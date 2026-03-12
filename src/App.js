@@ -17,50 +17,56 @@ import TermsAndConditions from './pages/TermsAndConditions';
 export default function App() {
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [view, setView] = useState('home');
+  const [view, setView] = useState('home'); // ✅ Always start on home
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // ⚠️ IMPORTANT: Replace this email with YOUR email that you use to sign in
   const ADMIN_EMAILS = [
     'odirasteve287@gmail.com'
   ];
 
   useEffect(() => {
+    // ✅ Clean OAuth token from URL hash immediately — prevents token leak and redirect loops
+    if (window.location.hash.includes('access_token') || window.location.hash.includes('error')) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+
     // Check current user session
     supabase.auth.getSession().then(({ data: { session } }) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
 
-      console.log('🔍 Current user email:', currentUser?.email);
-      console.log('🔍 Admin emails list:', ADMIN_EMAILS);
-
       if (currentUser && ADMIN_EMAILS.includes(currentUser.email)) {
-        console.log('✅ USER IS ADMIN!');
         setIsAdmin(true);
       } else {
-        console.log('❌ User is NOT admin');
         setIsAdmin(false);
       }
+      // ✅ Do NOT redirect here — always stay on home
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
 
-      console.log('🔍 Auth state changed. User:', currentUser?.email);
-
       if (currentUser && ADMIN_EMAILS.includes(currentUser.email)) {
-        console.log('✅ USER IS ADMIN!');
         setIsAdmin(true);
       } else {
-        console.log('❌ User is NOT admin');
         setIsAdmin(false);
         if (view === 'admin-dashboard') {
           setView('home');
         }
+      }
+
+      // ✅ Only redirect to dashboard on explicit sign-in, not on page load session restore
+      if (event === 'SIGNED_IN' && window.location.hash === '') {
+        setView('user-dashboard');
+      }
+
+      // ✅ On sign out, always go home
+      if (event === 'SIGNED_OUT') {
+        setView('home');
       }
     });
 
@@ -93,20 +99,14 @@ export default function App() {
   }, [view, refreshTrigger]);
 
   const loadProducts = async () => {
-    console.log('Loading products...');
     const { data, error } = await supabase
       .from('products')
       .select('*')
-      .in('status', ['active', 'sold'])  // ← sold items remain visible with a "Sold" badge
+      .in('status', ['active', 'sold'])
       .order('created_at', { ascending: false });
 
-    if (data) {
-      console.log('Products loaded:', data.length);
-      setProducts(data);
-    }
-    if (error) {
-      console.error('Error loading products:', error);
-    }
+    if (data) setProducts(data);
+    if (error) console.error('Error loading products:', error);
   };
 
   const addToCart = (product) => {
@@ -114,13 +114,8 @@ export default function App() {
   };
 
   const refreshProducts = () => {
-    console.log('Manual refresh triggered');
     setRefreshTrigger(prev => prev + 1);
   };
-
-  useEffect(() => {
-    console.log('🎯 isAdmin state:', isAdmin);
-  }, [isAdmin]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -158,11 +153,9 @@ export default function App() {
           )}
           {view === 'blog' && <Blog setView={setView} />}
 
-          {/* Sell page also serves as FAQs */}
           {view === 'sell' && <SellInstructions setView={setView} />}
           {view === 'faq'  && <SellInstructions setView={setView} />}
 
-          {/* Privacy & Terms pages */}
           {view === 'privacy' && <PrivacyPolicy setView={setView} />}
           {view === 'terms'   && <TermsAndConditions setView={setView} />}
 
@@ -174,20 +167,16 @@ export default function App() {
           {view === 'user-dashboard'   && user && <UserDashboard user={user} setView={setView} />}
           {view === 'buyer-dashboard'  && user && <BuyerDashboard user={user} setView={setView} />}
 
-          {/* Admin Dashboard - Only accessible to admin users */}
           {view === 'admin-dashboard' && user && isAdmin && (
             <AdminDashboard user={user} setView={setView} />
           )}
 
-          {/* Show unauthorized message if non-admin tries to access */}
           {view === 'admin-dashboard' && user && !isAdmin && (
             <div className="max-w-4xl mx-auto px-4 py-16 text-center">
               <div className="bg-red-50 border-2 border-red-200 rounded-lg p-12">
                 <div className="text-6xl mb-4">🚫</div>
                 <h2 className="text-3xl font-serif text-red-800 mb-4">Access Denied</h2>
-                <p className="text-gray-600 mb-4">
-                  You don't have permission to access the admin dashboard.
-                </p>
+                <p className="text-gray-600 mb-4">You don't have permission to access the admin dashboard.</p>
                 <p className="text-sm text-gray-500 mb-8">
                   Your email: <strong>{user.email}</strong> is not in the admin list.
                 </p>
@@ -206,9 +195,7 @@ export default function App() {
               <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-12">
                 <div className="text-6xl mb-4">🔒</div>
                 <h2 className="text-3xl font-serif text-yellow-800 mb-4">Authentication Required</h2>
-                <p className="text-gray-600 mb-8">
-                  Please sign in to access the admin dashboard.
-                </p>
+                <p className="text-gray-600 mb-8">Please sign in to access the admin dashboard.</p>
                 <button
                   onClick={() => setView('signin')}
                   className="px-8 py-3 bg-teal-800 text-white hover:bg-teal-700 transition rounded font-semibold"
