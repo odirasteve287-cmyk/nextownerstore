@@ -8,7 +8,6 @@ export default function SellerDashboard({ user, setView }) {
   const [stats, setStats] = useState({ total: 0, pending: 0, active: 0, sold: 0 });
   const [statusFilter, setStatusFilter] = useState('all');
 
-  // Post form state
   const [itemName, setItemName] = useState('');
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState('Furniture');
@@ -23,7 +22,6 @@ export default function SellerDashboard({ user, setView }) {
   const [postSuccess, setPostSuccess] = useState(false);
   const [postError, setPostError] = useState('');
 
-  // Messaging state
   const [conversations, setConversations] = useState([]);
   const [selectedConvIdx, setSelectedConvIdx] = useState(0);
   const [selectedConv, setSelectedConv] = useState(null);
@@ -36,11 +34,12 @@ export default function SellerDashboard({ user, setView }) {
   const pollRef = useRef(null);
   const textareaRef = useRef(null);
   const pendingMsgSentRef = useRef(false);
+  // Track whether we should auto-scroll (only after user sends a message)
+  const shouldScrollRef = useRef(false);
 
   const categories = ['Furniture', 'Electronics', 'Appliances', 'For Kids', 'Decor', 'Household'];
   const conditions = ['Brand New', 'Like New', 'Excellent', 'Good', 'Fair', 'For Parts'];
 
-  // ── On mount: check for requested tab ──
   useEffect(() => {
     const requestedTab = sessionStorage.getItem('dashboardTab');
     if (requestedTab) {
@@ -58,8 +57,6 @@ export default function SellerDashboard({ user, setView }) {
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, [user]);
 
-  // ── After conversations load, handle pending message from listing chat ──
-  // FIX: use a separate state to track if conversations have been loaded once
   const [convsLoaded, setConvsLoaded] = useState(false);
 
   useEffect(() => {
@@ -76,8 +73,12 @@ export default function SellerDashboard({ user, setView }) {
     handlePendingMessage(pending.text);
   }, [convsLoaded, user]);
 
+  // ── Only scroll when shouldScrollRef is true ──
   useEffect(() => {
-    msgsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (shouldScrollRef.current) {
+      msgsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      shouldScrollRef.current = false;
+    }
   }, [messages]);
 
   useEffect(() => {
@@ -88,7 +89,6 @@ export default function SellerDashboard({ user, setView }) {
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, [selectedConv]);
 
-  // Auto-expand textarea
   const handleTextareaInput = (e) => {
     const ta = e.target;
     ta.style.height = 'auto';
@@ -96,11 +96,9 @@ export default function SellerDashboard({ user, setView }) {
     setNewMessage(ta.value);
   };
 
-  // ── Send a pending message (from listing page) into a conversation ──
   const handlePendingMessage = async (text) => {
     if (!text || !user) return;
     try {
-      // Re-fetch fresh conversations to avoid stale closure
       const { data: freshConvs } = await supabase
         .from('agent_conversations')
         .select('*')
@@ -110,45 +108,27 @@ export default function SellerDashboard({ user, setView }) {
 
       let conv = (freshConvs && freshConvs.length > 0) ? freshConvs[0] : null;
 
-      // Create a new conversation if none exists
       if (!conv) {
         const { data: newConv, error: ce } = await supabase
           .from('agent_conversations')
-          .insert([{
-            user_id: user.id,
-            created_at: new Date().toISOString(),
-            last_message_at: new Date().toISOString(),
-          }])
-          .select()
-          .single();
+          .insert([{ user_id: user.id, created_at: new Date().toISOString(), last_message_at: new Date().toISOString() }])
+          .select().single();
         if (ce) { console.error('conv create error:', ce.message); return; }
         conv = newConv;
       }
 
       if (!conv) return;
 
-      // Insert the message
       const { error: me } = await supabase
         .from('agent_messages')
-        .insert([{
-          conversation_id: conv.id,
-          sender_id: user.id,
-          is_agent: false,
-          content: text,
-          created_at: new Date().toISOString(),
-        }]);
+        .insert([{ conversation_id: conv.id, sender_id: user.id, is_agent: false, content: text, created_at: new Date().toISOString() }]);
 
       if (me) { console.error('message insert error:', me.message); return; }
 
-      await supabase.from('agent_conversations')
-        .update({ last_message_at: new Date().toISOString() })
-        .eq('id', conv.id);
+      await supabase.from('agent_conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conv.id);
 
-      // Reload conversations & select this one
       const { data: convs } = await supabase
-        .from('agent_conversations')
-        .select('*')
-        .eq('user_id', user.id)
+        .from('agent_conversations').select('*').eq('user_id', user.id)
         .order('last_message_at', { ascending: false });
 
       if (convs && convs.length > 0) {
@@ -158,55 +138,41 @@ export default function SellerDashboard({ user, setView }) {
         setSelectedConvIdx(0);
         setMobileShowChat(true);
 
-        // Load messages for this conv
         const { data: msgs } = await supabase
-          .from('agent_messages')
-          .select('*')
-          .eq('conversation_id', enriched[0].id)
+          .from('agent_messages').select('*').eq('conversation_id', enriched[0].id)
           .order('created_at', { ascending: true });
-        if (msgs) setMessages(msgs);
+        if (msgs) {
+          shouldScrollRef.current = true;
+          setMessages(msgs);
+        }
       }
-    } catch (err) {
-      console.error('pendingMessage error:', err.message);
-    }
+    } catch (err) { console.error('pendingMessage error:', err.message); }
   };
 
-  // ── Fetch agent names for conversations ──
   const fetchAgentNames = async (convs) => {
     const names = {};
     for (const conv of convs) {
       try {
         const { data: agentMsg } = await supabase
-          .from('agent_messages')
-          .select('sender_id')
-          .eq('conversation_id', conv.id)
-          .eq('is_agent', true)
-          .limit(1);
+          .from('agent_messages').select('sender_id').eq('conversation_id', conv.id)
+          .eq('is_agent', true).limit(1);
 
         if (agentMsg && agentMsg.length > 0) {
           const agentId = agentMsg[0].sender_id;
           const { data: profile } = await supabase
-            .from('seller_profiles')
-            .select('business_name, full_name, name')
-            .eq('user_id', agentId)
-            .single();
+            .from('seller_profiles').select('business_name, full_name, name').eq('user_id', agentId).single();
 
           if (profile) {
             names[conv.id] = profile.business_name || profile.full_name || profile.name || 'Support Agent';
           } else {
             const { data: authUser } = await supabase
-              .from('profiles')
-              .select('full_name, username, name')
-              .eq('id', agentId)
-              .single();
+              .from('profiles').select('full_name, username, name').eq('id', agentId).single();
             names[conv.id] = authUser?.full_name || authUser?.username || authUser?.name || 'Support Agent';
           }
         } else {
           names[conv.id] = 'Support Team';
         }
-      } catch {
-        names[conv.id] = 'Support Team';
-      }
+      } catch { names[conv.id] = 'Support Team'; }
     }
     return names;
   };
@@ -215,18 +181,14 @@ export default function SellerDashboard({ user, setView }) {
     return await Promise.all(convs.map(async (conv) => {
       const { data: lastMsg } = await supabase
         .from('agent_messages').select('content, is_agent, created_at')
-        .eq('conversation_id', conv.id)
-        .order('created_at', { ascending: false }).limit(1);
+        .eq('conversation_id', conv.id).order('created_at', { ascending: false }).limit(1);
       return { ...conv, lastMsg: lastMsg?.[0] || null };
     }));
   };
 
   const loadProfile = async () => {
     const { data } = await supabase.from('seller_profiles').select('*').eq('user_id', user.id).single();
-    if (data) {
-      setBusinessName(data.business_name || '');
-      setLocation(data.location || '');
-    }
+    if (data) { setBusinessName(data.business_name || ''); setLocation(data.location || ''); }
   };
 
   const loadConversations = async () => {
@@ -238,7 +200,6 @@ export default function SellerDashboard({ user, setView }) {
     if (convs && convs.length > 0) {
       const enriched = await enrichConversations(convs);
       setConversations(enriched);
-
       fetchAgentNames(convs).then(names => setAgentNames(names));
 
       if (!selectedConv) {
@@ -249,8 +210,6 @@ export default function SellerDashboard({ user, setView }) {
     } else {
       setConversations([]);
     }
-
-    // FIX: mark conversations as loaded so pending message effect fires
     setConvsLoaded(true);
   };
 
@@ -258,9 +217,9 @@ export default function SellerDashboard({ user, setView }) {
     if (!conv) return;
     if (!silent) setMsgLoading(true);
     const { data, error } = await supabase
-      .from('agent_messages').select('*')
-      .eq('conversation_id', conv.id)
+      .from('agent_messages').select('*').eq('conversation_id', conv.id)
       .order('created_at', { ascending: true });
+    // Do NOT auto-scroll on silent poll or initial load
     if (!error && data) setMessages(data);
     if (!silent) setMsgLoading(false);
   };
@@ -291,11 +250,12 @@ export default function SellerDashboard({ user, setView }) {
         .insert([{ conversation_id: conv.id, sender_id: user.id, is_agent: false, content: newMessage, created_at: new Date().toISOString() }])
         .select().single();
       if (msg) {
+        // Only scroll when user explicitly sends a message
+        shouldScrollRef.current = true;
         setMessages(p => [...p, msg]);
         setNewMessage('');
         if (textareaRef.current) { textareaRef.current.value = ''; textareaRef.current.style.height = 'auto'; }
-        await supabase.from('agent_conversations')
-          .update({ last_message_at: new Date().toISOString() }).eq('id', conv.id);
+        await supabase.from('agent_conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conv.id);
         loadConversations();
       }
     } catch (err) { console.error('send error:', err.message); }
@@ -308,7 +268,7 @@ export default function SellerDashboard({ user, setView }) {
     if (productsData) {
       setProducts(productsData);
       setStats({
-        total: productsData.length,
+        total:   productsData.length,
         pending: productsData.filter(p => p.status === 'pending').length,
         active:  productsData.filter(p => p.status === 'active').length,
         sold:    productsData.filter(p => p.status === 'sold').length,
@@ -365,23 +325,19 @@ export default function SellerDashboard({ user, setView }) {
 
   const filteredProducts = statusFilter === 'all' ? products : products.filter(p => p.status === statusFilter);
 
-  const formatTime = (ts) => ts
-    ? new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    : '';
+  const formatTime = (ts) => ts ? new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
   const formatDate = (ts) => {
     if (!ts) return '';
-    const d = new Date(ts);
-    const today = new Date();
-    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+    const d = new Date(ts), today = new Date(), yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
     if (d.toDateString() === today.toDateString()) return formatTime(ts);
     if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
     return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
   };
 
   const getDateChip = (ts) => {
-    const d = new Date(ts);
-    const today = new Date();
-    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+    const d = new Date(ts), today = new Date(), yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
     if (d.toDateString() === today.toDateString()) return 'Today';
     if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
     return d.toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' });
@@ -401,11 +357,11 @@ export default function SellerDashboard({ user, setView }) {
   };
 
   const statusColor = (s) => ({
-    active:  { bg: 'rgba(74,222,128,0.15)',  text: '#4ade80'  },
-    pending: { bg: 'rgba(251,191,36,0.15)',  text: '#fbbf24'  },
-    sold:    { bg: 'rgba(255,255,255,0.08)', text: 'rgba(255,255,255,0.45)' },
-    approved:{ bg: 'rgba(74,222,128,0.15)',  text: '#4ade80'  },
-    rejected:{ bg: 'rgba(255,107,107,0.15)', text: '#ff6b6b'  },
+    active:   { bg: 'rgba(74,222,128,0.15)',  text: '#4ade80'  },
+    pending:  { bg: 'rgba(251,191,36,0.15)',  text: '#fbbf24'  },
+    sold:     { bg: 'rgba(255,255,255,0.08)', text: 'rgba(255,255,255,0.45)' },
+    approved: { bg: 'rgba(74,222,128,0.15)',  text: '#4ade80'  },
+    rejected: { bg: 'rgba(255,107,107,0.15)', text: '#ff6b6b'  },
   }[s] || { bg: 'rgba(255,255,255,0.08)', text: 'rgba(255,255,255,0.45)' });
 
   return (
@@ -463,7 +419,16 @@ export default function SellerDashboard({ user, setView }) {
         .btn-del { color: #ff6b6b; border-color: #ff6b6b; }
         .btn-del:hover { background: #ff6b6b; color: #fff; }
 
-        .wa-shell { display: flex; height: calc(100vh - 260px); min-height: 600px; border-radius: 14px; overflow: hidden; border: 1px solid #1e2a3a; box-shadow: 0 16px 50px rgba(0,0,0,0.5); }
+        /* ── Chat shell: desktop ── */
+        .wa-shell {
+          display: flex;
+          height: calc(100vh - 200px);
+          min-height: 600px;
+          border-radius: 14px;
+          overflow: hidden;
+          border: 1px solid #1e2a3a;
+          box-shadow: 0 16px 50px rgba(0,0,0,0.5);
+        }
         .wa-left { width: 300px; flex-shrink: 0; background: #0e1117; border-right: 1px solid #1e2a3a; display: flex; flex-direction: column; }
         .wa-left-top { padding: 16px 20px; background: #131920; border-bottom: 1px solid #1e2a3a; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
         .wa-left-top h3 { font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0; }
@@ -526,14 +491,37 @@ export default function SellerDashboard({ user, setView }) {
         .settings-card { background: #151c27; border: 1px solid #1e2a3a; border-radius: 14px; padding: 40px; }
         .settings-label { font-size: 0.72rem; font-weight: 700; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 18px; }
 
+        /* ── Mobile overrides ── */
         @media (max-width: 768px) {
           .dash-tabbar { padding: 0 16px; }
           .dash-page { padding: 24px 16px; }
           .form-row { grid-template-columns: 1fr; }
           .listings-grid { grid-template-columns: 1fr; }
-          .wa-shell { flex-direction: column; height: auto; min-height: 540px; }
-          .wa-left { width: 100%; height: auto; border-right: none; border-bottom: 1px solid #1e2a3a; display: ${mobileShowChat ? 'none' : 'flex'}; }
-          .wa-right { min-height: 480px; display: ${mobileShowChat ? 'flex' : 'none'}; }
+
+          /* Chat: full-screen height on mobile, stacked layout */
+          .wa-shell {
+            flex-direction: column;
+            height: calc(100vh - 120px); /* much taller on mobile */
+            min-height: 0;
+            border-radius: 10px;
+          }
+          /* Contact list panel */
+          .wa-left {
+            width: 100%;
+            flex: none;
+            height: 240px;             /* fixed compact height when visible */
+            border-right: none;
+            border-bottom: 1px solid #1e2a3a;
+          }
+          .wa-left.hidden { display: none; }
+
+          /* Chat panel fills remaining space */
+          .wa-right {
+            flex: 1;
+            min-height: 0;
+          }
+          .wa-right.hidden { display: none; }
+
           .wa-msg-inner { max-width: 85%; }
           .wa-back-btn { display: block !important; }
         }
@@ -542,8 +530,8 @@ export default function SellerDashboard({ user, setView }) {
       {/* ── Tab Bar ── */}
       <div className="dash-tabbar">
         {[
-          { id: 'new',      label: 'Add New' },
-          { id: 'listings', label: 'My Ads' },
+          { id: 'new',      label: 'Add New'  },
+          { id: 'listings', label: 'My Ads'   },
           { id: 'messages', label: 'Messages' },
           { id: 'settings', label: 'Settings' },
         ].map(({ id, label }) => (
@@ -571,22 +559,14 @@ export default function SellerDashboard({ user, setView }) {
               <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#4dd4ac', marginBottom: '4px' }}>Add New Listing</div>
               <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.32)' }}>Fill in the details and submit — your listing will be reviewed before going live.</div>
             </div>
-
-            {postSuccess && (
-              <div className="alert alert-success">✓ Listing submitted! It will be visible after admin verification.</div>
-            )}
-            {postError && (
-              <div className="alert alert-error">⚠ {postError}</div>
-            )}
-
+            {postSuccess && <div className="alert alert-success">✓ Listing submitted! It will be visible after admin verification.</div>}
+            {postError   && <div className="alert alert-error">⚠ {postError}</div>}
             <div style={{ background: '#151c27', border: '1px solid #1e2a3a', borderRadius: '14px', padding: '40px' }}>
               <form onSubmit={handlePostSubmit}>
-
                 <div className="form-row">
                   <div className="form-group">
                     <label>Business Name</label>
-                    <input type="text" value={businessName} onChange={e => setBusinessName(e.target.value)}
-                      required placeholder="e.g. Steve's Electronics" className="form-control" />
+                    <input type="text" value={businessName} onChange={e => setBusinessName(e.target.value)} required placeholder="e.g. Steve's Electronics" className="form-control" />
                   </div>
                   <div className="form-group">
                     <label>Category</label>
@@ -595,12 +575,10 @@ export default function SellerDashboard({ user, setView }) {
                     </select>
                   </div>
                 </div>
-
                 <div className="form-row">
                   <div className="form-group">
                     <label>Item Name</label>
-                    <input type="text" value={itemName} onChange={e => setItemName(e.target.value)}
-                      required placeholder='e.g. Samsung 55" TV' className="form-control" />
+                    <input type="text" value={itemName} onChange={e => setItemName(e.target.value)} required placeholder='e.g. Samsung 55" TV' className="form-control" />
                   </div>
                   <div className="form-group">
                     <label>Condition</label>
@@ -609,27 +587,20 @@ export default function SellerDashboard({ user, setView }) {
                     </select>
                   </div>
                 </div>
-
                 <div className="form-row">
                   <div className="form-group">
                     <label>Price ($)</label>
-                    <input type="number" value={price} onChange={e => setPrice(e.target.value)}
-                      required min="0" step="0.01" placeholder="0.00" className="form-control" />
+                    <input type="number" value={price} onChange={e => setPrice(e.target.value)} required min="0" step="0.01" placeholder="0.00" className="form-control" />
                   </div>
                   <div className="form-group">
                     <label>Location</label>
-                    <input type="text" value={location} onChange={e => setLocation(e.target.value)}
-                      required placeholder="e.g. Nairobi, Kenya" className="form-control" />
+                    <input type="text" value={location} onChange={e => setLocation(e.target.value)} required placeholder="e.g. Nairobi, Kenya" className="form-control" />
                   </div>
                 </div>
-
                 <div className="form-group">
                   <label>Description</label>
-                  <textarea value={description} onChange={e => setDescription(e.target.value)}
-                    required rows="5" className="form-control"
-                    placeholder="Describe your item — condition, features, reason for selling…" />
+                  <textarea value={description} onChange={e => setDescription(e.target.value)} required rows="5" className="form-control" placeholder="Describe your item — condition, features, reason for selling…" />
                 </div>
-
                 <div className="form-group">
                   <label>Images</label>
                   <div className="upload-zone">
@@ -650,15 +621,8 @@ export default function SellerDashboard({ user, setView }) {
                     <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.82rem' }}>JPG, PNG or GIF · 1 main + 2 optional detail images</p>
                   </div>
                 </div>
-
                 <button type="submit" disabled={uploading}
-                  style={{
-                    padding: '12px 28px', background: uploading ? 'rgba(77,212,172,0.5)' : '#4dd4ac',
-                    color: '#000', border: 'none', borderRadius: '8px', fontSize: '0.9rem',
-                    fontWeight: '600', cursor: uploading ? 'default' : 'pointer',
-                    display: 'inline-flex', alignItems: 'center', gap: '8px',
-                    fontFamily: 'inherit', transition: 'all 0.2s',
-                  }}
+                  style={{ padding: '12px 28px', background: uploading ? 'rgba(77,212,172,0.5)' : '#4dd4ac', color: '#000', border: 'none', borderRadius: '8px', fontSize: '0.9rem', fontWeight: '600', cursor: uploading ? 'default' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px', fontFamily: 'inherit', transition: 'all 0.2s' }}
                   onMouseEnter={e => { if (!uploading) e.currentTarget.style.background = '#3bc495'; }}
                   onMouseLeave={e => { if (!uploading) e.currentTarget.style.background = '#4dd4ac'; }}>
                   ✈ {uploading ? 'Submitting…' : 'Submit for Verification'}
@@ -675,21 +639,18 @@ export default function SellerDashboard({ user, setView }) {
               <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#4dd4ac', marginBottom: '4px' }}>My Ads</div>
               <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.32)' }}>Track and manage all your listings.</div>
             </div>
-
             <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
               {[
-                { key: 'all',     label: 'All',      count: stats.total   },
-                { key: 'pending', label: 'Pending',  count: stats.pending },
-                { key: 'active',  label: 'Active',   count: stats.active  },
-                { key: 'sold',    label: 'Sold',     count: stats.sold    },
+                { key: 'all',     label: 'All',     count: stats.total   },
+                { key: 'pending', label: 'Pending', count: stats.pending },
+                { key: 'active',  label: 'Active',  count: stats.active  },
+                { key: 'sold',    label: 'Sold',    count: stats.sold    },
               ].map(({ key, label, count }) => (
-                <button key={key} onClick={() => setStatusFilter(key)}
-                  className={`ftab ${statusFilter === key ? 'active' : ''}`}>
+                <button key={key} onClick={() => setStatusFilter(key)} className={`ftab ${statusFilter === key ? 'active' : ''}`}>
                   {label} <span>{count}</span>
                 </button>
               ))}
             </div>
-
             {filteredProducts.length === 0 ? (
               <div className="empty-state">
                 <div style={{ fontSize: '3.5rem', marginBottom: '16px', color: '#1e2a3a' }}>□</div>
@@ -707,50 +668,27 @@ export default function SellerDashboard({ user, setView }) {
                 {filteredProducts.map(product => {
                   const sc = statusColor(product.status);
                   const statusLabel = { pending: 'Pending', active: 'Active', sold: 'Sold', approved: 'Approved', rejected: 'Rejected' }[product.status] || product.status;
-                  const veriLabel = {
-                    pending:  '⏳ Waiting for Verification',
-                    active:   '✓ Live & Active',
-                    approved: '✓ Live & Approved',
-                    sold:     '● Sold',
-                    rejected: '✗ Rejected',
-                  }[product.status] || product.status;
-
+                  const veriLabel = { pending: '⏳ Waiting for Verification', active: '✓ Live & Active', approved: '✓ Live & Approved', sold: '● Sold', rejected: '✗ Rejected' }[product.status] || product.status;
                   return (
                     <div key={product.id} className="listing-card">
                       <div className="lc-img">
                         {product.image_url
                           ? <img src={product.image_url} alt={product.title} />
-                          : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', fontSize: '0.8rem', background: '#111' }}>No image</div>
-                        }
+                          : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', fontSize: '0.8rem', background: '#111' }}>No image</div>}
                         <span className="lc-status-badge" style={{ background: sc.bg, color: sc.text }}>{statusLabel}</span>
                       </div>
                       <div className="lc-body">
                         <div className="lc-title">{product.title}</div>
                         <div className="lc-price">${parseFloat(product.price).toFixed(2)}</div>
-                        <div className="lc-veri" style={{ borderLeft: `3px solid ${sc.text}`, color: sc.text }}>
-                          {veriLabel}
-                        </div>
-                        <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', marginBottom: '10px' }}>
-                          {product.category} · {product.condition} · {product.location}
-                        </div>
+                        <div className="lc-veri" style={{ borderLeft: `3px solid ${sc.text}`, color: sc.text }}>{veriLabel}</div>
+                        <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', marginBottom: '10px' }}>{product.category} · {product.condition} · {product.location}</div>
                         {(product.status === 'active' || product.status === 'approved' || product.status === 'pending') && (
                           <div className="lc-actions">
                             {(product.status === 'active' || product.status === 'approved') && (
-                              <button className="lc-btn btn-view" onClick={() => {
-                                sessionStorage.setItem('selectedProductId', product.id);
-                                setView('listings');
-                              }}>👁 View</button>
+                              <button className="lc-btn btn-view" onClick={() => { sessionStorage.setItem('selectedProductId', product.id); setView('listings'); }}>👁 View</button>
                             )}
                             {product.status === 'pending' && (
-                              <button className="lc-btn btn-del"
-                                onClick={async () => {
-                                  if (window.confirm('Delete this listing?')) {
-                                    await supabase.from('products').delete().eq('id', product.id);
-                                    loadSellerData();
-                                  }
-                                }}>
-                                🗑 Delete
-                              </button>
+                              <button className="lc-btn btn-del" onClick={async () => { if (window.confirm('Delete this listing?')) { await supabase.from('products').delete().eq('id', product.id); loadSellerData(); } }}>🗑 Delete</button>
                             )}
                           </div>
                         )}
@@ -772,9 +710,8 @@ export default function SellerDashboard({ user, setView }) {
             </div>
 
             <div className="wa-shell">
-
-              {/* Left: thread list */}
-              <div className="wa-left">
+              {/* Left: thread list — hidden on mobile when chat is open */}
+              <div className={`wa-left${mobileShowChat ? ' hidden' : ''}`}>
                 <div className="wa-left-top">
                   <div>
                     <h3>Chats</h3>
@@ -787,27 +724,20 @@ export default function SellerDashboard({ user, setView }) {
                       <div style={{ fontSize: '2rem', marginBottom: '10px' }}>💬</div>
                       <p>No conversations yet</p>
                       <p style={{ fontSize: '11px', marginTop: '6px' }}>Browse listings and tap Chat on any product to start</p>
-                      <button
-                        onClick={() => { setSelectedConv(null); setMessages([]); setMobileShowChat(true); }}
+                      <button onClick={() => { setSelectedConv(null); setMessages([]); setMobileShowChat(true); }}
                         style={{ marginTop: '14px', width: '100%', padding: '10px', background: 'rgba(77,212,172,0.1)', border: '1px solid #4dd4ac', borderRadius: '8px', color: '#4dd4ac', cursor: 'pointer', fontSize: '0.82rem', fontWeight: '600', fontFamily: 'inherit' }}>
                         + Start a conversation
                       </button>
                     </div>
                   ) : conversations.map((conv, idx) => (
-                    <div key={conv.id}
-                      className={`wa-contact ${selectedConvIdx === idx ? 'active' : ''}`}
-                      onClick={() => selectConv(conv, idx)}>
+                    <div key={conv.id} className={`wa-contact ${selectedConvIdx === idx ? 'active' : ''}`} onClick={() => selectConv(conv, idx)}>
                       <div className="wa-ava">
                         {getAgentName(conv).charAt(0).toUpperCase()}
                         <span className="wa-dot" />
                       </div>
                       <div className="wa-ci">
                         <div className="wa-cname">{getAgentName(conv)}</div>
-                        <div className="wa-cprev">
-                          {conv.lastMsg
-                            ? (conv.lastMsg.is_agent ? '🤝 ' : 'You: ') + conv.lastMsg.content
-                            : 'No messages yet'}
-                        </div>
+                        <div className="wa-cprev">{conv.lastMsg ? (conv.lastMsg.is_agent ? '🤝 ' : 'You: ') + conv.lastMsg.content : 'No messages yet'}</div>
                       </div>
                       <div className="wa-ctime">{formatDate(conv.last_message_at)}</div>
                     </div>
@@ -815,9 +745,8 @@ export default function SellerDashboard({ user, setView }) {
                 </div>
               </div>
 
-              {/* Right: chat panel */}
-              <div className="wa-right" style={{ display: 'flex', flexDirection: 'column' }}>
-
+              {/* Right: chat panel — hidden on mobile when contact list is showing */}
+              <div className={`wa-right${!mobileShowChat && conversations.length > 0 ? ' hidden' : ''}`} style={{ display: 'flex', flexDirection: 'column' }}>
                 {conversations.length === 0 && !mobileShowChat ? (
                   <div className="wa-empty">
                     <div className="wa-empty-icon">💬</div>
@@ -828,14 +757,12 @@ export default function SellerDashboard({ user, setView }) {
                   </div>
                 ) : (
                   <>
-                    {/* Top bar */}
                     <div className="wa-topbar">
+                      {/* Back button — visible only on mobile */}
                       <button onClick={() => setMobileShowChat(false)}
                         style={{ background: 'none', border: 'none', color: '#4dd4ac', cursor: 'pointer', fontSize: '1.2rem', padding: '0 4px', display: 'none' }}
                         className="wa-back-btn">←</button>
-                      <div className="wa-topbar-ava">
-                        {getAgentName(selectedConv).charAt(0).toUpperCase()}
-                      </div>
+                      <div className="wa-topbar-ava">{getAgentName(selectedConv).charAt(0).toUpperCase()}</div>
                       <div>
                         <div className="wa-topbar-name">{getAgentName(selectedConv)}</div>
                         <div className="wa-topbar-status">Online</div>
@@ -843,7 +770,6 @@ export default function SellerDashboard({ user, setView }) {
                       </div>
                     </div>
 
-                    {/* Messages */}
                     <div className="wa-msgs">
                       {msgLoading ? (
                         <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', paddingTop: '60px' }}>Loading…</div>
@@ -855,9 +781,7 @@ export default function SellerDashboard({ user, setView }) {
                         </div>
                       ) : messagesWithDateChips.map((item, i) => {
                         if (item.type === 'chip') return (
-                          <div key={`chip-${i}`} className="wa-datechip">
-                            <span>{item.label}</span>
-                          </div>
+                          <div key={`chip-${i}`} className="wa-datechip"><span>{item.label}</span></div>
                         );
                         const { msg } = item;
                         const isMe = !msg.is_agent;
@@ -879,7 +803,6 @@ export default function SellerDashboard({ user, setView }) {
                       <div ref={msgsEndRef} />
                     </div>
 
-                    {/* Input bar */}
                     <div className="wa-inputbar">
                       <textarea
                         ref={textareaRef}

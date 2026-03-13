@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase';
 
-// ── Defined OUTSIDE AuthForm so React doesn't remount it on every keystroke ──
 const inputStyle = {
   width: '100%',
   background: '#0d1117',
@@ -76,19 +75,29 @@ const IconEmail = <svg width="16" height="16" fill="none" stroke="currentColor" 
 const IconPhone = <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012.18 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.26A16 16 0 0015.74 17.09l1.62-1.62a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>;
 const IconLock  = <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>;
 
+const STORAGE_KEY = 'nos_saved_credentials';
+
 export default function AuthForm({ type: initialType, setView }) {
   const [tab, setTab] = useState(initialType === 'signup' ? 'register' : 'login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [username, setUsername] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState('+1 ');
   const [acceptPolicy, setAcceptPolicy] = useState(false);
   const [acceptPromo, setAcceptPromo] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // ── Auto-fill saved credentials on mount ──
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (saved?.email) setEmail(saved.email);
+      if (saved?.password) setPassword(saved.password);
+    } catch (_) {}
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -96,8 +105,11 @@ export default function AuthForm({ type: initialType, setView }) {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (error) setError(error.message);
-    else setView('user-dashboard');
+    if (error) {
+      setError(error.message);
+    } else {
+      setView('user-dashboard');
+    }
   };
 
   const handleRegister = async (e) => {
@@ -118,20 +130,26 @@ export default function AuthForm({ type: initialType, setView }) {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: {
-          username,
-          phone,
-        }
-      }
+      options: { data: { username, phone } }
     });
     setLoading(false);
 
     if (error) {
       setError(error.message);
     } else {
+      // ── Save credentials so login is auto-filled next time ──
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ email, password }));
       setSuccess('Account created! Please check your email to confirm your account.');
       setTimeout(() => setView('home'), 2000);
+    }
+  };
+
+  const handlePhoneChange = (e) => {
+    const val = e.target.value;
+    if (!val.startsWith('+1 ')) {
+      setPhone('+1 ');
+    } else {
+      setPhone(val);
     }
   };
 
@@ -174,19 +192,15 @@ export default function AuthForm({ type: initialType, setView }) {
               key={t}
               onClick={() => { setTab(t); setError(''); setSuccess(''); }}
               style={{
-                flex: 1,
-                padding: '16px',
+                flex: 1, padding: '16px',
                 background: tab === t ? '#0d1117' : '#111827',
                 border: 'none',
                 borderBottom: tab === t ? '2px solid #0bbfaa' : '2px solid transparent',
                 color: tab === t ? '#0bbfaa' : '#64748b',
                 fontWeight: tab === t ? '600' : '400',
-                fontSize: '15px',
-                cursor: 'pointer',
-                letterSpacing: '0.03em',
-                transition: 'all 0.2s',
-                marginBottom: '-2px',
-                textTransform: 'capitalize',
+                fontSize: '15px', cursor: 'pointer',
+                letterSpacing: '0.03em', transition: 'all 0.2s',
+                marginBottom: '-2px', textTransform: 'capitalize',
               }}
             >
               {t === 'login' ? 'Login' : 'Register'}
@@ -195,7 +209,6 @@ export default function AuthForm({ type: initialType, setView }) {
         </div>
 
         <div style={{ padding: '28px 32px 32px' }}>
-          {/* Error / Success messages */}
           {error && (
             <div style={{ background: '#2d1515', border: '1px solid #dc2626', borderRadius: '6px', padding: '10px 14px', marginBottom: '16px', color: '#f87171', fontSize: '13px' }}>
               {error}
@@ -209,26 +222,22 @@ export default function AuthForm({ type: initialType, setView }) {
 
           {/* LOGIN FORM */}
           {tab === 'login' && (
-            <form onSubmit={handleLogin}>
-              <InputField icon={IconEmail} type="email"    placeholder="Email"    value={email}    onChange={e => setEmail(e.target.value)}    required />
-              <PasswordField icon={IconLock} placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
-
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', marginTop: '4px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: '#64748b', fontSize: '13px' }}>
-                  <input type="checkbox" checked={rememberMe} onChange={e => setRememberMe(e.target.checked)}
-                    style={{ accentColor: '#0bbfaa', width: '15px', height: '15px' }} />
-                  Remember me
-                </label>
-                <button type="button" style={{ background: 'none', border: 'none', color: '#e2e8f0', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
-                  Forgot password?
-                </button>
-              </div>
-
+            <form onSubmit={handleLogin} autoComplete="on">
+              <InputField
+                icon={IconEmail} type="email" placeholder="Email"
+                value={email} onChange={e => setEmail(e.target.value)}
+                autoComplete="email" required
+              />
+              <PasswordField
+                icon={IconLock} placeholder="Password"
+                value={password} onChange={e => setPassword(e.target.value)}
+                autoComplete="current-password" required
+              />
               <button type="submit" disabled={loading} style={{
                 width: '100%', padding: '13px', background: '#0bbfaa', border: 'none',
                 borderRadius: '6px', color: '#0d1b2a', fontWeight: '700', fontSize: '15px',
                 cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1,
-                transition: 'background 0.2s', letterSpacing: '0.02em',
+                transition: 'background 0.2s', letterSpacing: '0.02em', marginTop: '8px',
               }}
                 onMouseEnter={e => !loading && (e.currentTarget.style.background = '#09a896')}
                 onMouseLeave={e => e.currentTarget.style.background = '#0bbfaa'}
@@ -240,13 +249,16 @@ export default function AuthForm({ type: initialType, setView }) {
 
           {/* REGISTER FORM */}
           {tab === 'register' && (
-            <form onSubmit={handleRegister}>
-              <InputField icon={IconUser}  type="text"     placeholder="Username*"    value={username} onChange={e => setUsername(e.target.value)} required />
-              <InputField icon={IconEmail} type="email"    placeholder="Email*"       value={email}    onChange={e => setEmail(e.target.value)}    required />
-              <InputField icon={IconPhone} type="tel"      placeholder="Contact*"     value={phone}    onChange={e => setPhone(e.target.value)}    required />
-              <PasswordField icon={IconLock} placeholder="Password*"         value={password}        onChange={e => setPassword(e.target.value)} required />
-              <PasswordField icon={IconLock} placeholder="Confirm Password*" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
-
+            <form onSubmit={handleRegister} autoComplete="on">
+              <InputField icon={IconUser}  type="text"  placeholder="Username*" value={username} onChange={e => setUsername(e.target.value)} autoComplete="username" required />
+              <InputField icon={IconEmail} type="email" placeholder="Email*"    value={email}    onChange={e => setEmail(e.target.value)}    autoComplete="email"    required />
+              <InputField
+                icon={IconPhone} type="tel" placeholder="+1 Contact*"
+                value={phone} onChange={handlePhoneChange}
+                autoComplete="tel" required
+              />
+              <PasswordField icon={IconLock} placeholder="Password*"         value={password}        onChange={e => setPassword(e.target.value)}        autoComplete="new-password" required />
+              <PasswordField icon={IconLock} placeholder="Confirm Password*" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} autoComplete="new-password" required />
               <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer', color: '#64748b', fontSize: '13px', marginBottom: '8px' }}>
                 <input type="checkbox" checked={acceptPolicy} onChange={e => setAcceptPolicy(e.target.checked)}
                   style={{ accentColor: '#0bbfaa', width: '15px', height: '15px', marginTop: '1px', flexShrink: 0 }} />
@@ -257,7 +269,6 @@ export default function AuthForm({ type: initialType, setView }) {
                   style={{ accentColor: '#0bbfaa', width: '15px', height: '15px', marginTop: '1px', flexShrink: 0 }} />
                 I agree to receive promotional emails and updates
               </label>
-
               <button type="submit" disabled={loading} style={{
                 width: '100%', padding: '13px', background: '#0bbfaa', border: 'none',
                 borderRadius: '6px', color: '#0d1b2a', fontWeight: '700', fontSize: '15px',
