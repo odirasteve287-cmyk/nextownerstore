@@ -594,7 +594,7 @@ export default function SellerDashboard({ user, setView }) {
                   </div>
                   <div className="form-group">
                     <label>Location</label>
-                    <input type="text" value={location} onChange={e => setLocation(e.target.value)} required placeholder="e.g. Nairobi, Kenya" className="form-control" />
+                    <input type="text" value={location} onChange={e => setLocation(e.target.value)} required placeholder="e.g. USA, Newyork" className="form-control" />
                   </div>
                 </div>
                 <div className="form-group">
