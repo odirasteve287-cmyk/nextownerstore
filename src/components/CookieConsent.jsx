@@ -21,7 +21,7 @@ export default function CookieConsent() {
   const [showDetails, setShowDetails] = useState(false);
   const [animateOut, setAnimateOut] = useState(false);
   const [prefs, setPrefs] = useState({
-    essential: true,   // always on
+    essential: true,
     analytics: false,
     marketing: false,
     functional: false,
@@ -30,7 +30,6 @@ export default function CookieConsent() {
   useEffect(() => {
     const consent = getCookie(COOKIE_KEY);
     if (!consent) {
-      // Slight delay so page loads first
       const t = setTimeout(() => setVisible(true), 900);
       return () => clearTimeout(t);
     }
@@ -176,7 +175,7 @@ export default function CookieConsent() {
         @media (max-width: 639px) {
           .nos-btn-row { flex-direction: column !important; }
           .nos-btn-row .nos-btn { width: 100%; text-align: center; }
-          .nos-cookie-inner { padding: 24px 20px !important; }
+          .nos-cookie-inner { padding: 20px 16px !important; }
         }
       `}</style>
 
@@ -185,11 +184,12 @@ export default function CookieConsent() {
         className={`nos-cookie-wrap${animateOut ? ' out' : ''}`}
         style={{
           position: 'fixed',
-          bottom: '24px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: 'calc(100% - 48px)',
+          bottom: '16px',
+          left: '16px',
+          right: '16px',
+          width: 'auto',
           maxWidth: '680px',
+          margin: '0 auto',
           zIndex: 9999,
         }}
       >
@@ -207,7 +207,6 @@ export default function CookieConsent() {
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '16px' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                {/* Cookie icon */}
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0bbfaa" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/>
                   <path d="M8.5 8.5v.01M16 15.5v.01M12 12v.01"/>
