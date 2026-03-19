@@ -121,10 +121,13 @@ export default function Listings({ products = [], refreshProducts, cart = [], se
     try {
       const { data: imgs } = await supabase.from('product_images').select('*').eq('product_id', product.id).order('sort_order', { ascending: true });
       setSelectedProduct({ ...product, product_images: imgs || [] });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch {
       setSelectedProduct(product);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
+
   const handleBackToListings = () => setSelectedProduct(null);
   const handleViewCart = () => { setShowCartSidebar(false); setShowCartPage(true); setSelectedProduct(null); };
 
@@ -139,7 +142,17 @@ export default function Listings({ products = [], refreshProducts, cart = [], se
   if (showCartPage) return <CartPage cart={cart} setCart={setCart} onBack={() => setShowCartPage(false)} />;
   if (selectedProduct) return (
     <>
-      <ProductDetail product={selectedProduct} allProducts={products} onBack={handleBackToListings} onProductClick={handleProductClick} cart={cart} setCart={setCart} onShowCart={() => setShowCartSidebar(true)} isLoggedIn={isLoggedIn} onNavigate={onNavigate} />
+      <ProductDetail
+        product={selectedProduct}
+        allProducts={products}
+        onBack={handleBackToListings}
+        onProductClick={handleProductClick}
+        cart={cart}
+        setCart={setCart}
+        onShowCart={() => setShowCartSidebar(true)}
+        isLoggedIn={isLoggedIn}
+        onNavigate={onNavigate}
+      />
       {showCartSidebar && <CartSidebar cart={cart} setCart={setCart} onClose={() => setShowCartSidebar(false)} onViewCart={handleViewCart} />}
     </>
   );
@@ -153,6 +166,8 @@ export default function Listings({ products = [], refreshProducts, cart = [], se
         .filter-drawer { transition: transform 0.3s ease; }
         .listings-search-input::placeholder { color: #475569; }
         .listings-search-input:focus { border-color: #0bbfaa !important; }
+        .back-home-link { display: inline-flex; align-items: center; gap: 6px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; color: #0bbfaa; text-decoration: none; cursor: pointer; transition: opacity 0.2s; }
+        .back-home-link:hover { opacity: 0.7; }
       `}</style>
 
       {filterOpen && <div onClick={() => setFilterOpen(false)} style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 9998 }} />}
@@ -183,6 +198,19 @@ export default function Listings({ products = [], refreshProducts, cart = [], se
       </div>
 
       <div style={{ maxWidth: '1600px', margin: '0 auto', padding: '24px 32px' }}>
+
+        {/* ── Back Home Link ── */}
+        <div style={{ marginBottom: '16px' }}>
+          <span
+            className="back-home-link"
+            onClick={() => onNavigate ? onNavigate('home') : window.history.back()}
+          >
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back Home
+          </span>
+        </div>
 
         {/* ── Search Bar ── */}
         <div style={{ marginBottom: '28px' }}>
@@ -394,6 +422,18 @@ function ProductDetail({ product = {}, allProducts = [], onProductClick, onBack,
     .filter(p => p.id !== product?.id && p.category === productData.category)
     .slice(0, 3);
 
+  // ── Related item click: fetch images then open detail, scroll to top ──
+  const handleRelatedClick = async (rel) => {
+    try {
+      const { data: imgs } = await supabase.from('product_images').select('*').eq('product_id', rel.id).order('sort_order', { ascending: true });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      onProductClick({ ...rel, product_images: imgs || [] });
+    } catch {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      onProductClick(rel);
+    }
+  };
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#000000', color: '#e2e8f0' }}>
       <style>{`
@@ -411,6 +451,8 @@ function ProductDetail({ product = {}, allProducts = [], onProductClick, onBack,
         .title-price-block-desktop { display:block; }
         .title-price-block-mobile { display:none; }
         .detail-text-offset { padding-left: 92px; }
+        .related-card { display:flex; flex-direction:column; background:none; border:1px solid #1e293b; cursor:pointer; text-align:left; padding:0; overflow:hidden; transition:border-color 0.2s, transform 0.2s; }
+        .related-card:hover { border-color:#0bbfaa; transform:translateY(-2px); }
         @media (max-width:639px) {
           .detail-outer { flex-direction:column; }
           .detail-right { width:100%; }
@@ -474,16 +516,13 @@ function ProductDetail({ product = {}, allProducts = [], onProductClick, onBack,
               <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '14px', lineHeight: 1.7, color: '#94a3b8', margin: 0 }}>{productData.description}</p>
             </div>
 
-            {/* Related Items desktop */}
+            {/* ── Related Items desktop ── */}
             {relatedItems.length > 0 && (
               <div className="title-price-block-desktop detail-text-offset" style={{ marginTop: '8px' }}>
                 <h2 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '18px', fontWeight: '700', color: '#ffffff', marginBottom: '14px', marginTop: 0 }}>Related Items</h2>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
                   {relatedItems.map(rel => (
-                    <button key={rel.id} onClick={() => onProductClick && onProductClick(rel)}
-                      style={{ display: 'flex', flexDirection: 'column', background: 'none', border: '1px solid #1e293b', cursor: 'pointer', textAlign: 'left', padding: 0, overflow: 'hidden', transition: 'border-color 0.2s' }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = '#0bbfaa'}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = '#1e293b'}>
+                    <button key={rel.id} className="related-card" onClick={() => handleRelatedClick(rel)}>
                       <div style={{ width: '100%', aspectRatio: '4/3', overflow: 'hidden', backgroundColor: '#111827', position: 'relative' }}>
                         {rel.image_url
                           ? <img src={rel.image_url} alt={rel.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'} />
@@ -563,17 +602,17 @@ function ProductDetail({ product = {}, allProducts = [], onProductClick, onBack,
               <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '14px', lineHeight: 1.7, color: '#94a3b8' }}>{productData.description}</p>
             </div>
 
-            {/* Related Items mobile */}
+            {/* ── Related Items mobile ── */}
             {relatedItems.length > 0 && (
               <div className="detail-related-mobile">
                 <style>{`.detail-related-mobile { display: none; } @media (max-width: 639px) { .detail-related-mobile { display: block; border-top: 1px solid #1e293b; padding-top: 16px; } }`}</style>
                 <h2 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '18px', fontWeight: '700', color: '#ffffff', marginBottom: '14px' }}>Related Items</h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {relatedItems.map(rel => (
-                    <button key={rel.id} onClick={() => onProductClick && onProductClick(rel)}
-                      style={{ display: 'flex', gap: '12px', background: 'none', border: '1px solid #1e293b', cursor: 'pointer', textAlign: 'left', padding: '10px', overflow: 'hidden', transition: 'border-color 0.2s', alignItems: 'center' }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = '#0bbfaa'}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = '#1e293b'}>
+                    <button key={rel.id} onClick={() => handleRelatedClick(rel)}
+                      style={{ display: 'flex', gap: '12px', background: 'none', border: '1px solid #1e293b', cursor: 'pointer', textAlign: 'left', padding: '10px', overflow: 'hidden', transition: 'border-color 0.2s, transform 0.2s', alignItems: 'center' }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#0bbfaa'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = '#1e293b'; e.currentTarget.style.transform = 'translateY(0)'; }}>
                       <div style={{ width: '60px', height: '60px', overflow: 'hidden', backgroundColor: '#111827', flexShrink: 0 }}>
                         {rel.image_url ? <img src={rel.image_url} alt={rel.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontSize: '1.5rem', opacity: 0.3 }}>🏺</span>}
                       </div>
