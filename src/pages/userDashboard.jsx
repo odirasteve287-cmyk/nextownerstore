@@ -565,12 +565,21 @@ export default function AdminDashboard({ user, setView }) {
         .wa-back-btn { display:none; background:none; border:none; color:#4dd4ac; cursor:pointer; font-size:1.2rem; padding:0 4px; }
 
         /* ── Mobile sidebar drawer ── */
-        .mob-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9998; }
+        .mob-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:19998; }
         .mob-overlay.open { display:block; }
-        .mob-drawer { position:fixed; left:0; top:0; bottom:0; width:260px; background:#090d14; z-index:9999; transform:translateX(-100%); transition:transform 0.25s cubic-bezier(0.4,0,0.2,1); display:flex; flex-direction:column; border-right:2px solid #1e2a3a; }
+        .mob-drawer { position:fixed; left:0; top:0; bottom:0; width:260px; background:#090d14; z-index:19999; transform:translateX(-100%); transition:transform 0.28s cubic-bezier(0.4,0,0.2,1); display:flex; flex-direction:column; border-right:2px solid #1e2a3a; overflow-y:auto; }
         .mob-drawer.open { transform:translateX(0); }
-        .mob-topbar { display:none; position:sticky; top:0; z-index:100; background:#131920; border-bottom:2px solid #1e2a3a; padding:12px 16px; align-items:center; justify-content:space-between; }
-        .mob-menu-btn { background:none; border:1px solid #1e2a3a; border-radius:8px; color:#4dd4ac; cursor:pointer; font-size:1.1rem; padding:7px 10px; display:flex; align-items:center; gap:6px; font-family:inherit; font-size:0.82rem; font-weight:600; }
+
+        /* ── Mobile top header (hamburger + title) ── */
+        .mob-header { display:none; position:sticky; top:0; z-index:200; background:#0d1520; border-bottom:2px solid #1e2a3a; padding:0 16px; height:52px; align-items:center; justify-content:space-between; flex-shrink:0; }
+
+        /* ── Mobile bottom nav bar ── */
+        .mob-bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; z-index:300; background:#0d1520; border-top:2px solid #1e2a3a; height:60px; align-items:stretch; padding:0; }
+        .mob-nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border:none; background:transparent; cursor:pointer; color:rgba(255,255,255,0.35); font-family:inherit; padding:6px 2px; position:relative; transition:color 0.15s; }
+        .mob-nav-item.active { color:#4dd4ac; }
+        .mob-nav-item .nav-icon { font-size:1.1rem; line-height:1; }
+        .mob-nav-item .nav-label { font-size:9px; font-weight:600; letter-spacing:0.03em; text-transform:uppercase; line-height:1; }
+        .mob-nav-badge { position:absolute; top:5px; right:calc(50% - 14px); background:#ef4444; color:#fff; font-size:8px; font-weight:700; min-width:14px; height:14px; border-radius:7px; display:flex; align-items:center; justify-content:center; padding:0 3px; }
 
         /* ── Desktop sidebar ── */
         .admin-sidebar-desktop { width:252px; min-width:252px; border-right:2px solid #1e2a3a; display:flex; flex-direction:column; overflow-y:auto; }
@@ -578,11 +587,12 @@ export default function AdminDashboard({ user, setView }) {
         @media (max-width: 768px) {
           .admin-dashboard { flex-direction:column !important; }
           .admin-sidebar-desktop { display:none !important; }
-          .mob-topbar { display:flex !important; }
-          .admin-main { padding:16px !important; }
+          .mob-header { display:flex !important; }
+          .mob-bottom-nav { display:flex !important; }
+          .admin-main { padding:14px 14px 76px !important; }
 
           /* Messages: stack on mobile */
-          .wa-shell { flex-direction:column; height:calc(100vh - 180px); min-height:0; border-radius:10px; }
+          .wa-shell { flex-direction:column; height:calc(100vh - 175px); min-height:0; border-radius:10px; }
           .wa-left { width:100%; flex:none; height:220px; border-right:none; border-bottom:2px solid #1e2a3a; }
           .wa-left.hidden { display:none; }
           .wa-right.hidden { display:none; }
@@ -598,7 +608,7 @@ export default function AdminDashboard({ user, setView }) {
         }
 
         @media (max-width: 480px) {
-          .admin-main { padding:12px !important; }
+          .admin-main { padding:12px 12px 76px !important; }
           .product-actions { flex-wrap:wrap !important; }
         }
       `}</style>
@@ -608,11 +618,13 @@ export default function AdminDashboard({ user, setView }) {
         {/* ══ MOBILE OVERLAY + DRAWER ══ */}
         <div className={`mob-overlay${sidebarOpen?' open':''}`} onClick={() => setSidebarOpen(false)} />
         <div className={`mob-drawer adm-sb${sidebarOpen?' open':''}`}>
-          <div style={{ padding:'20px 18px 14px', borderBottom:'2px solid #1e2a3a' }}>
-            <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'3px' }}>
+          <div style={{ padding:'16px 18px 14px', borderBottom:'2px solid #1e2a3a', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
               <div style={{ width:'28px', height:'28px', borderRadius:'7px', background:'linear-gradient(135deg,#4dd4ac,#1e7a5e)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px' }}>⚙</div>
               <span style={{ fontFamily:'Georgia,serif', fontSize:'1.1rem', fontWeight:'700', color:'#4dd4ac' }}>Admin Panel</span>
             </div>
+            <button onClick={() => setSidebarOpen(false)}
+              style={{ background:'none', border:'none', color:'rgba(255,255,255,0.4)', cursor:'pointer', fontSize:'1.4rem', lineHeight:1, padding:'0' }}>×</button>
           </div>
           <div style={{ padding:'12px' }}>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'7px', marginBottom:'4px' }}>
@@ -706,25 +718,24 @@ export default function AdminDashboard({ user, setView }) {
         </aside>
 
         {/* ══ MAIN ══ */}
-        <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+        <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minWidth:0 }}>
 
-          {/* Mobile top bar */}
-          <div className="mob-topbar">
+          {/* ── Mobile top header ── */}
+          <div className="mob-header">
             <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-              <button className="mob-menu-btn" onClick={() => setSidebarOpen(true)}>
-                <span style={{ display:'flex', flexDirection:'column', gap:'3px' }}>
-                  <span style={{ width:'16px', height:'2px', background:'#4dd4ac', borderRadius:'1px', display:'block' }}/>
-                  <span style={{ width:'12px', height:'2px', background:'#4dd4ac', borderRadius:'1px', display:'block' }}/>
-                  <span style={{ width:'16px', height:'2px', background:'#4dd4ac', borderRadius:'1px', display:'block' }}/>
-                </span>
-                Menu
+              <button
+                onClick={() => setSidebarOpen(true)}
+                style={{ background:'none', border:'none', cursor:'pointer', padding:'4px', display:'flex', flexDirection:'column', gap:'4px' }}>
+                <span style={{ width:'20px', height:'2px', background:'#4dd4ac', borderRadius:'1px', display:'block' }}/>
+                <span style={{ width:'14px', height:'2px', background:'#4dd4ac', borderRadius:'1px', display:'block' }}/>
+                <span style={{ width:'20px', height:'2px', background:'#4dd4ac', borderRadius:'1px', display:'block' }}/>
               </button>
-              <span style={{ fontFamily:'Georgia,serif', fontSize:'1rem', fontWeight:'700', color:'#4dd4ac' }}>
+              <span style={{ fontFamily:'Georgia,serif', fontSize:'0.95rem', fontWeight:'700', color:'#4dd4ac' }}>
                 {menuItems.find(m=>m.id===tab)?.icon} {menuItems.find(m=>m.id===tab)?.label}
               </span>
             </div>
             <button onClick={()=>setView('home')}
-              style={{ background:'transparent', border:'1px solid #1e2a3a', borderRadius:'7px', color:'rgba(255,255,255,0.4)', cursor:'pointer', fontFamily:'inherit', fontSize:'0.75rem', padding:'6px 10px', fontWeight:'600' }}>
+              style={{ background:'transparent', border:'1px solid #1e2a3a', borderRadius:'7px', color:'rgba(255,255,255,0.4)', cursor:'pointer', fontFamily:'inherit', fontSize:'0.74rem', padding:'5px 10px', fontWeight:'600' }}>
               ← Store
             </button>
           </div>
@@ -1084,6 +1095,26 @@ export default function AdminDashboard({ user, setView }) {
 
             </div>
           </main>
+
+          {/* ── Mobile bottom nav bar ── */}
+          <nav className="mob-bottom-nav">
+            {menuItems.map(item => (
+              <button
+                key={item.id}
+                className={`mob-nav-item${tab===item.id?' active':''}`}
+                onClick={() => handleTabChange(item.id)}>
+                {item.count > 0 && <span className="mob-nav-badge">{item.count}</span>}
+                <span className="nav-icon">{item.icon}</span>
+                <span className="nav-label">{item.label}</span>
+              </button>
+            ))}
+            <button
+              className="mob-nav-item"
+              onClick={() => setView('home')}>
+              <span className="nav-icon">🏠</span>
+              <span className="nav-label">Store</span>
+            </button>
+          </nav>
         </div>
       </div>
 
