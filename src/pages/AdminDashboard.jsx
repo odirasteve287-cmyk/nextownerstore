@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../utils/supabase';
 
-// ── Agent list (mirrored from Listings.jsx) ──
 const AGENTS = [
   { name: 'Agent Sarah K.',  avatar: '👩‍💼', type: 'private',  online: false },
   { name: 'Agent James M.',  avatar: '👨‍💼', type: 'business', online: true  },
@@ -48,7 +47,6 @@ export default function AdminDashboard({ user, setView }) {
 
   const msgsEnd = useRef(null);
   const agentPickerRef = useRef(null);
-  
   const CATS  = ['Furniture','Electronics','Appliances','For Kids','Decor','Kitchenware','Household'];
   const CONDS = ['Brand New','Like New','Excellent','Good','Fair','For Parts'];
   const STATUSES = ['active', 'sold', 'pending', 'out_of_stock'];
@@ -83,6 +81,11 @@ export default function AdminDashboard({ user, setView }) {
     return () => clearInterval(iv);
   }, [selConv?.id]);
 
+  useEffect(() => {
+    document.body.style.overflow = sidebarOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [sidebarOpen]);
+
   const attachImages = async (products) => {
     if (!products || products.length === 0) return products;
     const ids = products.map(p => p.id);
@@ -91,19 +94,13 @@ export default function AdminDashboard({ user, setView }) {
       .select('product_id, image_url, is_primary, sort_order')
       .in('product_id', ids)
       .order('sort_order', { ascending: true });
-
     if (!imgs) return products;
-
     const byProd = {};
     imgs.forEach(img => {
       if (!byProd[img.product_id]) byProd[img.product_id] = [];
       byProd[img.product_id].push(img);
     });
-
-    return products.map(p => ({
-      ...p,
-      extra_imgs: byProd[p.id] || [],
-    }));
+    return products.map(p => ({ ...p, extra_imgs: byProd[p.id] || [] }));
   };
 
   const buildImages = (product) => {
@@ -121,7 +118,6 @@ export default function AdminDashboard({ user, setView }) {
 
   const load = async () => {
     const log = [];
-
     const { data: pend, error: e1 } = await supabase
       .from('products').select('*').eq('status', 'pending')
       .order('created_at', { ascending: false });
@@ -145,18 +141,10 @@ export default function AdminDashboard({ user, setView }) {
     log.push({ label:'agent_conversations', ok: !e4, count: cv?.length ?? 0, error: e4?.message });
     if (!e4) {
       setConvs(cv || []);
-      if (cv && cv.length > 0) {
-        setSelConv(prev => prev ?? cv[0]);
-      }
+      if (cv && cv.length > 0) setSelConv(prev => prev ?? cv[0]);
     }
-
     setDiag(log);
-    setStats({
-      pending:  pend?.length  ?? 0,
-      listings: lst?.length   ?? 0,
-      bookings: bk?.length    ?? 0,
-      messages: cv?.length    ?? 0,
-    });
+    setStats({ pending: pend?.length ?? 0, listings: lst?.length ?? 0, bookings: bk?.length ?? 0, messages: cv?.length ?? 0 });
   };
 
   const loadMsgs = async (conv) => {
@@ -171,38 +159,25 @@ export default function AdminDashboard({ user, setView }) {
   const sendReply = async () => {
     const text = replyText.trim();
     if (!text) return;
-
     let conv = selConv;
     if (!conv) {
       if (convs.length === 0) return;
-      conv = convs[0];
-      setSelConv(conv);
+      conv = convs[0]; setSelConv(conv);
       const { data: existingMsgs } = await supabase
         .from('agent_messages').select('*')
         .eq('conversation_id', conv.id).order('created_at', { ascending: true });
       if (existingMsgs) setMsgs(existingMsgs);
     }
-
     const msgContent = `[${selectedAgent.name}] ${text}`;
-
     const { data, error } = await supabase.from('agent_messages').insert([{
-      conversation_id: conv.id,
-      sender_id: user.id,
-      is_agent: true,
-      content: msgContent,
-      agent_name: selectedAgent.name,
-      created_at: new Date().toISOString(),
+      conversation_id: conv.id, sender_id: user.id, is_agent: true,
+      content: msgContent, agent_name: selectedAgent.name, created_at: new Date().toISOString(),
     }]).select().single();
-
     if (!error && data) {
-      setMsgs(p => [...p, data]);
-      setReplyText('');
-      await supabase.from('agent_conversations')
-        .update({ last_message_at: new Date().toISOString() }).eq('id', conv.id);
+      setMsgs(p => [...p, data]); setReplyText('');
+      await supabase.from('agent_conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conv.id);
       load();
-    } else if (error) {
-      alert('Send failed: ' + error.message);
-    }
+    } else if (error) { alert('Send failed: ' + error.message); }
   };
 
   const notifySeller = async (sellerId, messageText) => {
@@ -210,8 +185,7 @@ export default function AdminDashboard({ user, setView }) {
     try {
       const { data: convRows, error: ce1 } = await supabase
         .from('agent_conversations').select('id').eq('user_id', sellerId).limit(1);
-      if (ce1) { console.error('conv lookup error:', ce1.message); }
-
+      if (ce1) console.error('conv lookup error:', ce1.message);
       let convId;
       if (convRows && convRows.length > 0) {
         convId = convRows[0].id;
@@ -223,25 +197,19 @@ export default function AdminDashboard({ user, setView }) {
         if (ce2) { console.error('conv create error:', ce2.message); return; }
         convId = newConv.id;
       }
-
       const since = new Date(Date.now() - 60000).toISOString();
       const { data: recent } = await supabase
         .from('agent_messages').select('id')
         .eq('conversation_id', convId).eq('is_agent', true)
         .eq('content', messageText).gte('created_at', since).limit(1);
-      if (recent && recent.length > 0) { return; }
-
+      if (recent && recent.length > 0) return;
       const { error: me } = await supabase.from('agent_messages').insert([{
-        conversation_id: convId,
-        sender_id: user.id,
-        is_agent: true,
+        conversation_id: convId, sender_id: user.id, is_agent: true,
         content: `[${selectedAgent.name}] ${messageText}`,
-        agent_name: selectedAgent.name,
-        created_at: new Date().toISOString(),
+        agent_name: selectedAgent.name, created_at: new Date().toISOString(),
       }]);
       if (me) { console.error('message insert error:', me.message); return; }
-      await supabase.from('agent_conversations')
-        .update({ last_message_at: new Date().toISOString() }).eq('id', convId);
+      await supabase.from('agent_conversations').update({ last_message_at: new Date().toISOString() }).eq('id', convId);
     } catch (err) { console.error('notifySeller exception:', err.message); }
   };
 
@@ -293,14 +261,9 @@ export default function AdminDashboard({ user, setView }) {
   const openEdit = async (p) => {
     setEditProd(p);
     setEditF({
-      title: p.title||'',
-      price: p.price||'',
-      category: p.category||'Furniture',
-      condition: p.condition||'Like New',
-      description: p.description||'',
-      location: p.location||'',
-      business_name: p.business_name||'',
-      status: p.status||'active',
+      title: p.title||'', price: p.price||'', category: p.category||'Furniture',
+      condition: p.condition||'Like New', description: p.description||'',
+      location: p.location||'', business_name: p.business_name||'', status: p.status||'active',
     });
     setEImg0(null); setEImg1(null); setEImg2(null);
     const { data: imgs } = await supabase
@@ -350,8 +313,6 @@ export default function AdminDashboard({ user, setView }) {
       }
       setNProd({ title:'', price:'', category:'Furniture', condition:'Like New', description:'', location:'', business_name:'' });
       setNImg0(null); setNImg1(null); setNImg2(null);
-      // Reset file inputs by clearing their values via DOM
-      document.querySelectorAll('.admin-file-input').forEach(i => { i.value = ''; });
       setAddMsg({ type:'ok', text:'Listing published successfully!' });
       load();
     } catch (err) { setAddMsg({ type:'err', text: err.message }); }
@@ -369,9 +330,7 @@ export default function AdminDashboard({ user, setView }) {
     return match ? match[1] : null;
   };
 
-  const stripAgentPrefix = (content) => {
-    return content?.replace(/^\[.+?\]\s*/, '') || content;
-  };
+  const stripAgentPrefix = (content) => content?.replace(/^\[.+?\]\s*/, '') || content;
 
   const statusConfig = {
     active:       { bg:'rgba(74,222,128,0.12)',   color:'#4ade80',  label:'Active'       },
@@ -379,11 +338,6 @@ export default function AdminDashboard({ user, setView }) {
     pending:      { bg:'rgba(251,191,36,0.12)',   color:'#fbbf24',  label:'Pending'      },
     out_of_stock: { bg:'rgba(249,115,22,0.12)',   color:'#fb923c',  label:'Out of Stock' },
     _default:     { bg:'#1e2a3a',                color:'#aaa'                           },
-  };
-
-  const handleTabChange = (id) => {
-    setTab(id);
-    setSidebarOpen(false);
   };
 
   const ThumbStrip = ({ product }) => {
@@ -408,6 +362,96 @@ export default function AdminDashboard({ user, setView }) {
     );
   };
 
+  // ── FileField: click-to-open picker with live image preview ──
+  const FileField = ({ label, value, onChange, existingUrl = null }) => {
+    const inputRef = useRef(null);
+    const [previewSrc, setPreviewSrc] = useState(existingUrl || null);
+    const hasNewFile = !!value;
+
+    const handleChange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      onChange(file);
+      const url = URL.createObjectURL(file);
+      setPreviewSrc(url);
+    };
+
+    useEffect(() => {
+      if (!value) setPreviewSrc(existingUrl || null);
+    }, [existingUrl, value]);
+
+    return (
+      <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
+        <p style={{ fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.5)', margin:0 }}>{label}</p>
+
+        <div
+          onClick={() => inputRef.current?.click()}
+          style={{
+            width:'100%', aspectRatio:'1', borderRadius:'10px', overflow:'hidden',
+            background:'#0a1018',
+            border:`2px dashed ${hasNewFile ? '#4dd4ac' : previewSrc ? '#334155' : '#1e2a3a'}`,
+            display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+            cursor:'pointer', transition:'border-color 0.2s', position:'relative',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = '#4dd4ac'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = hasNewFile ? '#4dd4ac' : previewSrc ? '#334155' : '#1e2a3a'; }}
+        >
+          {previewSrc ? (
+            <>
+              <img
+                src={previewSrc}
+                alt="preview"
+                style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }}
+              />
+              <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.18)' }} />
+              <div style={{
+                position:'absolute', bottom:'8px', left:'50%', transform:'translateX(-50%)',
+                background:'rgba(0,0,0,0.75)', borderRadius:'20px', padding:'3px 10px',
+                fontSize:'10px', fontWeight:'700', color: hasNewFile ? '#4dd4ac' : '#94a3b8',
+                whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:'4px',
+                maxWidth:'90%', overflow:'hidden',
+              }}>
+                <span>{hasNewFile ? '✓ ' : ''}</span>
+                <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                  {hasNewFile ? value.name : 'Current image'}
+                </span>
+              </div>
+              <div style={{
+                position:'absolute', top:'7px', right:'7px',
+                background:'rgba(0,0,0,0.65)', borderRadius:'6px', padding:'3px 8px',
+                fontSize:'10px', fontWeight:'700', color:'#fff',
+              }}>
+                Change
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontSize:'2rem', marginBottom:'5px', opacity:0.3 }}>📷</div>
+              <span style={{ fontSize:'0.72rem', color:'rgba(255,255,255,0.3)', fontWeight:'600' }}>Click to choose</span>
+            </>
+          )}
+        </div>
+
+        {hasNewFile && (
+          <p style={{
+            fontSize:'0.72rem', color:'#4dd4ac', fontWeight:'600', margin:0,
+            overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
+          }}>
+            ✓ {value.name}
+          </p>
+        )}
+
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          style={{ display:'none' }}
+          onChange={handleChange}
+        />
+      </div>
+    );
+  };
+
   const menuItems = [
     { id:'pending',  icon:'⏳', label:'Pending',    count: stats.pending  },
     { id:'listings', icon:'📦', label:'Listings',   count: stats.listings },
@@ -416,8 +460,7 @@ export default function AdminDashboard({ user, setView }) {
     { id:'messages', icon:'💬', label:'Messages',   count: stats.messages },
   ];
 
-  // ── Sidebar content (shared between desktop & mobile drawer) ──
-  const SidebarContent = () => (
+  const SidebarInner = () => (
     <>
       <div style={{ padding:'24px 20px 18px', borderBottom:'2px solid #1e2a3a' }}>
         <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'3px' }}>
@@ -445,7 +488,7 @@ export default function AdminDashboard({ user, setView }) {
 
       <nav style={{ padding:'10px', flex:1 }}>
         {menuItems.map(item=>(
-          <button key={item.id} onClick={()=>handleTabChange(item.id)} className="adm-nav"
+          <button key={item.id} onClick={()=>{ setTab(item.id); setSidebarOpen(false); }} className="adm-nav"
             style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'9px 13px', marginBottom:'3px', borderRadius:'9px', background: tab===item.id ? '#4dd4ac' : 'transparent', color: tab===item.id ? '#000' : '#4dd4ac', border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:'0.85rem', fontWeight: tab===item.id ? '700' : '500', transition:'all 0.15s' }}>
             <span style={{ display:'flex', alignItems:'center', gap:'9px' }}><span>{item.icon}</span>{item.label}</span>
             {item.count > 0 && <span style={{ padding:'2px 7px', borderRadius:'20px', fontSize:'10px', fontWeight:'700', background: tab===item.id ? 'rgba(0,0,0,0.2)' : 'rgba(77,212,172,0.15)', color: tab===item.id ? '#000' : '#4dd4ac' }}>{item.count}</span>}
@@ -475,156 +518,60 @@ export default function AdminDashboard({ user, setView }) {
   return (
     <>
       <style>{`
+        * { box-sizing: border-box; }
         .adm-sb::-webkit-scrollbar{width:4px}.adm-sb::-webkit-scrollbar-thumb{background:#1e2a3a;border-radius:4px}
         .adm-in::placeholder{color:rgba(255,255,255,0.22)}.adm-in option{background:#111}
         .adm-nav:hover{background:rgba(77,212,172,0.1)!important}
         .agent-option:hover{background:rgba(77,212,172,0.1)!important}
 
-        /* ── File input styling (matches seller dashboard) ── */
-        .admin-file-input {
-          width: 100%;
-          padding: 10px;
-          background: #0e1117;
-          border: 1px solid #1e2a3a;
-          border-radius: 8px;
-          color: #fff;
-          cursor: pointer;
-          color-scheme: dark;
-          font-family: inherit;
-          font-size: 0.83rem;
-          box-sizing: border-box;
-          transition: border-color 0.2s;
-        }
-        .admin-file-input:hover { border-color: #4dd4ac; }
-        .admin-file-input::file-selector-button {
-          background: #1e2a3a;
-          color: #4dd4ac;
-          border: none;
-          padding: 4px 10px;
-          border-radius: 5px;
-          cursor: pointer;
-          font-size: 0.78rem;
-          font-weight: 600;
-          margin-right: 8px;
-        }
-        .admin-file-label {
-          display: block;
-          font-size: 0.78rem;
-          font-weight: 600;
-          color: rgba(255,255,255,0.5);
-          text-transform: uppercase;
-          letter-spacing: 0.04em;
-          margin-bottom: 6px;
-        }
+        .adm-root { display:flex; flex-direction:column; min-height:100vh; width:100%; background:#090d14; color:#fff; font-family:'Poppins',-apple-system,sans-serif; }
+        .adm-body { display:flex; flex:1; min-height:0; }
+        .adm-sidebar { width:252px; min-width:252px; border-right:2px solid #1e2a3a; display:flex; flex-direction:column; overflow-y:auto; background:#090d14; position:sticky; top:0; max-height:100vh; }
+        .adm-main { flex:1; overflow-y:auto; padding:28px 32px; min-width:0; }
+        .adm-topbar { display:none; }
+        .adm-drawer { display:none; position:fixed; top:0; left:0; height:100%; width:260px; background:#090d14; border-right:2px solid #1e2a3a; z-index:9999; flex-direction:column; overflow-y:auto; transform:translateX(-100%); transition:transform 0.27s ease; }
+        .adm-drawer.open { transform:translateX(0); }
+        .adm-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9998; }
 
-        /* ── Mobile topbar ── */
-        .admin-mobile-topbar {
-          display: none;
-          align-items: center;
-          justify-content: space-between;
-          padding: 12px 16px;
-          background: #131920;
-          border-bottom: 2px solid #1e2a3a;
-          position: sticky;
-          top: 0;
-          z-index: 200;
-        }
-        .hamburger-btn {
-          background: none;
-          border: none;
-          cursor: pointer;
-          display: flex;
-          flex-direction: column;
-          gap: 5px;
-          padding: 4px;
-        }
-        .hamburger-btn span {
-          display: block;
-          width: 22px;
-          height: 2px;
-          background: #4dd4ac;
-          border-radius: 2px;
-          transition: all 0.2s;
-        }
-        .mobile-drawer-overlay {
-          display: none;
-          position: fixed;
-          inset: 0;
-          background: rgba(0,0,0,0.7);
-          z-index: 300;
-        }
-        .mobile-drawer {
-          position: fixed;
-          top: 0;
-          left: 0;
-          bottom: 0;
-          width: 272px;
-          background: #090d14;
-          border-right: 2px solid #1e2a3a;
-          z-index: 301;
-          display: flex;
-          flex-direction: column;
-          overflow-y: auto;
-          transform: translateX(-100%);
-          transition: transform 0.25s ease;
-        }
-        .mobile-drawer.open { transform: translateX(0); }
-
-        @media (max-width: 768px) {
-          .admin-desktop-sidebar { display: none !important; }
-          .admin-mobile-topbar { display: flex !important; }
-          .mobile-drawer-overlay { display: block; }
-          .admin-main { padding: 16px !important; }
-          .messages-grid { grid-template-columns: 1fr !important; height: auto !important; gap: 16px !important; }
-          .conversation-list { height: 280px !important; }
-          .product-card { flex-direction: column !important; gap: 16px !important; }
-          .product-actions { width: 100% !important; flex-direction: row !important; justify-content: flex-end !important; }
-          .image-grid { grid-template-columns: 1fr !important; }
-          .form-grid { grid-template-columns: 1fr !important; }
-          .edit-modal { width: 95% !important; padding: 16px !important; margin: 10px !important; }
-          .agent-picker { flex-direction: column !important; align-items: flex-start !important; }
-        }
-        @media (max-width: 480px) {
-          .product-actions { flex-wrap: wrap !important; }
+        @media (max-width:768px) {
+          .adm-topbar { display:flex; align-items:center; justify-content:space-between; padding:11px 14px; background:#090d14; border-bottom:2px solid #1e2a3a; position:sticky; top:0; z-index:200; flex-shrink:0; }
+          .adm-sidebar { display:none; }
+          .adm-drawer  { display:flex; }
+          .adm-overlay { display:block; }
+          .adm-main    { padding:16px 14px; }
+          .mob-col  { flex-direction:column !important; }
+          .mob-acts { flex-direction:row !important; flex-wrap:wrap !important; }
+          .mob-lst-acts { width:100% !important; flex-wrap:wrap !important; justify-content:flex-start !important; }
+          .mob-form2 { grid-template-columns:1fr !important; }
+          .mob-img3  { grid-template-columns:1fr 1fr !important; }
+          .mob-edit2 { grid-template-columns:1fr !important; }
+          .mob-edit-imgs { grid-template-columns:1fr 1fr !important; }
+          .mob-msg-grid { grid-template-columns:1fr !important; height:auto !important; }
+          .mob-conv { height:220px !important; }
+          .mob-chat { height:460px !important; }
         }
       `}</style>
 
-      {/* ── Mobile drawer overlay ── */}
-      {sidebarOpen && (
-        <div className="mobile-drawer-overlay" onClick={() => setSidebarOpen(false)} />
-      )}
-
-      {/* ── Mobile sliding drawer ── */}
-      <div className={`mobile-drawer adm-sb ${sidebarOpen ? 'open' : ''}`}>
-        <SidebarContent />
+      {/* Mobile topbar */}
+      <div className="adm-topbar">
+        <button onClick={()=>setSidebarOpen(p=>!p)}
+          style={{ background:'#1e2a3a', border:'none', borderRadius:'8px', padding:'8px 12px', cursor:'pointer', color:'#4dd4ac', fontFamily:'inherit', fontSize:'0.82rem', fontWeight:'600', display:'flex', alignItems:'center', gap:'6px' }}>
+          <span style={{ fontSize:'1rem' }}>☰</span> Menu
+        </button>
+        <span style={{ fontFamily:'Georgia,serif', fontSize:'0.95rem', fontWeight:'700', color:'#4dd4ac' }}>⚙ Admin</span>
+        {stats.pending > 0
+          ? <span style={{ background:'rgba(251,191,36,0.15)', color:'#fbbf24', borderRadius:'20px', padding:'3px 9px', fontSize:'11px', fontWeight:'700' }}>{stats.pending} pending</span>
+          : <span style={{ width:'70px' }} />}
       </div>
 
-      <div style={{ position:'fixed', inset:0, zIndex:9999, display:'flex', flexDirection:'column', background:'#090d14', color:'#fff', fontFamily:"'Poppins',-apple-system,sans-serif", overflow:'hidden' }}>
+      {sidebarOpen && <div className="adm-overlay" onClick={()=>setSidebarOpen(false)} />}
+      <div className={`adm-drawer adm-sb${sidebarOpen ? ' open' : ''}`}><SidebarInner /></div>
 
-        {/* ── Mobile topbar ── */}
-        <div className="admin-mobile-topbar">
-          <button className="hamburger-btn" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
-            <span /><span /><span />
-          </button>
-          <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-            <div style={{ width:'24px', height:'24px', borderRadius:'5px', background:'linear-gradient(135deg,#4dd4ac,#1e7a5e)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'12px' }}>⚙</div>
-            <span style={{ fontFamily:'Georgia,serif', fontSize:'1rem', fontWeight:'700', color:'#4dd4ac' }}>Admin Panel</span>
-          </div>
-          <div style={{ fontSize:'0.78rem', color:'rgba(255,255,255,0.4)', fontWeight:'600' }}>
-            {menuItems.find(m => m.id === tab)?.label || ''}
-          </div>
-        </div>
+      <div className="adm-root">
+        <div className="adm-body">
+          <aside className="adm-sidebar adm-sb"><SidebarInner /></aside>
 
-        {/* ── Inner layout ── */}
-        <div style={{ flex:1, display:'flex', overflow:'hidden' }}>
-
-          {/* ── Desktop sidebar ── */}
-          <aside className="admin-desktop-sidebar adm-sb" style={{ width:'252px', minWidth:'252px', borderRight:'2px solid #1e2a3a', display:'flex', flexDirection:'column', overflowY:'auto' }}>
-            <SidebarContent />
-          </aside>
-
-          {/* ══════ MAIN ══════ */}
-          <main className="admin-main adm-sb" style={{ flex:1, overflowY:'auto', padding:'28px 32px' }}>
+          <main className="adm-main adm-sb">
             <div style={{ maxWidth:'1080px', margin:'0 auto' }}>
 
               {showDiag && (
@@ -634,9 +581,9 @@ export default function AdminDashboard({ user, setView }) {
                     {diag.length === 0
                       ? <p style={{ color:'rgba(255,255,255,0.35)', fontSize:'0.8rem' }}>No data yet — click Refresh Now</p>
                       : diag.map((d,i)=>(
-                        <div key={i} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'8px 12px', borderRadius:'6px', background: d.ok ? 'rgba(77,212,172,0.06)' : 'rgba(239,68,68,0.1)' }}>
+                        <div key={i} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'8px 12px', borderRadius:'6px', background: d.ok ? 'rgba(77,212,172,0.06)' : 'rgba(239,68,68,0.1)', flexWrap:'wrap' }}>
                           <span style={{ fontSize:'1rem' }}>{d.ok ? '✅' : '❌'}</span>
-                          <span style={{ color:'rgba(255,255,255,0.7)', fontSize:'0.82rem', flex:1 }}>{d.label}</span>
+                          <span style={{ color:'rgba(255,255,255,0.7)', fontSize:'0.82rem', flex:1, minWidth:'80px' }}>{d.label}</span>
                           <span style={{ color: d.ok ? '#4dd4ac' : '#fca5a5', fontSize:'0.82rem', fontWeight:'700' }}>
                             {d.ok ? `${d.count} rows` : `ERROR: ${d.error}`}
                           </span>
@@ -649,7 +596,7 @@ export default function AdminDashboard({ user, setView }) {
                       <p style={{ color:'#fca5a5', fontSize:'0.8rem', fontWeight:'700', marginBottom:'6px' }}>⚠ Errors detected — likely causes:</p>
                       <ul style={{ color:'rgba(255,255,255,0.5)', fontSize:'0.78rem', paddingLeft:'16px', lineHeight:1.7, margin:0 }}>
                         <li>Table doesn't exist yet → run the SQL in the README to create it</li>
-                        <li>Row Level Security blocking the admin → add policy</li>
+                        <li>Row Level Security blocking the admin → add policy: <code style={{ background:'#111', padding:'1px 4px', borderRadius:'3px', color:'#4dd4ac' }}>allow select for all / for authenticated</code></li>
                         <li>Wrong table name → check Supabase dashboard</li>
                       </ul>
                     </div>
@@ -660,18 +607,18 @@ export default function AdminDashboard({ user, setView }) {
               {/* ════════ PENDING ════════ */}
               {tab === 'pending' && (
                 <div>
-                  <h2 style={{ fontFamily:'Georgia,serif', fontSize:'1.7rem', color:'#4dd4ac', marginBottom:'6px' }}>Pending Submissions</h2>
+                  <h2 style={{ fontFamily:'Georgia,serif', fontSize:'clamp(1.2rem,5vw,1.7rem)', color:'#4dd4ac', marginBottom:'6px' }}>Pending Submissions</h2>
                   <p style={{ color:'rgba(255,255,255,0.35)', fontSize:'0.85rem', marginBottom:'20px' }}>Review products submitted by sellers — approve to publish or reject to remove</p>
                   {pending.length === 0
                     ? <Empty icon="✅" title="All caught up!" sub="No pending submissions right now." />
                     : pending.map(p=>(
                       <Card key={p.id} color="#fbbf24">
-                        <div className="product-card" style={{ display:'flex', gap:'16px', alignItems:'flex-start' }}>
+                        <div className="mob-col" style={{ display:'flex', gap:'16px', alignItems:'flex-start' }}>
                           <ThumbStrip product={p} />
                           <div style={{ flex:1, minWidth:0 }}>
-                            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'8px' }}>
-                              <h3 style={{ fontWeight:'700', color:'#4dd4ac', margin:0, fontSize:'1rem' }}>{p.title}</h3>
-                              <span style={{ background:'rgba(251,191,36,0.12)', color:'#fbbf24', padding:'3px 10px', borderRadius:'20px', fontSize:'10px', fontWeight:'700', flexShrink:0, marginLeft:'10px' }}>PENDING</span>
+                            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'8px', flexWrap:'wrap', gap:'6px' }}>
+                              <h3 style={{ fontWeight:'700', color:'#4dd4ac', margin:0, fontSize:'1rem', wordBreak:'break-word', flex:1 }}>{p.title}</h3>
+                              <span style={{ background:'rgba(251,191,36,0.12)', color:'#fbbf24', padding:'3px 10px', borderRadius:'20px', fontSize:'10px', fontWeight:'700', flexShrink:0 }}>PENDING</span>
                             </div>
                             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'4px 16px', fontSize:'0.78rem', color:'rgba(255,255,255,0.45)', marginBottom:'8px' }}>
                               <span><b style={{ color:'rgba(255,255,255,0.7)' }}>Price:</b> ${p.price}</span>
@@ -682,7 +629,7 @@ export default function AdminDashboard({ user, setView }) {
                             </div>
                             <p style={{ fontSize:'0.78rem', color:'rgba(255,255,255,0.3)', margin:0, overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>{p.description}</p>
                           </div>
-                          <div className="product-actions" style={{ display:'flex', flexDirection:'column', gap:'7px', flexShrink:0 }}>
+                          <div className="mob-acts" style={{ display:'flex', flexDirection:'column', gap:'7px', flexShrink:0 }}>
                             <Btn color="#16a34a" hover="#15803d" disabled={!!actionBusy[p.id]} onClick={() => approve(p)}>
                               {actionBusy[p.id] === 'approve' ? '⏳ Approving…' : '✓ Approve'}
                             </Btn>
@@ -701,20 +648,20 @@ export default function AdminDashboard({ user, setView }) {
               {/* ════════ LISTINGS ════════ */}
               {tab === 'listings' && (
                 <div>
-                  <h2 style={{ fontFamily:'Georgia,serif', fontSize:'1.7rem', color:'#4dd4ac', marginBottom:'6px' }}>All Listings</h2>
+                  <h2 style={{ fontFamily:'Georgia,serif', fontSize:'clamp(1.2rem,5vw,1.7rem)', color:'#4dd4ac', marginBottom:'6px' }}>All Listings</h2>
                   <p style={{ color:'rgba(255,255,255,0.35)', fontSize:'0.85rem', marginBottom:'20px' }}>Active and sold products — edit or delete any listing</p>
                   {listings.length === 0
                     ? <Empty icon="📦" title="No listings yet" sub="Add one using the Add Listing tab." />
                     : listings.map(p=>(
                       <Card key={p.id}>
-                        <div className="product-card" style={{ display:'flex', alignItems:'center', gap:'14px' }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:'14px', flexWrap:'wrap' }}>
                           <ThumbStrip product={p} />
-                          <div style={{ flex:1, minWidth:0 }}>
-                            <h3 style={{ fontWeight:'700', color:'#4dd4ac', margin:'0 0 4px', fontSize:'0.95rem' }}>{p.title}</h3>
+                          <div style={{ flex:1, minWidth:'120px' }}>
+                            <h3 style={{ fontWeight:'700', color:'#4dd4ac', margin:'0 0 4px', fontSize:'0.95rem', wordBreak:'break-word' }}>{p.title}</h3>
                             <p style={{ fontSize:'0.78rem', color:'rgba(255,255,255,0.45)', margin:'0 0 2px' }}>{p.category} · {p.condition} · <span style={{ color:'#4dd4ac', fontWeight:'700' }}>${p.price}</span></p>
                             <p style={{ fontSize:'11px', color:'rgba(255,255,255,0.25)', margin:0 }}>{p.location} · {p.business_name}</p>
                           </div>
-                          <div className="product-actions" style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+                          <div className="mob-lst-acts" style={{ display:'flex', alignItems:'center', gap:'10px' }}>
                             {statusBadge(p.status, statusConfig)}
                             <OutlineBtn color="#60a5fa" onClick={()=>openEdit(p)}>✎ Edit</OutlineBtn>
                             <OutlineBtn color="#ff6b6b" onClick={()=>deleteProd(p.id)}>✕ Delete</OutlineBtn>
@@ -729,7 +676,7 @@ export default function AdminDashboard({ user, setView }) {
               {/* ════════ ADD LISTING ════════ */}
               {tab === 'add' && (
                 <div>
-                  <h2 style={{ fontFamily:'Georgia,serif', fontSize:'1.7rem', color:'#4dd4ac', marginBottom:'6px' }}>Add New Listing</h2>
+                  <h2 style={{ fontFamily:'Georgia,serif', fontSize:'clamp(1.2rem,5vw,1.7rem)', color:'#4dd4ac', marginBottom:'6px' }}>Add New Listing</h2>
                   <p style={{ color:'rgba(255,255,255,0.35)', fontSize:'0.85rem', marginBottom:'20px' }}>Admin-created listings go live immediately — no approval required</p>
                   {addMsg.text && (
                     <div style={{ padding:'12px 16px', marginBottom:'16px', borderRadius:'8px', background: addMsg.type==='ok' ? 'rgba(77,212,172,0.08)' : 'rgba(239,68,68,0.08)', borderLeft:`4px solid ${addMsg.type==='ok' ? '#4dd4ac' : '#ef4444'}`, color: addMsg.type==='ok' ? '#4dd4ac' : '#fca5a5', fontSize:'0.85rem' }}>
@@ -737,7 +684,7 @@ export default function AdminDashboard({ user, setView }) {
                     </div>
                   )}
                   <form onSubmit={addListing} style={{ background:'#151c27', border:'2px solid #1e2a3a', borderRadius:'12px', padding:'24px' }}>
-                    <div className="form-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px', marginBottom:'14px' }}>
+                    <div className="mob-form2" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px', marginBottom:'14px' }}>
                       {[['Title *','title','text','Product title',true],['Price ($) *','price','number','0.00',true],['Business Name','business_name','text','Store name'],['Location','location','text','City, State']].map(([l,k,t,ph,req])=>(
                         <div key={k}>
                           <label style={{ display:'block', fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.5)', marginBottom:'6px' }}>{l}</label>
@@ -757,37 +704,16 @@ export default function AdminDashboard({ user, setView }) {
                       <label style={{ display:'block', fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.5)', marginBottom:'6px' }}>Description *</label>
                       <textarea required rows={3} value={nProd.description} onChange={e=>setNProd(p=>({...p,description:e.target.value}))} className="adm-in" style={{ ...IS, resize:'vertical' }} />
                     </div>
-
-                    {/* ── Image upload (matches SellerDashboard style) ── */}
-                    <div style={{ border:'2px dashed #1e2a3a', borderRadius:'10px', padding:'20px', background:'#0e1117', marginBottom:'16px' }}>
-                      <p style={{ fontSize:'0.82rem', fontWeight:'600', color:'rgba(255,255,255,0.45)', marginBottom:'14px' }}>📷 Product Images</p>
-                      <div className="image-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'14px' }}>
-                        {[
-                          { label:'Main Image *', file: nImg0, onChange: e => setNImg0(e.target.files[0]), required: true },
-                          { label:'Detail Image 1 (Optional)', file: nImg1, onChange: e => setNImg1(e.target.files[0]) },
-                          { label:'Detail Image 2 (Optional)', file: nImg2, onChange: e => setNImg2(e.target.files[0]) },
-                        ].map(({ label, file, onChange, required }) => (
-                          <div key={label}>
-                            <label className="admin-file-label">{label}</label>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              required={required}
-                              onChange={onChange}
-                              className="admin-file-input"
-                            />
-                            {file && (
-                              <p style={{ fontSize:'0.72rem', color:'#4dd4ac', marginTop:'5px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                                ✓ {file.name}
-                              </p>
-                            )}
-                          </div>
-                        ))}
+                    <div style={{ border:'2px dashed #1e2a3a', borderRadius:'10px', padding:'16px', background:'#0e1117', marginBottom:'16px' }}>
+                      <p style={{ fontSize:'0.82rem', fontWeight:'600', color:'rgba(255,255,255,0.45)', marginBottom:'12px' }}>📷 Product Images</p>
+                      <div className="mob-img3" style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'12px' }}>
+                        <FileField label="Main Image *"              value={nImg0} onChange={setNImg0} />
+                        <FileField label="Detail Image 1 (optional)" value={nImg1} onChange={setNImg1} />
+                        <FileField label="Detail Image 2 (optional)" value={nImg2} onChange={setNImg2} />
                       </div>
                     </div>
-
                     <div style={{ display:'flex', justifyContent:'flex-end' }}>
-                      <button type="submit" disabled={addBusy} style={{ padding:'11px 32px', background: addBusy ? '#2a6e5a' : '#4dd4ac', color:'#000', border:'none', borderRadius:'8px', cursor: addBusy ? 'not-allowed' : 'pointer', fontWeight:'700', fontFamily:'inherit', fontSize:'0.9rem' }}>
+                      <button type="submit" disabled={addBusy} style={{ padding:'11px 32px', background: addBusy ? '#2a6e5a' : '#4dd4ac', color:'#000', border:'none', borderRadius:'8px', cursor: addBusy ? 'not-allowed' : 'pointer', fontWeight:'700', fontFamily:'inherit', fontSize:'0.9rem', width:'100%' }}>
                         {addBusy ? '⏳ Publishing…' : '🚀 Publish Listing'}
                       </button>
                     </div>
@@ -798,19 +724,19 @@ export default function AdminDashboard({ user, setView }) {
               {/* ════════ BOOKINGS ════════ */}
               {tab === 'bookings' && (
                 <div>
-                  <h2 style={{ fontFamily:'Georgia,serif', fontSize:'1.7rem', color:'#4dd4ac', marginBottom:'6px' }}>Bookings</h2>
+                  <h2 style={{ fontFamily:'Georgia,serif', fontSize:'clamp(1.2rem,5vw,1.7rem)', color:'#4dd4ac', marginBottom:'6px' }}>Bookings</h2>
                   <p style={{ color:'rgba(255,255,255,0.35)', fontSize:'0.85rem', marginBottom:'20px' }}>Agent booking requests submitted via the Book An Agent form</p>
                   {bookings.length === 0
                     ? <Empty icon="📅" title="No bookings yet" sub="Bookings from the Book An Agent form will appear here." />
                     : bookings.map(b=>(
                       <Card key={b.id} color={b.status==='pending' ? '#fbbf24' : b.status==='confirmed' ? '#4dd4ac' : '#60a5fa'}>
-                        <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:'16px' }}>
+                        <div className="mob-col" style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:'16px' }}>
                           <div style={{ flex:1, minWidth:0 }}>
                             <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'8px' }}>
                               <div style={{ width:'38px', height:'38px', borderRadius:'50%', background:'linear-gradient(135deg,#4dd4ac22,#1e2a3a)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.1rem', flexShrink:0 }}>👤</div>
-                              <div>
+                              <div style={{ minWidth:0 }}>
                                 <p style={{ fontWeight:'700', color:'#fff', margin:0, fontSize:'0.95rem' }}>{b.name}</p>
-                                <p style={{ fontSize:'0.78rem', color:'rgba(255,255,255,0.4)', margin:0 }}>{b.email} · {b.phone}</p>
+                                <p style={{ fontSize:'0.78rem', color:'rgba(255,255,255,0.4)', margin:0, wordBreak:'break-all' }}>{b.email} · {b.phone}</p>
                               </div>
                             </div>
                             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'4px 20px', fontSize:'0.78rem', color:'rgba(255,255,255,0.45)', marginBottom:'8px' }}>
@@ -829,7 +755,7 @@ export default function AdminDashboard({ user, setView }) {
                               _default:  { bg:'#1e2a3a',               color:'#aaa'                       },
                             })}
                             {(!b.status || b.status === 'pending') && (
-                              <div style={{ display:'flex', gap:'6px', marginTop:'4px' }}>
+                              <div style={{ display:'flex', gap:'6px', marginTop:'4px', flexWrap:'wrap' }}>
                                 <Btn color="#16a34a" hover="#15803d" onClick={()=>updateBooking(b.id,'confirmed')}>✓ Confirm</Btn>
                                 <Btn color="#dc2626" hover="#b91c1c" onClick={()=>updateBooking(b.id,'cancelled')}>✗ Cancel</Btn>
                               </div>
@@ -848,12 +774,11 @@ export default function AdminDashboard({ user, setView }) {
               {/* ════════ MESSAGES ════════ */}
               {tab === 'messages' && (
                 <div>
-                  <h2 style={{ fontFamily:'Georgia,serif', fontSize:'1.7rem', color:'#4dd4ac', marginBottom:'6px' }}>Messages</h2>
+                  <h2 style={{ fontFamily:'Georgia,serif', fontSize:'clamp(1.2rem,5vw,1.7rem)', color:'#4dd4ac', marginBottom:'6px' }}>Messages</h2>
                   <p style={{ color:'rgba(255,255,255,0.35)', fontSize:'0.85rem', marginBottom:'20px' }}>Conversations from the seller/buyer support chat — reply as any agent</p>
-                  <div className="messages-grid" style={{ display:'grid', gridTemplateColumns:'260px 1fr', gap:'14px', height:'580px' }}>
+                  <div className="mob-msg-grid" style={{ display:'grid', gridTemplateColumns:'260px 1fr', gap:'14px', height:'580px' }}>
 
-                    {/* ── Conversation list ── */}
-                    <div className="conversation-list" style={{ border:'2px solid #1e2a3a', borderRadius:'12px', overflow:'hidden', display:'flex', flexDirection:'column', background:'#151c27' }}>
+                    <div className="mob-conv" style={{ border:'2px solid #1e2a3a', borderRadius:'12px', overflow:'hidden', display:'flex', flexDirection:'column', background:'#151c27' }}>
                       <div style={{ padding:'12px 14px', background:'#4dd4ac', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                         <span style={{ fontWeight:'700', fontSize:'0.85rem', color:'#000' }}>💬 Conversations</span>
                         <span style={{ background:'rgba(0,0,0,0.15)', color:'#000', borderRadius:'20px', padding:'1px 8px', fontSize:'10px', fontWeight:'700' }}>{convs.length}</span>
@@ -881,8 +806,7 @@ export default function AdminDashboard({ user, setView }) {
                       </div>
                     </div>
 
-                    {/* ── Chat panel ── */}
-                    <div style={{ border:'2px solid #1e2a3a', borderRadius:'12px', overflow:'hidden', display:'flex', flexDirection:'column', background:'#151c27' }}>
+                    <div className="mob-chat" style={{ border:'2px solid #1e2a3a', borderRadius:'12px', overflow:'hidden', display:'flex', flexDirection:'column', background:'#151c27' }}>
                       {selConv ? (
                         <>
                           <div style={{ padding:'12px 18px', background:'#4dd4ac', display:'flex', alignItems:'center', gap:'10px' }}>
@@ -901,7 +825,7 @@ export default function AdminDashboard({ user, setView }) {
                                 const displayContent = m.is_agent ? stripAgentPrefix(m.content) : m.content;
                                 return (
                                   <div key={i} style={{ display:'flex', justifyContent: m.is_agent ? 'flex-start' : 'flex-end' }}>
-                                    <div style={{ maxWidth:'70%' }}>
+                                    <div style={{ maxWidth:'80%' }}>
                                       {m.is_agent && agentLabel && (
                                         <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'4px' }}>
                                           <div style={{ width:'20px', height:'20px', borderRadius:'50%', background:'linear-gradient(135deg,#4dd4ac,#2a9d7c)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.6rem', flexShrink:0 }}>
@@ -912,7 +836,7 @@ export default function AdminDashboard({ user, setView }) {
                                       )}
                                       <div style={{ padding:'10px 14px', borderRadius:'10px', background: m.is_agent ? '#1d4b39' : '#1e2b27', color:'#e0f5ef', borderTopLeftRadius: m.is_agent ? '2px' : '10px', borderTopRightRadius: m.is_agent ? '10px' : '2px' }}>
                                         {!m.is_agent && <p style={{ fontSize:'10px', fontWeight:'700', color:'#94a3b8', marginBottom:'4px', margin:'0 0 4px' }}>User</p>}
-                                        <p style={{ fontSize:'0.85rem', lineHeight:1.5, whiteSpace:'pre-wrap', margin:0 }}>{displayContent}</p>
+                                        <p style={{ fontSize:'0.85rem', lineHeight:1.5, whiteSpace:'pre-wrap', margin:0, wordBreak:'break-word' }}>{displayContent}</p>
                                         <p style={{ fontSize:'10px', color:'rgba(224,245,239,0.35)', marginTop:'5px', margin:'5px 0 0' }}>{new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</p>
                                       </div>
                                     </div>
@@ -923,19 +847,18 @@ export default function AdminDashboard({ user, setView }) {
                             <div ref={msgsEnd} />
                           </div>
 
-                          {/* ── Reply bar with agent picker ── */}
                           <div style={{ padding:'12px 14px', borderTop:'2px solid #1e2a3a', background:'#131920' }}>
-                            <div className="agent-picker" style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'10px' }}>
+                            <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'10px' }}>
                               <span style={{ fontSize:'0.72rem', fontWeight:'600', color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.06em', whiteSpace:'nowrap' }}>Replying as:</span>
-                              <div ref={agentPickerRef} style={{ position:'relative', flex:1 }}>
+                              <div ref={agentPickerRef} style={{ position:'relative', flex:1, minWidth:0 }}>
                                 <button
                                   onClick={e => { e.stopPropagation(); setShowAgentPicker(p => !p); }}
-                                  style={{ width:'100%', display:'flex', alignItems:'center', gap:'8px', padding:'7px 12px', background:'#1a2230', border:`1.5px solid ${showAgentPicker ? '#4dd4ac' : '#1e2a3a'}`, borderRadius:'8px', cursor:'pointer', transition:'border-color 0.2s', fontFamily:'inherit' }}>
-                                  <span style={{ fontSize:'1rem' }}>{selectedAgent.avatar}</span>
-                                  <span style={{ flex:1, textAlign:'left', fontSize:'0.82rem', fontWeight:'600', color:'#4dd4ac' }}>{selectedAgent.name}</span>
-                                  <span style={{ fontSize:'0.7rem', color:'rgba(255,255,255,0.3)', background:'rgba(255,255,255,0.06)', padding:'2px 7px', borderRadius:'10px' }}>{selectedAgent.type}</span>
+                                  style={{ width:'100%', display:'flex', alignItems:'center', gap:'8px', padding:'7px 12px', background:'#1a2230', border:`1.5px solid ${showAgentPicker ? '#4dd4ac' : '#1e2a3a'}`, borderRadius:'8px', cursor:'pointer', transition:'border-color 0.2s', fontFamily:'inherit', minWidth:0 }}>
+                                  <span style={{ fontSize:'1rem', flexShrink:0 }}>{selectedAgent.avatar}</span>
+                                  <span style={{ flex:1, textAlign:'left', fontSize:'0.82rem', fontWeight:'600', color:'#4dd4ac', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{selectedAgent.name}</span>
+                                  <span style={{ fontSize:'0.7rem', color:'rgba(255,255,255,0.3)', background:'rgba(255,255,255,0.06)', padding:'2px 7px', borderRadius:'10px', flexShrink:0 }}>{selectedAgent.type}</span>
                                   <div style={{ width:'7px', height:'7px', borderRadius:'50%', background: selectedAgent.online ? '#22c55e' : '#475569', flexShrink:0 }} />
-                                  <span style={{ color:'rgba(255,255,255,0.3)', fontSize:'0.8rem' }}>{showAgentPicker ? '▲' : '▼'}</span>
+                                  <span style={{ color:'rgba(255,255,255,0.3)', fontSize:'0.8rem', flexShrink:0 }}>{showAgentPicker ? '▲' : '▼'}</span>
                                 </button>
 
                                 {showAgentPicker && (
@@ -944,9 +867,7 @@ export default function AdminDashboard({ user, setView }) {
                                       Choose Agent
                                     </div>
                                     {AGENTS.map(agent => (
-                                      <button
-                                        key={agent.name}
-                                        className="agent-option"
+                                      <button key={agent.name} className="agent-option"
                                         onClick={e => { e.stopPropagation(); setSelectedAgent(agent); setShowAgentPicker(false); }}
                                         style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:'10px 14px', background: selectedAgent.name === agent.name ? 'rgba(77,212,172,0.12)' : 'transparent', border:'none', borderBottom:'1px solid #1e2a3a', cursor:'pointer', fontFamily:'inherit', transition:'background 0.15s' }}>
                                         <span style={{ fontSize:'1.1rem' }}>{agent.avatar}</span>
@@ -958,9 +879,7 @@ export default function AdminDashboard({ user, setView }) {
                                           <div style={{ width:'7px', height:'7px', borderRadius:'50%', background: agent.online ? '#22c55e' : '#475569' }} />
                                           <span style={{ fontSize:'0.68rem', color:'rgba(255,255,255,0.28)' }}>{agent.online ? 'Online' : 'Offline'}</span>
                                         </div>
-                                        {selectedAgent.name === agent.name && (
-                                          <span style={{ color:'#4dd4ac', fontSize:'0.8rem' }}>✓</span>
-                                        )}
+                                        {selectedAgent.name === agent.name && <span style={{ color:'#4dd4ac', fontSize:'0.8rem' }}>✓</span>}
                                       </button>
                                     ))}
                                   </div>
@@ -975,13 +894,13 @@ export default function AdminDashboard({ user, setView }) {
                                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(); } }}
                                 placeholder={`Message as ${selectedAgent.name}…`}
                                 className="adm-in"
-                                style={{ flex:1, background:'#1a2230', border:'1.5px solid #1e2a3a', borderRadius:'8px', color:'#fff', fontFamily:'inherit', fontSize:'0.875rem', padding:'10px 14px', outline:'none', boxSizing:'border-box' }}
+                                style={{ flex:1, background:'#1a2230', border:'1.5px solid #1e2a3a', borderRadius:'8px', color:'#fff', fontFamily:'inherit', fontSize:'0.875rem', padding:'10px 14px', outline:'none', boxSizing:'border-box', minWidth:0 }}
                                 onFocus={e => e.target.style.borderColor='#4dd4ac'}
                                 onBlur={e => e.target.style.borderColor='#1e2a3a'}
                               />
                               <button
                                 onClick={sendReply}
-                                style={{ padding:'10px 22px', background: replyText.trim() ? '#4dd4ac' : '#1e2a3a', color: replyText.trim() ? '#000' : 'rgba(255,255,255,0.2)', border:'none', borderRadius:'8px', cursor:'pointer', fontWeight:'700', fontFamily:'inherit', transition:'background 0.15s', whiteSpace:'nowrap' }}
+                                style={{ padding:'10px 22px', background: replyText.trim() ? '#4dd4ac' : '#1e2a3a', color: replyText.trim() ? '#000' : 'rgba(255,255,255,0.2)', border:'none', borderRadius:'8px', cursor:'pointer', fontWeight:'700', fontFamily:'inherit', transition:'background 0.15s', whiteSpace:'nowrap', flexShrink:0 }}
                                 onMouseEnter={e => { e.currentTarget.style.background = replyText.trim() ? '#3bc495' : '#253040'; }}
                                 onMouseLeave={e => { e.currentTarget.style.background = replyText.trim() ? '#4dd4ac' : '#1e2a3a'; }}>
                                 Send
@@ -1008,7 +927,7 @@ export default function AdminDashboard({ user, setView }) {
       {/* ════════ EDIT MODAL ════════ */}
       {editOpen && editProd && (
         <div style={{ position:'fixed', inset:0, zIndex:10000, background:'rgba(0,0,0,0.88)', display:'flex', alignItems:'center', justifyContent:'center', padding:'16px' }}>
-          <div className="edit-modal adm-sb" style={{ width:'100%', maxWidth:'660px', background:'#151c27', border:'2px solid #1e2a3a', borderRadius:'14px', padding:'26px', maxHeight:'90vh', overflowY:'auto' }}>
+          <div className="adm-sb" style={{ width:'100%', maxWidth:'660px', background:'#151c27', border:'2px solid #1e2a3a', borderRadius:'14px', padding:'26px', maxHeight:'92vh', overflowY:'auto' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'18px' }}>
               <div>
                 <h3 style={{ fontFamily:'Georgia,serif', fontSize:'1.3rem', color:'#4dd4ac', margin:0 }}>Edit Listing</h3>
@@ -1016,7 +935,7 @@ export default function AdminDashboard({ user, setView }) {
               </div>
               <button onClick={()=>setEditOpen(false)} style={{ fontSize:'1.6rem', color:'rgba(255,255,255,0.3)', background:'none', border:'none', cursor:'pointer', lineHeight:1 }}>×</button>
             </div>
-            <div className="form-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'13px', marginBottom:'13px' }}>
+            <div className="mob-edit2" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'13px', marginBottom:'13px' }}>
               {[['Title','title','text'],['Price ($)','price','number'],['Business Name','business_name','text'],['Location','location','text']].map(([l,k,t])=>(
                 <div key={k}>
                   <label style={{ display:'block', fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.5)', marginBottom:'5px' }}>{l}</label>
@@ -1033,32 +952,18 @@ export default function AdminDashboard({ user, setView }) {
               </div>
 
               <div style={{ gridColumn:'1/-1' }}>
-                <label style={{ display:'block', fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.5)', marginBottom:'5px' }}>
-                  Listing Status
-                </label>
+                <label style={{ display:'block', fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.5)', marginBottom:'5px' }}>Listing Status</label>
                 <div style={{ position:'relative' }}>
-                  <select
-                    value={editF.status || 'active'}
-                    onChange={e => setEditF(p => ({ ...p, status: e.target.value }))}
-                    className="adm-in"
+                  <select value={editF.status || 'active'} onChange={e => setEditF(p => ({ ...p, status: e.target.value }))} className="adm-in"
                     style={{ ...IS, paddingLeft:'40px', appearance:'none', WebkitAppearance:'none' }}>
                     {STATUSES.map(s => (
                       <option key={s} value={s}>
-                        {s === 'active' ? 'Active — visible to buyers' :
-                         s === 'sold'   ? 'Sold — marked as sold' :
-                         s === 'pending' ? 'Pending — awaiting review' :
-                         'Out of Stock — temporarily unavailable'}
+                        {s === 'active' ? 'Active — visible to buyers' : s === 'sold' ? 'Sold — marked as sold' : s === 'pending' ? 'Pending — awaiting review' : 'Out of Stock — temporarily unavailable'}
                       </option>
                     ))}
                   </select>
-                  <div style={{
-                    position:'absolute', left:'13px', top:'50%', transform:'translateY(-50%)',
-                    width:'10px', height:'10px', borderRadius:'50%', pointerEvents:'none',
-                    background:
-                      editF.status === 'active'       ? '#4ade80' :
-                      editF.status === 'sold'         ? '#60a5fa' :
-                      editF.status === 'pending'      ? '#fbbf24' :
-                      editF.status === 'out_of_stock' ? '#fb923c' : '#aaa',
+                  <div style={{ position:'absolute', left:'13px', top:'50%', transform:'translateY(-50%)', width:'10px', height:'10px', borderRadius:'50%', pointerEvents:'none',
+                    background: editF.status === 'active' ? '#4ade80' : editF.status === 'sold' ? '#60a5fa' : editF.status === 'pending' ? '#fbbf24' : editF.status === 'out_of_stock' ? '#fb923c' : '#aaa',
                   }} />
                   <div style={{ position:'absolute', right:'13px', top:'50%', transform:'translateY(-50%)', pointerEvents:'none', color:'rgba(255,255,255,0.3)', fontSize:'0.8rem' }}>▼</div>
                 </div>
@@ -1068,55 +973,22 @@ export default function AdminDashboard({ user, setView }) {
                 </div>
               </div>
             </div>
+
             <div style={{ marginBottom:'13px' }}>
               <label style={{ display:'block', fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.5)', marginBottom:'5px' }}>Description</label>
               <textarea rows={3} value={editF.description||''} onChange={e=>setEditF(p=>({...p,description:e.target.value}))} className="adm-in" style={{ ...IS, resize:'vertical' }} />
             </div>
 
-            {/* ── Edit modal image upload ── */}
-            <div style={{ border:'2px dashed #1e2a3a', borderRadius:'8px', padding:'16px', background:'#0e1117', marginBottom:'16px' }}>
-              <p style={{ fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.4)', marginBottom:'12px' }}>📷 Current Images</p>
-              <div className="image-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'10px', marginBottom:'14px' }}>
-                {[0,1,2].map(slot => (
-                  <div key={slot} style={{ display:'flex', flexDirection:'column', gap:'6px', alignItems:'center' }}>
-                    <div style={{ width:'100%', aspectRatio:'1', borderRadius:'8px', overflow:'hidden', background:'#1e2a3a', border:'1.5px solid #1e2a3a', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                      {editExistingImgs[slot]
-                        ? <img src={editExistingImgs[slot]} alt={`Image ${slot+1}`} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-                        : <span style={{ color:'rgba(255,255,255,0.15)', fontSize:'1.6rem' }}>📷</span>}
-                    </div>
-                    <span style={{ fontSize:'10px', color:'rgba(255,255,255,0.3)', textAlign:'center' }}>
-                      {slot === 0 ? 'Main' : `Detail ${slot}`}{editExistingImgs[slot] ? '' : ' — empty'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <p style={{ fontSize:'0.75rem', fontWeight:'600', color:'rgba(255,255,255,0.35)', marginBottom:'10px' }}>Replace Images (leave blank to keep existing)</p>
-              <div className="image-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'12px' }}>
-                {[
-                  { label:'New Main Image', file: eImg0, onChange: e => setEImg0(e.target.files[0]) },
-                  { label:'New Detail 1',   file: eImg1, onChange: e => setEImg1(e.target.files[0]) },
-                  { label:'New Detail 2',   file: eImg2, onChange: e => setEImg2(e.target.files[0]) },
-                ].map(({ label, file, onChange }) => (
-                  <div key={label}>
-                    <label className="admin-file-label">{label}</label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={onChange}
-                      className="admin-file-input"
-                    />
-                    {file && (
-                      <p style={{ fontSize:'0.72rem', color:'#4dd4ac', marginTop:'5px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                        ✓ {file.name}
-                      </p>
-                    )}
-                  </div>
-                ))}
+            <div style={{ border:'2px dashed #1e2a3a', borderRadius:'8px', padding:'14px', background:'#0e1117', marginBottom:'16px' }}>
+              <p style={{ fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.4)', marginBottom:'12px' }}>📷 Images — click a slot to replace</p>
+              <div className="mob-edit-imgs" style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'12px' }}>
+                <FileField label="Main Image"  value={eImg0} onChange={setEImg0} existingUrl={editExistingImgs[0]} />
+                <FileField label="Detail 1"    value={eImg1} onChange={setEImg1} existingUrl={editExistingImgs[1]} />
+                <FileField label="Detail 2"    value={eImg2} onChange={setEImg2} existingUrl={editExistingImgs[2]} />
               </div>
             </div>
 
-            <div style={{ display:'flex', gap:'10px', justifyContent:'flex-end' }}>
+            <div style={{ display:'flex', gap:'10px', justifyContent:'flex-end', flexWrap:'wrap' }}>
               <OutlineBtn color="rgba(255,255,255,0.3)" onClick={()=>setEditOpen(false)}>Cancel</OutlineBtn>
               <button onClick={saveEdit} disabled={editBusy} style={{ padding:'10px 26px', background: editBusy ? '#2a6e5a' : '#4dd4ac', color:'#000', border:'none', borderRadius:'8px', cursor: editBusy ? 'not-allowed' : 'pointer', fontWeight:'700', fontFamily:'inherit' }}>
                 {editBusy ? '⏳ Saving…' : '💾 Save Changes'}
