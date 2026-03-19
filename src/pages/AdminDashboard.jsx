@@ -290,7 +290,6 @@ export default function AdminDashboard({ user, setView }) {
 
   const openEdit = async (p) => {
     setEditProd(p);
-    // ── Include status in the edit form ──
     setEditF({
       title: p.title||'',
       price: p.price||'',
@@ -318,7 +317,6 @@ export default function AdminDashboard({ user, setView }) {
     if (!editProd) return;
     setEditBusy(true);
     try {
-      // ── status is now part of editF and will be saved ──
       const upd = { ...editF, price: parseFloat(editF.price), updated_at: new Date().toISOString() };
       if (eImg0) { const u = await uploadImg(eImg0); if (u) { upd.image_url = u; await supabase.from('product_images').upsert([{ product_id: editProd.id, image_url: u, is_primary: true, sort_order: 0 }]); } }
       if (eImg1) { const u = await uploadImg(eImg1); if (u) await supabase.from('product_images').upsert([{ product_id: editProd.id, image_url: u, is_primary: false, sort_order: 1 }]); }
@@ -367,7 +365,6 @@ export default function AdminDashboard({ user, setView }) {
     return content?.replace(/^\[.+?\]\s*/, '') || content;
   };
 
-  // Status badge config for product status
   const statusConfig = {
     active:       { bg:'rgba(74,222,128,0.12)',   color:'#4ade80',  label:'Active'       },
     sold:         { bg:'rgba(96,165,250,0.12)',   color:'#60a5fa',  label:'Sold'         },
@@ -404,13 +401,36 @@ export default function AdminDashboard({ user, setView }) {
     </div>
   );
 
+  // FIXED FileField component
   const FileField = ({ label, onChange, cls='' }) => (
     <div>
       <p style={{ fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.5)', marginBottom:'6px' }}>{label}</p>
-      <div style={{ border:'2px dashed #1e2a3a', borderRadius:'8px', padding:'10px 12px', background:'#0a1018', transition:'border-color 0.2s' }}
-        onMouseEnter={e=>e.currentTarget.style.borderColor='#4dd4ac'} onMouseLeave={e=>e.currentTarget.style.borderColor='#1e2a3a'}>
-        <input type="file" accept="image/*" onChange={e=>onChange(e.target.files[0])} className={cls}
-          style={{ width:'100%', background:'transparent', border:'none', color:'rgba(255,255,255,0.5)', cursor:'pointer', outline:'none', fontSize:'0.8rem', fontFamily:'inherit' }} />
+      <div 
+        style={{ 
+          border:'2px dashed #1e2a3a', 
+          borderRadius:'8px', 
+          padding:'10px 12px', 
+          background:'#0a1018',
+          cursor: 'pointer',
+          transition:'border-color 0.2s'
+        }}
+        onMouseEnter={e=>e.currentTarget.style.borderColor='#4dd4ac'} 
+        onMouseLeave={e=>e.currentTarget.style.borderColor='#1e2a3a'}
+        onClick={() => {
+          const fileInput = document.querySelector(`.${cls}`);
+          if (fileInput) fileInput.click();
+        }}
+      >
+        <input 
+          type="file" 
+          accept="image/*" 
+          onChange={e => onChange(e.target.files[0])} 
+          className={cls}
+          style={{ display: 'none' }}
+        />
+        <span style={{ color:'rgba(255,255,255,0.5)', fontSize:'0.8rem' }}>
+          Click to select file...
+        </span>
       </div>
     </div>
   );
@@ -875,7 +895,6 @@ export default function AdminDashboard({ user, setView }) {
                 <select value={editF.condition||'Like New'} onChange={e=>setEditF(p=>({...p,condition:e.target.value}))} className="adm-in" style={IS}>{CONDS.map(c=><option key={c}>{c}</option>)}</select>
               </div>
 
-              {/* ── Status field — spans full width with colour indicator ── */}
               <div style={{ gridColumn:'1/-1' }}>
                 <label style={{ display:'block', fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.5)', marginBottom:'5px' }}>
                   Listing Status
@@ -895,7 +914,6 @@ export default function AdminDashboard({ user, setView }) {
                       </option>
                     ))}
                   </select>
-                  {/* Coloured dot indicator */}
                   <div style={{
                     position:'absolute', left:'13px', top:'50%', transform:'translateY(-50%)',
                     width:'10px', height:'10px', borderRadius:'50%', pointerEvents:'none',
@@ -905,10 +923,8 @@ export default function AdminDashboard({ user, setView }) {
                       editF.status === 'pending'      ? '#fbbf24' :
                       editF.status === 'out_of_stock' ? '#fb923c' : '#aaa',
                   }} />
-                  {/* Custom chevron */}
                   <div style={{ position:'absolute', right:'13px', top:'50%', transform:'translateY(-50%)', pointerEvents:'none', color:'rgba(255,255,255,0.3)', fontSize:'0.8rem' }}>▼</div>
                 </div>
-                {/* Preview badge */}
                 <div style={{ marginTop:'8px', display:'flex', alignItems:'center', gap:'8px' }}>
                   <span style={{ fontSize:'0.72rem', color:'rgba(255,255,255,0.3)' }}>Preview badge:</span>
                   {statusBadge(editF.status || 'active', statusConfig)}
@@ -938,9 +954,9 @@ export default function AdminDashboard({ user, setView }) {
               </div>
               <p style={{ fontSize:'0.75rem', fontWeight:'600', color:'rgba(255,255,255,0.35)', marginBottom:'10px' }}>Replace Images (leave blank to keep existing)</p>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'10px' }}>
-                <FileField label="New Main Image" onChange={setEImg0} />
-                <FileField label="New Detail 1" onChange={setEImg1} />
-                <FileField label="New Detail 2" onChange={setEImg2} />
+                <FileField label="New Main Image" onChange={setEImg0} cls="edit-file-in" />
+                <FileField label="New Detail 1" onChange={setEImg1} cls="edit-file-in" />
+                <FileField label="New Detail 2" onChange={setEImg2} cls="edit-file-in" />
               </div>
             </div>
 
