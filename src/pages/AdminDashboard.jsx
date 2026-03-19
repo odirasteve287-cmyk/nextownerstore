@@ -314,16 +314,20 @@ export default function AdminDashboard({ user, setView }) {
 
   const FileField = ({ label, onChange, cls = '' }) => {
     const [fileName, setFileName] = React.useState('');
+    const inputRef = useRef(null);
     return (
       <div>
         <p style={{ fontSize: '0.75rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', marginBottom: '5px' }}>{label}</p>
-        <div style={{ border: `2px dashed ${fileName ? '#4dd4ac' : '#1e2a3a'}`, borderRadius: '8px', padding: '8px 10px', background: '#0a1018' }}>
-          <input type="file" accept="image/*" onChange={e => { const f = e.target.files[0]; onChange(f); setFileName(f?.name || ''); }} className={cls}
-            style={{ width: '100%', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', outline: 'none', fontSize: '0.75rem', fontFamily: 'inherit' }} />
-          {fileName ? (
-            <p style={{ margin: '5px 0 0', fontSize: '0.7rem', color: '#4dd4ac', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>✓ {fileName}</p>
-          ) : null}
-        </div>
+        <input ref={inputRef} type="file" accept="image/*" className={cls}
+          onChange={e => { const f = e.target.files[0]; onChange(f); setFileName(f?.name || ''); }}
+          style={{ display: 'none' }} />
+        <button type="button" onClick={() => inputRef.current?.click()}
+          style={{ width: '100%', border: `2px dashed ${fileName ? '#4dd4ac' : '#1e2a3a'}`, borderRadius: '8px', padding: '10px', background: '#0a1018', cursor: 'pointer', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+          <span style={{ fontSize: '1.1rem' }}>{fileName ? '✅' : '📷'}</span>
+          <span style={{ fontSize: '0.7rem', color: fileName ? '#4dd4ac' : 'rgba(255,255,255,0.35)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>
+            {fileName || 'Tap to choose'}
+          </span>
+        </button>
       </div>
     );
   };
