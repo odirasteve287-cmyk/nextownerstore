@@ -10,6 +10,25 @@ const AGENTS = [
 ];
 
 export default function AdminDashboard({ user, setView }) {
+  // Add debug state
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 0);
+  const [viewportMeta, setViewportMeta] = useState(false);
+  
+  useEffect(() => {
+    // Check if viewport meta exists
+    const meta = document.querySelector('meta[name="viewport"]');
+    setViewportMeta(!!meta);
+    
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      console.log('Window width:', window.innerWidth);
+      console.log('Should be mobile?', window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const [tab,      setTab]      = useState('pending');
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -398,6 +417,13 @@ export default function AdminDashboard({ user, setView }) {
     <>
       <style>{`
         * { box-sizing:border-box; }
+        
+        /* Force viewport behavior */
+        @viewport {
+          width: device-width;
+          zoom: 1.0;
+        }
+        
         .adm-sb::-webkit-scrollbar{width:4px}.adm-sb::-webkit-scrollbar-thumb{background:#1e2a3a;border-radius:4px}
         .adm-in::placeholder{color:rgba(255,255,255,0.22)}.adm-in option{background:#111}
         .adm-nav:hover{background:rgba(77,212,172,0.1)!important}
@@ -443,39 +469,86 @@ export default function AdminDashboard({ user, setView }) {
         .adm-dropdown::-webkit-scrollbar{width:4px}
         .adm-dropdown::-webkit-scrollbar-thumb{background:#1e2a3a;border-radius:4px}
 
-        /* Force mobile styles */
+        /* FORCE MOBILE STYLES WITH HIGHEST SPECIFICITY */
         @media (max-width:768px) {
-          .adm-topbar  { 
-            display: flex !important; 
-            align-items: center; 
-            justify-content: space-between; 
-            padding: 11px 14px; 
-            background: #090d14; 
-            border-bottom: 2px solid #1e2a3a; 
-            position: sticky; 
-            top: 0; 
-            z-index: 500; 
-            flex-shrink: 0; 
-            gap: 10px; 
+          body, html {
+            max-width: 100vw !important;
+            overflow-x: hidden !important;
+            margin: 0 !important;
+            padding: 0 !important;
           }
+          
+          .adm-topbar { 
+            display: flex !important; 
+            align-items: center !important; 
+            justify-content: space-between !important; 
+            padding: 11px 14px !important; 
+            background: #090d14 !important; 
+            border-bottom: 2px solid #1e2a3a !important; 
+            position: sticky !important; 
+            top: 0 !important; 
+            z-index: 500 !important; 
+            flex-shrink: 0 !important; 
+            gap: 10px !important; 
+          }
+          
           .adm-sidebar { 
             display: none !important; 
           }
-          .adm-main    { 
+          
+          .adm-main { 
             padding: 16px 14px !important; 
+            width: 100% !important;
+            max-width: 100vw !important;
+            overflow-x: hidden !important;
           }
-          .mob-col     { flex-direction:column !important; }
-          .mob-acts    { flex-direction:row !important; flex-wrap:wrap !important; }
+          
+          .adm-dropdown {
+            position: absolute !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+          }
+          
+          .mob-col { flex-direction:column !important; }
+          .mob-acts { flex-direction:row !important; flex-wrap:wrap !important; }
           .mob-lst-acts{ width:100% !important; flex-wrap:wrap !important; justify-content:flex-start !important; }
-          .mob-form2   { grid-template-columns:1fr !important; }
-          .mob-img3    { grid-template-columns:1fr 1fr !important; }
-          .mob-edit2   { grid-template-columns:1fr !important; }
+          .mob-form2 { grid-template-columns:1fr !important; }
+          .mob-img3 { grid-template-columns:1fr 1fr !important; }
+          .mob-edit2 { grid-template-columns:1fr !important; }
           .mob-edit-imgs{ grid-template-columns:1fr 1fr !important; }
           .mob-msg-grid{ grid-template-columns:1fr !important; height:auto !important; }
-          .mob-conv    { height:220px !important; }
-          .mob-chat    { height:460px !important; }
+          .mob-conv { height:220px !important; }
+          .mob-chat { height:460px !important; }
+          
+          /* Force all elements to respect viewport width */
+          .adm-root, .adm-body, .adm-main, .adm-main > div {
+            max-width: 100vw !important;
+            overflow-x: hidden !important;
+          }
         }
+
+        /* Debug panel styles */
+        .debug-panel {
+          background: #ff0000;
+          color: white;
+          padding: 10px;
+          margin-bottom: 10px;
+          border-radius: 4px;
+          font-size: 12px;
+          font-weight: bold;
+        }
+        .debug-panel.ok { background: #00aa00; }
+        .debug-panel.warning { background: #ff6600; }
       `}</style>
+
+      {/* ══ DEBUG INFO ══ */}
+      <div className={`debug-panel ${viewportMeta ? 'ok' : 'warning'}`}>
+        <strong>DEBUG:</strong> Window Width: {windowWidth}px | 
+        Mobile? {windowWidth <= 768 ? '✅ Yes' : '❌ No'} |
+        Viewport Meta: {viewportMeta ? '✅ Present' : '❌ MISSING!'}
+        {!viewportMeta && ' - ADD TO index.html!'}
+      </div>
 
       {/* ══ MOBILE TOPBAR ══ */}
       <div className="adm-topbar">
