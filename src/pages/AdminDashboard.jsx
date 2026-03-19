@@ -565,13 +565,21 @@ export default function AdminDashboard({ user, setView }) {
         .wa-back-btn { display:none; background:none; border:none; color:#4dd4ac; cursor:pointer; font-size:1.2rem; padding:0 4px; }
 
         /* ── Mobile sidebar drawer ── */
-        .mob-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:19998; }
+        .mob-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:10001; }
         .mob-overlay.open { display:block; }
-        .mob-drawer { position:fixed; left:0; top:0; bottom:0; width:260px; background:#090d14; z-index:19999; transform:translateX(-100%); transition:transform 0.28s cubic-bezier(0.4,0,0.2,1); display:flex; flex-direction:column; border-right:2px solid #1e2a3a; overflow-y:auto; }
+        .mob-drawer { position:fixed; left:0; top:0; bottom:0; width:270px; background:#090d14; z-index:10002; transform:translateX(-100%); transition:transform 0.28s cubic-bezier(0.4,0,0.2,1); display:flex; flex-direction:column; border-right:2px solid #1e2a3a; overflow-y:auto; }
         .mob-drawer.open { transform:translateX(0); }
 
         /* ── Mobile top header (hamburger + title) ── */
         .mob-header { display:none; position:sticky; top:0; z-index:200; background:#0d1520; border-bottom:2px solid #1e2a3a; padding:0 16px; height:52px; align-items:center; justify-content:space-between; flex-shrink:0; }
+
+        /* ── Mobile bottom nav bar ── */
+        .mob-bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; z-index:10000; background:#0d1520; border-top:2px solid #1e2a3a; height:60px; align-items:stretch; padding:0; }
+        .mob-nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border:none; background:transparent; cursor:pointer; color:rgba(255,255,255,0.35); font-family:inherit; padding:6px 2px; position:relative; transition:color 0.15s; }
+        .mob-nav-item.active { color:#4dd4ac; }
+        .mob-nav-item .nav-icon { font-size:1.1rem; line-height:1; }
+        .mob-nav-item .nav-label { font-size:9px; font-weight:600; letter-spacing:0.03em; text-transform:uppercase; line-height:1; }
+        .mob-nav-badge { position:absolute; top:5px; right:calc(50% - 16px); background:#ef4444; color:#fff; font-size:8px; font-weight:700; min-width:14px; height:14px; border-radius:7px; display:flex; align-items:center; justify-content:center; padding:0 3px; }
 
         /* ── Desktop sidebar ── */
         .admin-sidebar-desktop { width:252px; min-width:252px; border-right:2px solid #1e2a3a; display:flex; flex-direction:column; overflow-y:auto; }
@@ -580,7 +588,8 @@ export default function AdminDashboard({ user, setView }) {
           .admin-dashboard { flex-direction:column !important; }
           .admin-sidebar-desktop { display:none !important; }
           .mob-header { display:flex !important; }
-          .admin-main { padding:16px !important; }
+          .mob-bottom-nav { display:flex !important; }
+          .admin-main { padding:14px 14px 76px !important; }
 
           /* Messages: stack on mobile */
           .wa-shell { flex-direction:column; height:calc(100vh - 175px); min-height:0; border-radius:10px; }
@@ -604,58 +613,58 @@ export default function AdminDashboard({ user, setView }) {
         }
       `}</style>
 
-      <div className="admin-dashboard" style={{ position:'fixed', inset:0, zIndex:9999, display:'flex', background:'#090d14', color:'#fff', fontFamily:"'Poppins',-apple-system,sans-serif", overflow:'hidden' }}>
-
-        {/* ══ MOBILE OVERLAY + DRAWER ══ */}
-        <div className={`mob-overlay${sidebarOpen?' open':''}`} onClick={() => setSidebarOpen(false)} />
-        <div className={`mob-drawer adm-sb${sidebarOpen?' open':''}`}>
-          <div style={{ padding:'16px 18px 14px', borderBottom:'2px solid #1e2a3a', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-            <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-              <div style={{ width:'28px', height:'28px', borderRadius:'7px', background:'linear-gradient(135deg,#4dd4ac,#1e7a5e)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px' }}>⚙</div>
-              <span style={{ fontFamily:'Georgia,serif', fontSize:'1.1rem', fontWeight:'700', color:'#4dd4ac' }}>Admin Panel</span>
-            </div>
-            <button onClick={() => setSidebarOpen(false)}
-              style={{ background:'none', border:'none', color:'rgba(255,255,255,0.4)', cursor:'pointer', fontSize:'1.4rem', lineHeight:1, padding:'0' }}>×</button>
+      {/* ══ MOBILE OVERLAY + DRAWER — rendered OUTSIDE admin-dashboard so overflow:hidden doesn't clip them ══ */}
+      <div className={`mob-overlay${sidebarOpen?' open':''}`} onClick={() => setSidebarOpen(false)} />
+      <div className={`mob-drawer adm-sb${sidebarOpen?' open':''}`}>
+        <div style={{ padding:'16px 18px 14px', borderBottom:'2px solid #1e2a3a', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+            <div style={{ width:'28px', height:'28px', borderRadius:'7px', background:'linear-gradient(135deg,#4dd4ac,#1e7a5e)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px' }}>⚙</div>
+            <span style={{ fontFamily:'Georgia,serif', fontSize:'1.1rem', fontWeight:'700', color:'#4dd4ac' }}>Admin Panel</span>
           </div>
-          <div style={{ padding:'12px' }}>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'7px', marginBottom:'4px' }}>
-              {[
-                { v:stats.pending,  l:'Pending',  c:'#fbbf24', bg:'rgba(251,191,36,0.08)'  },
-                { v:stats.listings, l:'Active',   c:'#4dd4ac', bg:'rgba(77,212,172,0.08)'  },
-                { v:stats.bookings, l:'Bookings', c:'#60a5fa', bg:'rgba(96,165,250,0.08)'  },
-                { v:stats.messages, l:'Chats',    c:'#c084fc', bg:'rgba(192,132,252,0.08)' },
-              ].map(s=>(
-                <div key={s.l} style={{ padding:'8px 5px', borderRadius:'8px', textAlign:'center', background:s.bg, border:`1px solid ${s.c}22` }}>
-                  <div style={{ fontSize:'1.3rem', fontWeight:'800', color:s.c, lineHeight:1 }}>{s.v}</div>
-                  <div style={{ fontSize:'9px', color:'rgba(255,255,255,0.35)', marginTop:'2px', textTransform:'uppercase', letterSpacing:'0.05em' }}>{s.l}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <nav style={{ padding:'8px', flex:1 }}>
-            {menuItems.map(item=>(
-              <button key={item.id} onClick={() => handleTabChange(item.id)} className="adm-nav"
-                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'9px 13px', marginBottom:'3px', borderRadius:'9px', background:tab===item.id?'#4dd4ac':'transparent', color:tab===item.id?'#000':'#4dd4ac', border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:'0.85rem', fontWeight:tab===item.id?'700':'500', transition:'all 0.15s' }}>
-                <span style={{ display:'flex', alignItems:'center', gap:'9px' }}><span>{item.icon}</span>{item.label}</span>
-                {item.count > 0 && <span style={{ padding:'2px 7px', borderRadius:'20px', fontSize:'10px', fontWeight:'700', background:tab===item.id?'rgba(0,0,0,0.2)':'rgba(77,212,172,0.15)', color:tab===item.id?'#000':'#4dd4ac' }}>{item.count}</span>}
-              </button>
+          <button onClick={() => setSidebarOpen(false)}
+            style={{ background:'none', border:'none', color:'rgba(255,255,255,0.4)', cursor:'pointer', fontSize:'1.6rem', lineHeight:1, padding:'0 4px' }}>×</button>
+        </div>
+        <div style={{ padding:'12px' }}>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'7px' }}>
+            {[
+              { v:stats.pending,  l:'Pending',  c:'#fbbf24', bg:'rgba(251,191,36,0.08)'  },
+              { v:stats.listings, l:'Active',   c:'#4dd4ac', bg:'rgba(77,212,172,0.08)'  },
+              { v:stats.bookings, l:'Bookings', c:'#60a5fa', bg:'rgba(96,165,250,0.08)'  },
+              { v:stats.messages, l:'Chats',    c:'#c084fc', bg:'rgba(192,132,252,0.08)' },
+            ].map(s=>(
+              <div key={s.l} style={{ padding:'8px 5px', borderRadius:'8px', textAlign:'center', background:s.bg, border:`1px solid ${s.c}22` }}>
+                <div style={{ fontSize:'1.3rem', fontWeight:'800', color:s.c, lineHeight:1 }}>{s.v}</div>
+                <div style={{ fontSize:'9px', color:'rgba(255,255,255,0.35)', marginTop:'2px', textTransform:'uppercase', letterSpacing:'0.05em' }}>{s.l}</div>
+              </div>
             ))}
-          </nav>
-          <div style={{ padding:'10px 12px', borderTop:'2px solid #1e2a3a' }}>
-            <button onClick={() => { setShowDiag(p=>!p); setSidebarOpen(false); }}
-              style={{ width:'100%', padding:'7px 12px', background:'rgba(96,165,250,0.08)', border:'1px solid #1e2a3a', borderRadius:'8px', color:'#60a5fa', cursor:'pointer', fontFamily:'inherit', fontSize:'0.78rem', fontWeight:'600', marginBottom:'6px' }}>
-              🔍 {showDiag?'Hide':'Show'} Diagnostics
-            </button>
-            <button onClick={() => { load(); setSidebarOpen(false); }}
-              style={{ width:'100%', padding:'7px 12px', background:'rgba(77,212,172,0.08)', border:'1px solid #1e2a3a', borderRadius:'8px', color:'#4dd4ac', cursor:'pointer', fontFamily:'inherit', fontSize:'0.78rem', fontWeight:'600', marginBottom:'6px' }}>
-              ↻ Refresh Now
-            </button>
-            <button onClick={()=>setView('home')}
-              style={{ width:'100%', padding:'9px 12px', background:'transparent', border:'2px solid #1e2a3a', borderRadius:'9px', color:'rgba(255,255,255,0.4)', cursor:'pointer', fontFamily:'inherit', fontSize:'0.82rem', fontWeight:'600' }}>
-              ← Back to Store
-            </button>
           </div>
         </div>
+        <nav style={{ padding:'8px', flex:1 }}>
+          {menuItems.map(item=>(
+            <button key={item.id} onClick={() => handleTabChange(item.id)} className="adm-nav"
+              style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 14px', marginBottom:'3px', borderRadius:'9px', background:tab===item.id?'#4dd4ac':'transparent', color:tab===item.id?'#000':'#4dd4ac', border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:'0.9rem', fontWeight:tab===item.id?'700':'500', transition:'all 0.15s' }}>
+              <span style={{ display:'flex', alignItems:'center', gap:'10px' }}><span>{item.icon}</span>{item.label}</span>
+              {item.count > 0 && <span style={{ padding:'2px 8px', borderRadius:'20px', fontSize:'10px', fontWeight:'700', background:tab===item.id?'rgba(0,0,0,0.2)':'rgba(77,212,172,0.15)', color:tab===item.id?'#000':'#4dd4ac' }}>{item.count}</span>}
+            </button>
+          ))}
+        </nav>
+        <div style={{ padding:'12px', borderTop:'2px solid #1e2a3a', display:'flex', flexDirection:'column', gap:'8px' }}>
+          <button onClick={() => { setShowDiag(p=>!p); setSidebarOpen(false); }}
+            style={{ width:'100%', padding:'8px 12px', background:'rgba(96,165,250,0.08)', border:'1px solid #1e2a3a', borderRadius:'8px', color:'#60a5fa', cursor:'pointer', fontFamily:'inherit', fontSize:'0.82rem', fontWeight:'600' }}>
+            🔍 {showDiag?'Hide':'Show'} Diagnostics
+          </button>
+          <button onClick={() => { load(); setSidebarOpen(false); }}
+            style={{ width:'100%', padding:'8px 12px', background:'rgba(77,212,172,0.08)', border:'1px solid #1e2a3a', borderRadius:'8px', color:'#4dd4ac', cursor:'pointer', fontFamily:'inherit', fontSize:'0.82rem', fontWeight:'600' }}>
+            ↻ Refresh Now
+          </button>
+          <button onClick={()=>setView('home')}
+            style={{ width:'100%', padding:'10px 12px', background:'transparent', border:'2px solid #1e2a3a', borderRadius:'9px', color:'rgba(255,255,255,0.4)', cursor:'pointer', fontFamily:'inherit', fontSize:'0.85rem', fontWeight:'600' }}>
+            ← Back to Store
+          </button>
+        </div>
+      </div>
+
+      <div className="admin-dashboard" style={{ position:'fixed', inset:0, zIndex:9999, display:'flex', background:'#090d14', color:'#fff', fontFamily:"'Poppins',-apple-system,sans-serif", overflow:'hidden' }}>
 
         {/* ══ DESKTOP SIDEBAR ══ */}
         <aside className="admin-sidebar-desktop adm-sb">
@@ -1086,12 +1095,28 @@ export default function AdminDashboard({ user, setView }) {
 
             </div>
           </main>
+
+          {/* ── Mobile bottom nav bar ── */}
+          <nav className="mob-bottom-nav">
+            {menuItems.map(item => (
+              <button key={item.id} className={`mob-nav-item${tab===item.id?' active':''}`} onClick={() => handleTabChange(item.id)}>
+                {item.count > 0 && <span className="mob-nav-badge">{item.count}</span>}
+                <span className="nav-icon">{item.icon}</span>
+                <span className="nav-label">{item.label}</span>
+              </button>
+            ))}
+            <button className="mob-nav-item" onClick={() => setView('home')}>
+              <span className="nav-icon">🏠</span>
+              <span className="nav-label">Store</span>
+            </button>
+          </nav>
+
         </div>
       </div>
 
       {/* ════ EDIT MODAL ════ */}
       {editOpen && editProd && (
-        <div style={{ position:'fixed', inset:0, zIndex:10000, background:'rgba(0,0,0,0.88)', display:'flex', alignItems:'center', justifyContent:'center', padding:'16px' }}>
+        <div style={{ position:'fixed', inset:0, zIndex:10050, background:'rgba(0,0,0,0.88)', display:'flex', alignItems:'center', justifyContent:'center', padding:'16px' }}>
           <div className="edit-modal adm-sb" style={{ width:'100%', maxWidth:'660px', background:'#151c27', border:'2px solid #1e2a3a', borderRadius:'14px', padding:'26px', maxHeight:'90vh', overflowY:'auto' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'18px' }}>
               <div>
