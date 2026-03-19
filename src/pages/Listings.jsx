@@ -333,7 +333,7 @@ function getAIAgent(productId) {
 
 // ── Message Modal ──
 function MessageModal({ onClose, agentName, productTitle, productPrice, isLoggedIn = false, onNavigate }) {
-  const defaultMsg = `Hello ${agentName}, I have seen this item "${productTitle}" of $${productPrice} and I am really interested in buying it, may you provide me with payment method and delivery information.`;
+  const defaultMsg = `Hello ${agentName}, I have seen this item "${productTitle}" of $${productPrice} and I am really interested in buying it, may you provide me with more information.`;
   const [message, setMessage] = useState(defaultMsg);
   const [sent, setSent] = useState(false);
 
