@@ -312,13 +312,15 @@ export default function AdminDashboard({ user, setView }) {
     );
   };
 
+  // FIXED: FileField uses <label> wrapper so the entire box is tappable on mobile
   const FileField = ({ label, onChange, cls = '' }) => (
     <div>
       <p style={{ fontSize: '0.75rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', marginBottom: '5px' }}>{label}</p>
-      <div style={{ border: '2px dashed #1e2a3a', borderRadius: '8px', padding: '8px 10px', background: '#0a1018' }}>
+      <label style={{ display: 'block', border: '2px dashed #1e2a3a', borderRadius: '8px', padding: '10px', background: '#0a1018', cursor: 'pointer', textAlign: 'center', minHeight: '44px', position: 'relative' }}>
+        <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', pointerEvents: 'none' }}>📷 Tap to choose</span>
         <input type="file" accept="image/*" onChange={e => onChange(e.target.files[0])} className={cls}
-          style={{ width: '100%', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', outline: 'none', fontSize: '0.75rem', fontFamily: 'inherit' }} />
-      </div>
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }} />
+      </label>
     </div>
   );
 
