@@ -47,65 +47,20 @@ export default function AdminDashboard({ user, setView }) {
 
   const msgsEnd = useRef(null);
   const agentPickerRef = useRef(null);
-  const fileInputRefs = {
-    nImg0: useRef(null),
-    nImg1: useRef(null),
-    nImg2: useRef(null),
-    eImg0: useRef(null),
-    eImg1: useRef(null),
-    eImg2: useRef(null)
-  };
+  
+  // Simple file input refs
+  const fileInput0 = useRef(null);
+  const fileInput1 = useRef(null);
+  const fileInput2 = useRef(null);
+  const editFileInput0 = useRef(null);
+  const editFileInput1 = useRef(null);
+  const editFileInput2 = useRef(null);
   
   const CATS  = ['Furniture','Electronics','Appliances','For Kids','Decor','Kitchenware','Household'];
   const CONDS = ['Brand New','Like New','Excellent','Good','Fair','For Parts'];
   const STATUSES = ['active', 'sold', 'pending', 'out_of_stock'];
 
   const IS = { background:'#0e1117', border:'2px solid #1e2a3a', color:'#fff', width:'100%', padding:'10px 14px', borderRadius:'8px', outline:'none', fontFamily:'inherit', fontSize:'0.875rem', boxSizing:'border-box' };
-
-  // Add responsive styles
-  useEffect(() => {
-    const style = document.createElement('style');
-    style.textContent = `
-      @media (max-width: 768px) {
-        .admin-dashboard {
-          flex-direction: column !important;
-        }
-        .admin-sidebar {
-          width: 100% !important;
-          min-width: 100% !important;
-          border-right: none !important;
-          border-bottom: 2px solid #1e2a3a !important;
-        }
-        .admin-main {
-          padding: 16px !important;
-        }
-        .messages-grid {
-          grid-template-columns: 1fr !important;
-          height: auto !important;
-        }
-        .product-card {
-          flex-direction: column !important;
-        }
-        .product-actions {
-          width: 100% !important;
-          flex-direction: row !important;
-          justify-content: flex-end !important;
-        }
-        .image-grid {
-          grid-template-columns: 1fr !important;
-        }
-        .stats-grid {
-          grid-template-columns: 1fr 1fr !important;
-        }
-        .edit-modal {
-          width: 95% !important;
-          padding: 16px !important;
-        }
-      }
-    `;
-    document.head.appendChild(style);
-    return () => document.head.removeChild(style);
-  }, []);
 
   useEffect(() => {
     if (user) { load(); const iv = setInterval(load, 10000); return () => clearInterval(iv); }
@@ -342,10 +297,40 @@ export default function AdminDashboard({ user, setView }) {
     return supabase.storage.from('product-images').getPublicUrl(path).data.publicUrl;
   };
 
-  const handleFileSelect = (setter, ref) => (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setter(file);
+  // Simple file selection handlers
+  const handleMainImageChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setNImg0(e.target.files[0]);
+    }
+  };
+
+  const handleImage1Change = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setNImg1(e.target.files[0]);
+    }
+  };
+
+  const handleImage2Change = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setNImg2(e.target.files[0]);
+    }
+  };
+
+  const handleEditMainImageChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setEImg0(e.target.files[0]);
+    }
+  };
+
+  const handleEditImage1Change = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setEImg1(e.target.files[0]);
+    }
+  };
+
+  const handleEditImage2Change = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setEImg2(e.target.files[0]);
     }
   };
 
@@ -404,9 +389,9 @@ export default function AdminDashboard({ user, setView }) {
       for (const [f, ord] of [[nImg1,1],[nImg2,2]]) { if (f) { const u = await uploadImg(f); if (u) await supabase.from('product_images').insert([{ product_id: prod.id, image_url: u, is_primary: false, sort_order: ord }]); } }
       setNProd({ title:'', price:'', category:'Furniture', condition:'Like New', description:'', location:'', business_name:'' });
       setNImg0(null); setNImg1(null); setNImg2(null);
-      if (fileInputRefs.nImg0.current) fileInputRefs.nImg0.current.value = '';
-      if (fileInputRefs.nImg1.current) fileInputRefs.nImg1.current.value = '';
-      if (fileInputRefs.nImg2.current) fileInputRefs.nImg2.current.value = '';
+      if (fileInput0.current) fileInput0.current.value = '';
+      if (fileInput1.current) fileInput1.current.value = '';
+      if (fileInput2.current) fileInput2.current.value = '';
       setAddMsg({ type:'ok', text:'Listing published successfully!' });
       load();
     } catch (err) { setAddMsg({ type:'err', text: err.message }); }
@@ -464,13 +449,14 @@ export default function AdminDashboard({ user, setView }) {
     </div>
   );
 
-  // FIXED FileField component
-  const FileField = ({ label, onChange, ref, required = false }) => (
+  // Simple FileField component
+  const FileField = ({ label, onClick, filename, required = false }) => (
     <div>
       <p style={{ fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.5)', marginBottom:'6px' }}>
         {label} {required && <span style={{ color:'#ef4444' }}>*</span>}
       </p>
       <div 
+        onClick={onClick}
         style={{ 
           border:'2px dashed #1e2a3a', 
           borderRadius:'8px', 
@@ -482,17 +468,9 @@ export default function AdminDashboard({ user, setView }) {
         }}
         onMouseEnter={e => e.currentTarget.style.borderColor = '#4dd4ac'}
         onMouseLeave={e => e.currentTarget.style.borderColor = '#1e2a3a'}
-        onClick={() => ref.current?.click()}
       >
-        <input
-          type="file"
-          accept="image/*"
-          onChange={onChange}
-          ref={ref}
-          style={{ display: 'none' }}
-        />
-        <span style={{ color:'rgba(255,255,255,0.5)', fontSize:'0.85rem' }}>
-          📁 Click to browse
+        <span style={{ color: filename ? '#4dd4ac' : 'rgba(255,255,255,0.5)', fontSize:'0.85rem' }}>
+          {filename ? `✓ ${filename}` : '📁 Click to browse'}
         </span>
       </div>
     </div>
@@ -574,11 +552,52 @@ export default function AdminDashboard({ user, setView }) {
           .product-actions {
             flex-wrap: wrap !important;
           }
-          .stats-grid {
-            grid-template-columns: 1fr 1fr !important;
-          }
         }
       `}</style>
+
+      {/* Hidden file inputs */}
+      <input 
+        type="file" 
+        ref={fileInput0}
+        onChange={handleMainImageChange}
+        accept="image/*"
+        style={{ display: 'none' }}
+      />
+      <input 
+        type="file" 
+        ref={fileInput1}
+        onChange={handleImage1Change}
+        accept="image/*"
+        style={{ display: 'none' }}
+      />
+      <input 
+        type="file" 
+        ref={fileInput2}
+        onChange={handleImage2Change}
+        accept="image/*"
+        style={{ display: 'none' }}
+      />
+      <input 
+        type="file" 
+        ref={editFileInput0}
+        onChange={handleEditMainImageChange}
+        accept="image/*"
+        style={{ display: 'none' }}
+      />
+      <input 
+        type="file" 
+        ref={editFileInput1}
+        onChange={handleEditImage1Change}
+        accept="image/*"
+        style={{ display: 'none' }}
+      />
+      <input 
+        type="file" 
+        ref={editFileInput2}
+        onChange={handleEditImage2Change}
+        accept="image/*"
+        style={{ display: 'none' }}
+      />
 
       <div className="admin-dashboard" style={{ position:'fixed', inset:0, zIndex:9999, display:'flex', background:'#090d14', color:'#fff', fontFamily:"'Poppins',-apple-system,sans-serif", overflow:'hidden' }}>
 
@@ -775,19 +794,19 @@ export default function AdminDashboard({ user, setView }) {
                     <div className="image-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'12px' }}>
                       <FileField 
                         label="Main Image" 
-                        onChange={handleFileSelect(setNImg0, fileInputRefs.nImg0)} 
-                        ref={fileInputRefs.nImg0}
+                        onClick={() => fileInput0.current?.click()}
+                        filename={nImg0?.name}
                         required={true}
                       />
                       <FileField 
                         label="Detail Image 1" 
-                        onChange={handleFileSelect(setNImg1, fileInputRefs.nImg1)} 
-                        ref={fileInputRefs.nImg1}
+                        onClick={() => fileInput1.current?.click()}
+                        filename={nImg1?.name}
                       />
                       <FileField 
                         label="Detail Image 2" 
-                        onChange={handleFileSelect(setNImg2, fileInputRefs.nImg2)} 
-                        ref={fileInputRefs.nImg2}
+                        onClick={() => fileInput2.current?.click()}
+                        filename={nImg2?.name}
                       />
                     </div>
                   </div>
@@ -1097,18 +1116,18 @@ export default function AdminDashboard({ user, setView }) {
               <div className="image-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'10px' }}>
                 <FileField 
                   label="New Main Image" 
-                  onChange={handleFileSelect(setEImg0, fileInputRefs.eImg0)} 
-                  ref={fileInputRefs.eImg0}
+                  onClick={() => editFileInput0.current?.click()}
+                  filename={eImg0?.name}
                 />
                 <FileField 
                   label="New Detail 1" 
-                  onChange={handleFileSelect(setEImg1, fileInputRefs.eImg1)} 
-                  ref={fileInputRefs.eImg1}
+                  onClick={() => editFileInput1.current?.click()}
+                  filename={eImg1?.name}
                 />
                 <FileField 
                   label="New Detail 2" 
-                  onChange={handleFileSelect(setEImg2, fileInputRefs.eImg2)} 
-                  ref={fileInputRefs.eImg2}
+                  onClick={() => editFileInput2.current?.click()}
+                  filename={eImg2?.name}
                 />
               </div>
             </div>
