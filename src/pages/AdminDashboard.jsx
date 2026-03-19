@@ -47,11 +47,65 @@ export default function AdminDashboard({ user, setView }) {
 
   const msgsEnd = useRef(null);
   const agentPickerRef = useRef(null);
+  const fileInputRefs = {
+    nImg0: useRef(null),
+    nImg1: useRef(null),
+    nImg2: useRef(null),
+    eImg0: useRef(null),
+    eImg1: useRef(null),
+    eImg2: useRef(null)
+  };
+  
   const CATS  = ['Furniture','Electronics','Appliances','For Kids','Decor','Kitchenware','Household'];
   const CONDS = ['Brand New','Like New','Excellent','Good','Fair','For Parts'];
   const STATUSES = ['active', 'sold', 'pending', 'out_of_stock'];
 
   const IS = { background:'#0e1117', border:'2px solid #1e2a3a', color:'#fff', width:'100%', padding:'10px 14px', borderRadius:'8px', outline:'none', fontFamily:'inherit', fontSize:'0.875rem', boxSizing:'border-box' };
+
+  // Add responsive styles
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @media (max-width: 768px) {
+        .admin-dashboard {
+          flex-direction: column !important;
+        }
+        .admin-sidebar {
+          width: 100% !important;
+          min-width: 100% !important;
+          border-right: none !important;
+          border-bottom: 2px solid #1e2a3a !important;
+        }
+        .admin-main {
+          padding: 16px !important;
+        }
+        .messages-grid {
+          grid-template-columns: 1fr !important;
+          height: auto !important;
+        }
+        .product-card {
+          flex-direction: column !important;
+        }
+        .product-actions {
+          width: 100% !important;
+          flex-direction: row !important;
+          justify-content: flex-end !important;
+        }
+        .image-grid {
+          grid-template-columns: 1fr !important;
+        }
+        .stats-grid {
+          grid-template-columns: 1fr 1fr !important;
+        }
+        .edit-modal {
+          width: 95% !important;
+          padding: 16px !important;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
 
   useEffect(() => {
     if (user) { load(); const iv = setInterval(load, 10000); return () => clearInterval(iv); }
@@ -288,6 +342,13 @@ export default function AdminDashboard({ user, setView }) {
     return supabase.storage.from('product-images').getPublicUrl(path).data.publicUrl;
   };
 
+  const handleFileSelect = (setter, ref) => (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setter(file);
+    }
+  };
+
   const openEdit = async (p) => {
     setEditProd(p);
     setEditF({
@@ -343,7 +404,9 @@ export default function AdminDashboard({ user, setView }) {
       for (const [f, ord] of [[nImg1,1],[nImg2,2]]) { if (f) { const u = await uploadImg(f); if (u) await supabase.from('product_images').insert([{ product_id: prod.id, image_url: u, is_primary: false, sort_order: ord }]); } }
       setNProd({ title:'', price:'', category:'Furniture', condition:'Like New', description:'', location:'', business_name:'' });
       setNImg0(null); setNImg1(null); setNImg2(null);
-      document.querySelectorAll('.adm-file-in').forEach(el => { el.value = ''; });
+      if (fileInputRefs.nImg0.current) fileInputRefs.nImg0.current.value = '';
+      if (fileInputRefs.nImg1.current) fileInputRefs.nImg1.current.value = '';
+      if (fileInputRefs.nImg2.current) fileInputRefs.nImg2.current.value = '';
       setAddMsg({ type:'ok', text:'Listing published successfully!' });
       load();
     } catch (err) { setAddMsg({ type:'err', text: err.message }); }
@@ -402,34 +465,34 @@ export default function AdminDashboard({ user, setView }) {
   );
 
   // FIXED FileField component
-  const FileField = ({ label, onChange, cls='' }) => (
+  const FileField = ({ label, onChange, ref, required = false }) => (
     <div>
-      <p style={{ fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.5)', marginBottom:'6px' }}>{label}</p>
+      <p style={{ fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.5)', marginBottom:'6px' }}>
+        {label} {required && <span style={{ color:'#ef4444' }}>*</span>}
+      </p>
       <div 
         style={{ 
           border:'2px dashed #1e2a3a', 
           borderRadius:'8px', 
-          padding:'10px 12px', 
+          padding:'12px',
           background:'#0a1018',
-          cursor: 'pointer',
-          transition:'border-color 0.2s'
+          cursor:'pointer',
+          transition:'all 0.2s',
+          textAlign:'center'
         }}
-        onMouseEnter={e=>e.currentTarget.style.borderColor='#4dd4ac'} 
-        onMouseLeave={e=>e.currentTarget.style.borderColor='#1e2a3a'}
-        onClick={() => {
-          const fileInput = document.querySelector(`.${cls}`);
-          if (fileInput) fileInput.click();
-        }}
+        onMouseEnter={e => e.currentTarget.style.borderColor = '#4dd4ac'}
+        onMouseLeave={e => e.currentTarget.style.borderColor = '#1e2a3a'}
+        onClick={() => ref.current?.click()}
       >
-        <input 
-          type="file" 
-          accept="image/*" 
-          onChange={e => onChange(e.target.files[0])} 
-          className={cls}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={onChange}
+          ref={ref}
           style={{ display: 'none' }}
         />
-        <span style={{ color:'rgba(255,255,255,0.5)', fontSize:'0.8rem' }}>
-          Click to select file...
+        <span style={{ color:'rgba(255,255,255,0.5)', fontSize:'0.85rem' }}>
+          📁 Click to browse
         </span>
       </div>
     </div>
@@ -450,12 +513,77 @@ export default function AdminDashboard({ user, setView }) {
         .adm-in::placeholder{color:rgba(255,255,255,0.22)}.adm-in option{background:#111}
         .adm-nav:hover{background:rgba(77,212,172,0.1)!important}
         .agent-option:hover{background:rgba(77,212,172,0.1)!important}
+        
+        @media (max-width: 768px) {
+          .admin-dashboard {
+            flex-direction: column !important;
+          }
+          .admin-sidebar {
+            width: 100% !important;
+            min-width: 100% !important;
+            border-right: none !important;
+            border-bottom: 2px solid #1e2a3a !important;
+          }
+          .admin-main {
+            padding: 16px !important;
+          }
+          .messages-grid {
+            grid-template-columns: 1fr !important;
+            height: auto !important;
+            gap: 16px !important;
+          }
+          .conversation-list {
+            height: 300px !important;
+          }
+          .product-card {
+            flex-direction: column !important;
+            gap: 16px !important;
+          }
+          .product-actions {
+            width: 100% !important;
+            flex-direction: row !important;
+            justify-content: flex-end !important;
+          }
+          .image-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .stats-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+          .form-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .edit-modal {
+            width: 95% !important;
+            padding: 16px !important;
+            margin: 10px !important;
+          }
+          .agent-picker {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .admin-main {
+            padding: 12px !important;
+          }
+          .stats-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .product-actions {
+            flex-wrap: wrap !important;
+          }
+          .stats-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+        }
       `}</style>
 
-      <div style={{ position:'fixed', inset:0, zIndex:9999, display:'flex', background:'#090d14', color:'#fff', fontFamily:"'Poppins',-apple-system,sans-serif", overflow:'hidden' }}>
+      <div className="admin-dashboard" style={{ position:'fixed', inset:0, zIndex:9999, display:'flex', background:'#090d14', color:'#fff', fontFamily:"'Poppins',-apple-system,sans-serif", overflow:'hidden' }}>
 
         {/* ══════ SIDEBAR ══════ */}
-        <aside className="adm-sb" style={{ width:'252px', minWidth:'252px', borderRight:'2px solid #1e2a3a', display:'flex', flexDirection:'column', overflowY:'auto' }}>
+        <aside className="admin-sidebar adm-sb" style={{ width:'252px', minWidth:'252px', borderRight:'2px solid #1e2a3a', display:'flex', flexDirection:'column', overflowY:'auto' }}>
           <div style={{ padding:'24px 20px 18px', borderBottom:'2px solid #1e2a3a' }}>
             <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'3px' }}>
               <div style={{ width:'30px', height:'30px', borderRadius:'7px', background:'linear-gradient(135deg,#4dd4ac,#1e7a5e)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'15px' }}>⚙</div>
@@ -465,7 +593,7 @@ export default function AdminDashboard({ user, setView }) {
           </div>
 
           <div style={{ padding:'14px', borderBottom:'2px solid #1e2a3a' }}>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
+            <div className="stats-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
               {[
                 { v:stats.pending,  l:'Pending',  c:'#fbbf24', bg:'rgba(251,191,36,0.08)'  },
                 { v:stats.listings, l:'Active',   c:'#4dd4ac', bg:'rgba(77,212,172,0.08)'  },
@@ -509,7 +637,7 @@ export default function AdminDashboard({ user, setView }) {
         </aside>
 
         {/* ══════ MAIN ══════ */}
-        <main className="adm-sb" style={{ flex:1, overflowY:'auto', padding:'28px 32px' }}>
+        <main className="admin-main adm-sb" style={{ flex:1, overflowY:'auto', padding:'28px 32px' }}>
           <div style={{ maxWidth:'1080px', margin:'0 auto' }}>
 
             {showDiag && (
@@ -551,7 +679,7 @@ export default function AdminDashboard({ user, setView }) {
                   ? <Empty icon="✅" title="All caught up!" sub="No pending submissions right now." />
                   : pending.map(p=>(
                     <Card key={p.id} color="#fbbf24">
-                      <div style={{ display:'flex', gap:'16px', alignItems:'flex-start' }}>
+                      <div className="product-card" style={{ display:'flex', gap:'16px', alignItems:'flex-start' }}>
                         <ThumbStrip product={p} />
                         <div style={{ flex:1, minWidth:0 }}>
                           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'8px' }}>
@@ -567,7 +695,7 @@ export default function AdminDashboard({ user, setView }) {
                           </div>
                           <p style={{ fontSize:'0.78rem', color:'rgba(255,255,255,0.3)', margin:0, overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>{p.description}</p>
                         </div>
-                        <div style={{ display:'flex', flexDirection:'column', gap:'7px', flexShrink:0 }}>
+                        <div className="product-actions" style={{ display:'flex', flexDirection:'column', gap:'7px', flexShrink:0 }}>
                           <Btn color="#16a34a" hover="#15803d" disabled={!!actionBusy[p.id]} onClick={() => approve(p)}>
                             {actionBusy[p.id] === 'approve' ? '⏳ Approving…' : '✓ Approve'}
                           </Btn>
@@ -592,14 +720,14 @@ export default function AdminDashboard({ user, setView }) {
                   ? <Empty icon="📦" title="No listings yet" sub="Add one using the Add Listing tab." />
                   : listings.map(p=>(
                     <Card key={p.id}>
-                      <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
+                      <div className="product-card" style={{ display:'flex', alignItems:'center', gap:'14px' }}>
                         <ThumbStrip product={p} />
                         <div style={{ flex:1, minWidth:0 }}>
                           <h3 style={{ fontWeight:'700', color:'#4dd4ac', margin:'0 0 4px', fontSize:'0.95rem' }}>{p.title}</h3>
                           <p style={{ fontSize:'0.78rem', color:'rgba(255,255,255,0.45)', margin:'0 0 2px' }}>{p.category} · {p.condition} · <span style={{ color:'#4dd4ac', fontWeight:'700' }}>${p.price}</span></p>
                           <p style={{ fontSize:'11px', color:'rgba(255,255,255,0.25)', margin:0 }}>{p.location} · {p.business_name}</p>
                         </div>
-                        <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+                        <div className="product-actions" style={{ display:'flex', alignItems:'center', gap:'10px' }}>
                           {statusBadge(p.status, statusConfig)}
                           <OutlineBtn color="#60a5fa" onClick={()=>openEdit(p)}>✎ Edit</OutlineBtn>
                           <OutlineBtn color="#ff6b6b" onClick={()=>deleteProd(p.id)}>✕ Delete</OutlineBtn>
@@ -622,7 +750,7 @@ export default function AdminDashboard({ user, setView }) {
                   </div>
                 )}
                 <form onSubmit={addListing} style={{ background:'#151c27', border:'2px solid #1e2a3a', borderRadius:'12px', padding:'24px' }}>
-                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px', marginBottom:'14px' }}>
+                  <div className="form-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px', marginBottom:'14px' }}>
                     {[['Title *','title','text','Product title',true],['Price ($) *','price','number','0.00',true],['Business Name','business_name','text','Store name'],['Location','location','text','City, State']].map(([l,k,t,ph,req])=>(
                       <div key={k}>
                         <label style={{ display:'block', fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.5)', marginBottom:'6px' }}>{l}</label>
@@ -644,10 +772,23 @@ export default function AdminDashboard({ user, setView }) {
                   </div>
                   <div style={{ border:'2px dashed #1e2a3a', borderRadius:'10px', padding:'16px', background:'#0e1117', marginBottom:'16px' }}>
                     <p style={{ fontSize:'0.82rem', fontWeight:'600', color:'rgba(255,255,255,0.45)', marginBottom:'12px' }}>📷 Product Images</p>
-                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'12px' }}>
-                      <FileField label="Main Image *" onChange={setNImg0} cls="adm-file-in" />
-                      <FileField label="Detail Image 1 (optional)" onChange={setNImg1} cls="adm-file-in" />
-                      <FileField label="Detail Image 2 (optional)" onChange={setNImg2} cls="adm-file-in" />
+                    <div className="image-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'12px' }}>
+                      <FileField 
+                        label="Main Image" 
+                        onChange={handleFileSelect(setNImg0, fileInputRefs.nImg0)} 
+                        ref={fileInputRefs.nImg0}
+                        required={true}
+                      />
+                      <FileField 
+                        label="Detail Image 1" 
+                        onChange={handleFileSelect(setNImg1, fileInputRefs.nImg1)} 
+                        ref={fileInputRefs.nImg1}
+                      />
+                      <FileField 
+                        label="Detail Image 2" 
+                        onChange={handleFileSelect(setNImg2, fileInputRefs.nImg2)} 
+                        ref={fileInputRefs.nImg2}
+                      />
                     </div>
                   </div>
                   <div style={{ display:'flex', justifyContent:'flex-end' }}>
@@ -714,10 +855,10 @@ export default function AdminDashboard({ user, setView }) {
               <div>
                 <h2 style={{ fontFamily:'Georgia,serif', fontSize:'1.7rem', color:'#4dd4ac', marginBottom:'6px' }}>Messages</h2>
                 <p style={{ color:'rgba(255,255,255,0.35)', fontSize:'0.85rem', marginBottom:'20px' }}>Conversations from the seller/buyer support chat — reply as any agent</p>
-                <div style={{ display:'grid', gridTemplateColumns:'260px 1fr', gap:'14px', height:'580px' }}>
+                <div className="messages-grid" style={{ display:'grid', gridTemplateColumns:'260px 1fr', gap:'14px', height:'580px' }}>
 
                   {/* ── Conversation list ── */}
-                  <div style={{ border:'2px solid #1e2a3a', borderRadius:'12px', overflow:'hidden', display:'flex', flexDirection:'column', background:'#151c27' }}>
+                  <div className="conversation-list" style={{ border:'2px solid #1e2a3a', borderRadius:'12px', overflow:'hidden', display:'flex', flexDirection:'column', background:'#151c27' }}>
                     <div style={{ padding:'12px 14px', background:'#4dd4ac', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                       <span style={{ fontWeight:'700', fontSize:'0.85rem', color:'#000' }}>💬 Conversations</span>
                       <span style={{ background:'rgba(0,0,0,0.15)', color:'#000', borderRadius:'20px', padding:'1px 8px', fontSize:'10px', fontWeight:'700' }}>{convs.length}</span>
@@ -789,7 +930,7 @@ export default function AdminDashboard({ user, setView }) {
 
                         {/* ── Reply bar with agent picker ── */}
                         <div style={{ padding:'12px 14px', borderTop:'2px solid #1e2a3a', background:'#131920' }}>
-                          <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'10px' }}>
+                          <div className="agent-picker" style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'10px' }}>
                             <span style={{ fontSize:'0.72rem', fontWeight:'600', color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.06em', whiteSpace:'nowrap' }}>Replying as:</span>
                             <div ref={agentPickerRef} style={{ position:'relative', flex:1 }}>
                               <button
@@ -871,7 +1012,7 @@ export default function AdminDashboard({ user, setView }) {
       {/* ════════ EDIT MODAL ════════ */}
       {editOpen && editProd && (
         <div style={{ position:'fixed', inset:0, zIndex:10000, background:'rgba(0,0,0,0.88)', display:'flex', alignItems:'center', justifyContent:'center', padding:'16px' }}>
-          <div className="adm-sb" style={{ width:'100%', maxWidth:'660px', background:'#151c27', border:'2px solid #1e2a3a', borderRadius:'14px', padding:'26px', maxHeight:'90vh', overflowY:'auto' }}>
+          <div className="edit-modal adm-sb" style={{ width:'100%', maxWidth:'660px', background:'#151c27', border:'2px solid #1e2a3a', borderRadius:'14px', padding:'26px', maxHeight:'90vh', overflowY:'auto' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'18px' }}>
               <div>
                 <h3 style={{ fontFamily:'Georgia,serif', fontSize:'1.3rem', color:'#4dd4ac', margin:0 }}>Edit Listing</h3>
@@ -879,7 +1020,7 @@ export default function AdminDashboard({ user, setView }) {
               </div>
               <button onClick={()=>setEditOpen(false)} style={{ fontSize:'1.6rem', color:'rgba(255,255,255,0.3)', background:'none', border:'none', cursor:'pointer', lineHeight:1 }}>×</button>
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'13px', marginBottom:'13px' }}>
+            <div className="form-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'13px', marginBottom:'13px' }}>
               {[['Title','title','text'],['Price ($)','price','number'],['Business Name','business_name','text'],['Location','location','text']].map(([l,k,t])=>(
                 <div key={k}>
                   <label style={{ display:'block', fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.5)', marginBottom:'5px' }}>{l}</label>
@@ -938,7 +1079,7 @@ export default function AdminDashboard({ user, setView }) {
 
             <div style={{ border:'2px dashed #1e2a3a', borderRadius:'8px', padding:'14px', background:'#0e1117', marginBottom:'16px' }}>
               <p style={{ fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.4)', marginBottom:'10px' }}>📷 Current Images</p>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'10px', marginBottom:'14px' }}>
+              <div className="image-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'10px', marginBottom:'14px' }}>
                 {[0,1,2].map(slot => (
                   <div key={slot} style={{ display:'flex', flexDirection:'column', gap:'6px', alignItems:'center' }}>
                     <div style={{ width:'100%', aspectRatio:'1', borderRadius:'8px', overflow:'hidden', background:'#1e2a3a', border:'1.5px solid #1e2a3a', display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -953,10 +1094,22 @@ export default function AdminDashboard({ user, setView }) {
                 ))}
               </div>
               <p style={{ fontSize:'0.75rem', fontWeight:'600', color:'rgba(255,255,255,0.35)', marginBottom:'10px' }}>Replace Images (leave blank to keep existing)</p>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'10px' }}>
-                <FileField label="New Main Image" onChange={setEImg0} cls="edit-file-in" />
-                <FileField label="New Detail 1" onChange={setEImg1} cls="edit-file-in" />
-                <FileField label="New Detail 2" onChange={setEImg2} cls="edit-file-in" />
+              <div className="image-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'10px' }}>
+                <FileField 
+                  label="New Main Image" 
+                  onChange={handleFileSelect(setEImg0, fileInputRefs.eImg0)} 
+                  ref={fileInputRefs.eImg0}
+                />
+                <FileField 
+                  label="New Detail 1" 
+                  onChange={handleFileSelect(setEImg1, fileInputRefs.eImg1)} 
+                  ref={fileInputRefs.eImg1}
+                />
+                <FileField 
+                  label="New Detail 2" 
+                  onChange={handleFileSelect(setEImg2, fileInputRefs.eImg2)} 
+                  ref={fileInputRefs.eImg2}
+                />
               </div>
             </div>
 
