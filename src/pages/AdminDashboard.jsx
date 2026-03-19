@@ -82,7 +82,6 @@ export default function AdminDashboard({ user, setView }) {
     return () => clearInterval(iv);
   }, [selConv?.id]);
 
-  // Lock body scroll when mobile sidebar is open
   useEffect(() => {
     document.body.style.overflow = sidebarOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
@@ -350,7 +349,6 @@ export default function AdminDashboard({ user, setView }) {
       for (const [f, ord] of [[nImg1,1],[nImg2,2]]) { if (f) { const u = await uploadImg(f); if (u) await supabase.from('product_images').insert([{ product_id: prod.id, image_url: u, is_primary: false, sort_order: ord }]); } }
       setNProd({ title:'', price:'', category:'Furniture', condition:'Like New', description:'', location:'', business_name:'' });
       setNImg0(null); setNImg1(null); setNImg2(null);
-      document.querySelectorAll('.adm-file-in').forEach(el => { el.value = ''; });
       setAddMsg({ type:'ok', text:'Listing published successfully!' });
       load();
     } catch (err) { setAddMsg({ type:'err', text: err.message }); }
@@ -402,22 +400,80 @@ export default function AdminDashboard({ user, setView }) {
     );
   };
 
-  const Thumb = ({ url }) => (
-    <div style={{ width:'72px', height:'72px', borderRadius:'8px', overflow:'hidden', background:'#0e1117', border:'2px solid #1e2a3a', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
-      {url ? <img src={url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : <span style={{ color:'rgba(255,255,255,0.2)', fontSize:'1.4rem' }}>📦</span>}
-    </div>
-  );
+  // ── FileField: shows live image preview when a file is selected ──
+  const FileField = ({ label, value, onChange, existingUrl = null }) => {
+    const inputRef = useRef(null);
+    // Build a preview URL from the File object if one is chosen, else fall back to existingUrl
+    const previewUrl = value ? URL.createObjectURL(value) : existingUrl || null;
+    const hasFile = !!value;
 
-  const FileField = ({ label, onChange, cls='' }) => (
-    <div>
-      <p style={{ fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.5)', marginBottom:'6px' }}>{label}</p>
-      <div style={{ border:'2px dashed #1e2a3a', borderRadius:'8px', padding:'10px 12px', background:'#0a1018', transition:'border-color 0.2s' }}
-        onMouseEnter={e=>e.currentTarget.style.borderColor='#4dd4ac'} onMouseLeave={e=>e.currentTarget.style.borderColor='#1e2a3a'}>
-        <input type="file" accept="image/*" onChange={e=>onChange(e.target.files[0])} className={cls}
-          style={{ width:'100%', background:'transparent', border:'none', color:'rgba(255,255,255,0.5)', cursor:'pointer', outline:'none', fontSize:'0.8rem', fontFamily:'inherit' }} />
+    return (
+      <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
+        <p style={{ fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.5)', margin:0 }}>{label}</p>
+
+        {/* ── Preview box — click anywhere to trigger file picker ── */}
+        <div
+          onClick={() => inputRef.current?.click()}
+          style={{
+            width:'100%', aspectRatio:'1', borderRadius:'10px', overflow:'hidden',
+            background:'#0a1018', border:`2px dashed ${hasFile ? '#4dd4ac' : '#1e2a3a'}`,
+            display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+            cursor:'pointer', transition:'border-color 0.2s, background 0.2s',
+            position:'relative',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = '#4dd4ac'; e.currentTarget.style.background = '#0d1a14'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = hasFile ? '#4dd4ac' : '#1e2a3a'; e.currentTarget.style.background = '#0a1018'; }}
+        >
+          {previewUrl ? (
+            <>
+              <img
+                src={previewUrl}
+                alt="preview"
+                style={{ width:'100%', height:'100%', objectFit:'cover', position:'absolute', inset:0 }}
+              />
+              {/* Overlay badge */}
+              <div style={{
+                position:'absolute', bottom:'8px', left:'50%', transform:'translateX(-50%)',
+                background:'rgba(0,0,0,0.72)', borderRadius:'20px', padding:'3px 10px',
+                fontSize:'10px', fontWeight:'700', color:'#4dd4ac', whiteSpace:'nowrap',
+                display:'flex', alignItems:'center', gap:'5px',
+              }}>
+                <span>✓</span>
+                <span style={{ maxWidth:'90px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                  {value ? value.name : 'Current image'}
+                </span>
+              </div>
+              {/* Change button top-right */}
+              <div style={{
+                position:'absolute', top:'7px', right:'7px',
+                background:'rgba(0,0,0,0.65)', borderRadius:'6px', padding:'3px 8px',
+                fontSize:'10px', fontWeight:'700', color:'#fff',
+              }}>
+                Change
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontSize:'2rem', marginBottom:'6px', opacity:0.35 }}>📷</div>
+              <span style={{ fontSize:'0.72rem', color:'rgba(255,255,255,0.3)', fontWeight:'600' }}>Click to choose</span>
+            </>
+          )}
+        </div>
+
+        {/* Hidden real file input */}
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          style={{ display:'none' }}
+          onChange={e => {
+            const file = e.target.files[0];
+            if (file) onChange(file);
+          }}
+        />
       </div>
-    </div>
-  );
+    );
+  };
 
   const menuItems = [
     { id:'pending',  icon:'⏳', label:'Pending',    count: stats.pending  },
@@ -427,7 +483,6 @@ export default function AdminDashboard({ user, setView }) {
     { id:'messages', icon:'💬', label:'Messages',   count: stats.messages },
   ];
 
-  // Sidebar inner markup — rendered in both desktop aside and mobile drawer
   const SidebarInner = () => (
     <>
       <div style={{ padding:'24px 20px 18px', borderBottom:'2px solid #1e2a3a' }}>
@@ -492,109 +547,35 @@ export default function AdminDashboard({ user, setView }) {
         .adm-nav:hover{background:rgba(77,212,172,0.1)!important}
         .agent-option:hover{background:rgba(77,212,172,0.1)!important}
 
-        /* ── Root: normal flow, fills full viewport height ── */
-        .adm-root {
-          display: flex;
-          flex-direction: column;
-          min-height: 100vh;
-          width: 100%;
-          background: #090d14;
-          color: #fff;
-          font-family: 'Poppins', -apple-system, sans-serif;
-        }
-        /* ── Content row: sidebar + main ── */
-        .adm-body {
-          display: flex;
-          flex: 1;
-          min-height: 0;
-        }
-        /* ── Desktop sidebar ── */
-        .adm-sidebar {
-          width: 252px;
-          min-width: 252px;
-          border-right: 2px solid #1e2a3a;
-          display: flex;
-          flex-direction: column;
-          overflow-y: auto;
-          background: #090d14;
-          position: sticky;
-          top: 0;
-          max-height: 100vh;
-        }
-        /* ── Main area ── */
-        .adm-main {
-          flex: 1;
-          overflow-y: auto;
-          padding: 28px 32px;
-          min-width: 0;
-        }
-        /* ── Mobile topbar (hidden on desktop) ── */
-        .adm-topbar { display: none; }
-        /* ── Mobile drawer ── */
-        .adm-drawer {
-          display: none;
-          position: fixed;
-          top: 0; left: 0;
-          height: 100%;
-          width: 260px;
-          background: #090d14;
-          border-right: 2px solid #1e2a3a;
-          z-index: 9999;
-          flex-direction: column;
-          overflow-y: auto;
-          transform: translateX(-100%);
-          transition: transform 0.27s ease;
-        }
-        .adm-drawer.open { transform: translateX(0); }
-        /* ── Overlay ── */
-        .adm-overlay {
-          display: none;
-          position: fixed;
-          inset: 0;
-          background: rgba(0,0,0,0.6);
-          z-index: 9998;
-        }
+        .adm-root { display:flex; flex-direction:column; min-height:100vh; width:100%; background:#090d14; color:#fff; font-family:'Poppins',-apple-system,sans-serif; }
+        .adm-body { display:flex; flex:1; min-height:0; }
+        .adm-sidebar { width:252px; min-width:252px; border-right:2px solid #1e2a3a; display:flex; flex-direction:column; overflow-y:auto; background:#090d14; position:sticky; top:0; max-height:100vh; }
+        .adm-main { flex:1; overflow-y:auto; padding:28px 32px; min-width:0; }
+        .adm-topbar { display:none; }
+        .adm-drawer { display:none; position:fixed; top:0; left:0; height:100%; width:260px; background:#090d14; border-right:2px solid #1e2a3a; z-index:9999; flex-direction:column; overflow-y:auto; transform:translateX(-100%); transition:transform 0.27s ease; }
+        .adm-drawer.open { transform:translateX(0); }
+        .adm-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9998; }
 
-        /* ── Mobile breakpoint ── */
-        @media (max-width: 768px) {
-          .adm-topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 11px 14px;
-            background: #090d14;
-            border-bottom: 2px solid #1e2a3a;
-            position: sticky;
-            top: 0;
-            z-index: 200;
-            flex-shrink: 0;
-          }
-          .adm-sidebar { display: none; }
-          .adm-drawer  { display: flex; }
-          .adm-overlay { display: block; }
-          .adm-main    { padding: 16px 14px; }
-
-          /* Card rows → stack vertically */
-          .mob-col   { flex-direction: column !important; }
-          /* Action buttons → wrap horizontally */
-          .mob-acts  { flex-direction: row !important; flex-wrap: wrap !important; }
-          /* Listing action row → full width */
-          .mob-lst-acts { width: 100% !important; flex-wrap: wrap !important; justify-content: flex-start !important; }
-          /* Two-column forms → single column */
-          .mob-form2 { grid-template-columns: 1fr !important; }
-          /* Three-column image grids → single column */
-          .mob-img3  { grid-template-columns: 1fr !important; }
-          /* Edit modal grids */
-          .mob-edit2 { grid-template-columns: 1fr !important; }
-          .mob-edit-imgs { grid-template-columns: 1fr 1fr !important; }
-          /* Messages layout */
-          .mob-msg-grid { grid-template-columns: 1fr !important; height: auto !important; }
-          .mob-conv     { height: 220px !important; }
-          .mob-chat     { height: 460px !important; }
+        @media (max-width:768px) {
+          .adm-topbar { display:flex; align-items:center; justify-content:space-between; padding:11px 14px; background:#090d14; border-bottom:2px solid #1e2a3a; position:sticky; top:0; z-index:200; flex-shrink:0; }
+          .adm-sidebar { display:none; }
+          .adm-drawer  { display:flex; }
+          .adm-overlay { display:block; }
+          .adm-main    { padding:16px 14px; }
+          .mob-col   { flex-direction:column !important; }
+          .mob-acts  { flex-direction:row !important; flex-wrap:wrap !important; }
+          .mob-lst-acts { width:100% !important; flex-wrap:wrap !important; justify-content:flex-start !important; }
+          .mob-form2 { grid-template-columns:1fr !important; }
+          .mob-img3  { grid-template-columns:1fr 1fr !important; }
+          .mob-edit2 { grid-template-columns:1fr !important; }
+          .mob-edit-imgs { grid-template-columns:1fr 1fr !important; }
+          .mob-msg-grid { grid-template-columns:1fr !important; height:auto !important; }
+          .mob-conv { height:220px !important; }
+          .mob-chat { height:460px !important; }
         }
       `}</style>
 
-      {/* ── Mobile topbar ── */}
+      {/* Mobile topbar */}
       <div className="adm-topbar">
         <button onClick={()=>setSidebarOpen(p=>!p)}
           style={{ background:'#1e2a3a', border:'none', borderRadius:'8px', padding:'8px 12px', cursor:'pointer', color:'#4dd4ac', fontFamily:'inherit', fontSize:'0.82rem', fontWeight:'600', display:'flex', alignItems:'center', gap:'6px' }}>
@@ -606,21 +587,13 @@ export default function AdminDashboard({ user, setView }) {
           : <span style={{ width:'70px' }} />}
       </div>
 
-      {/* ── Mobile overlay + drawer ── */}
       {sidebarOpen && <div className="adm-overlay" onClick={()=>setSidebarOpen(false)} />}
-      <div className={`adm-drawer adm-sb${sidebarOpen ? ' open' : ''}`}>
-        <SidebarInner />
-      </div>
+      <div className={`adm-drawer adm-sb${sidebarOpen ? ' open' : ''}`}><SidebarInner /></div>
 
       <div className="adm-root">
         <div className="adm-body">
+          <aside className="adm-sidebar adm-sb"><SidebarInner /></aside>
 
-          {/* ── Desktop sidebar ── */}
-          <aside className="adm-sidebar adm-sb">
-            <SidebarInner />
-          </aside>
-
-          {/* ══════ MAIN ══════ */}
           <main className="adm-main adm-sb">
             <div style={{ maxWidth:'1080px', margin:'0 auto' }}>
 
@@ -632,11 +605,9 @@ export default function AdminDashboard({ user, setView }) {
                       ? <p style={{ color:'rgba(255,255,255,0.35)', fontSize:'0.8rem' }}>No data yet — click Refresh Now</p>
                       : diag.map((d,i)=>(
                         <div key={i} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'8px 12px', borderRadius:'6px', background: d.ok ? 'rgba(77,212,172,0.06)' : 'rgba(239,68,68,0.1)', flexWrap:'wrap' }}>
-                          <span style={{ fontSize:'1rem' }}>{d.ok ? '✅' : '❌'}</span>
+                          <span>{d.ok ? '✅' : '❌'}</span>
                           <span style={{ color:'rgba(255,255,255,0.7)', fontSize:'0.82rem', flex:1, minWidth:'100px' }}>{d.label}</span>
-                          <span style={{ color: d.ok ? '#4dd4ac' : '#fca5a5', fontSize:'0.82rem', fontWeight:'700' }}>
-                            {d.ok ? `${d.count} rows` : `ERROR: ${d.error}`}
-                          </span>
+                          <span style={{ color: d.ok ? '#4dd4ac' : '#fca5a5', fontSize:'0.82rem', fontWeight:'700' }}>{d.ok ? `${d.count} rows` : `ERROR: ${d.error}`}</span>
                         </div>
                       ))
                     }
@@ -754,14 +725,17 @@ export default function AdminDashboard({ user, setView }) {
                       <label style={{ display:'block', fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.5)', marginBottom:'6px' }}>Description *</label>
                       <textarea required rows={3} value={nProd.description} onChange={e=>setNProd(p=>({...p,description:e.target.value}))} className="adm-in" style={{ ...IS, resize:'vertical' }} />
                     </div>
+
+                    {/* ── Image pickers with live preview ── */}
                     <div style={{ border:'2px dashed #1e2a3a', borderRadius:'10px', padding:'16px', background:'#0e1117', marginBottom:'16px' }}>
                       <p style={{ fontSize:'0.82rem', fontWeight:'600', color:'rgba(255,255,255,0.45)', marginBottom:'12px' }}>📷 Product Images</p>
                       <div className="mob-img3" style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'12px' }}>
-                        <FileField label="Main Image *" onChange={setNImg0} cls="adm-file-in" />
-                        <FileField label="Detail Image 1 (optional)" onChange={setNImg1} cls="adm-file-in" />
-                        <FileField label="Detail Image 2 (optional)" onChange={setNImg2} cls="adm-file-in" />
+                        <FileField label="Main Image *"            value={nImg0} onChange={setNImg0} />
+                        <FileField label="Detail Image 1 (optional)" value={nImg1} onChange={setNImg1} />
+                        <FileField label="Detail Image 2 (optional)" value={nImg2} onChange={setNImg2} />
                       </div>
                     </div>
+
                     <div style={{ display:'flex', justifyContent:'flex-end' }}>
                       <button type="submit" disabled={addBusy} style={{ padding:'11px 32px', background: addBusy ? '#2a6e5a' : '#4dd4ac', color:'#000', border:'none', borderRadius:'8px', cursor: addBusy ? 'not-allowed' : 'pointer', fontWeight:'700', fontFamily:'inherit', fontSize:'0.9rem', width:'100%' }}>
                         {addBusy ? '⏳ Publishing…' : '🚀 Publish Listing'}
@@ -828,7 +802,6 @@ export default function AdminDashboard({ user, setView }) {
                   <p style={{ color:'rgba(255,255,255,0.35)', fontSize:'0.85rem', marginBottom:'20px' }}>Conversations from the seller/buyer support chat — reply as any agent</p>
                   <div className="mob-msg-grid" style={{ display:'grid', gridTemplateColumns:'260px 1fr', gap:'14px', height:'580px' }}>
 
-                    {/* ── Conversation list ── */}
                     <div className="mob-conv" style={{ border:'2px solid #1e2a3a', borderRadius:'12px', overflow:'hidden', display:'flex', flexDirection:'column', background:'#151c27' }}>
                       <div style={{ padding:'12px 14px', background:'#4dd4ac', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                         <span style={{ fontWeight:'700', fontSize:'0.85rem', color:'#000' }}>💬 Conversations</span>
@@ -857,7 +830,6 @@ export default function AdminDashboard({ user, setView }) {
                       </div>
                     </div>
 
-                    {/* ── Chat panel ── */}
                     <div className="mob-chat" style={{ border:'2px solid #1e2a3a', borderRadius:'12px', overflow:'hidden', display:'flex', flexDirection:'column', background:'#151c27' }}>
                       {selConv ? (
                         <>
@@ -868,7 +840,6 @@ export default function AdminDashboard({ user, setView }) {
                               <p style={{ fontSize:'10px', color:'rgba(0,0,0,0.5)', margin:0 }}>Active conversation</p>
                             </div>
                           </div>
-
                           <div className="adm-sb" style={{ flex:1, overflowY:'auto', padding:'18px', display:'flex', flexDirection:'column', gap:'10px', background:'#0a1018' }}>
                             {msgs.length === 0
                               ? <div style={{ textAlign:'center', color:'rgba(255,255,255,0.2)', margin:'auto' }}><p style={{ fontSize:'1.8rem' }}>💬</p><p style={{ fontSize:'0.82rem' }}>No messages in this conversation</p></div>
@@ -877,7 +848,7 @@ export default function AdminDashboard({ user, setView }) {
                                 const displayContent = m.is_agent ? stripAgentPrefix(m.content) : m.content;
                                 return (
                                   <div key={i} style={{ display:'flex', justifyContent: m.is_agent ? 'flex-start' : 'flex-end' }}>
-                                    <div style={{ maxWidth:'80%' }}>
+                                    <div style={{ maxWidth:'70%' }}>
                                       {m.is_agent && agentLabel && (
                                         <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'4px' }}>
                                           <div style={{ width:'20px', height:'20px', borderRadius:'50%', background:'linear-gradient(135deg,#4dd4ac,#2a9d7c)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.6rem', flexShrink:0 }}>
@@ -898,8 +869,6 @@ export default function AdminDashboard({ user, setView }) {
                             }
                             <div ref={msgsEnd} />
                           </div>
-
-                          {/* ── Reply bar with agent picker ── */}
                           <div style={{ padding:'12px 14px', borderTop:'2px solid #1e2a3a', background:'#131920' }}>
                             <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'10px' }}>
                               <span style={{ fontSize:'0.72rem', fontWeight:'600', color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.06em', whiteSpace:'nowrap' }}>Replying as:</span>
@@ -913,16 +882,11 @@ export default function AdminDashboard({ user, setView }) {
                                   <div style={{ width:'7px', height:'7px', borderRadius:'50%', background: selectedAgent.online ? '#22c55e' : '#475569', flexShrink:0 }} />
                                   <span style={{ color:'rgba(255,255,255,0.3)', fontSize:'0.8rem', flexShrink:0 }}>{showAgentPicker ? '▲' : '▼'}</span>
                                 </button>
-
                                 {showAgentPicker && (
                                   <div style={{ position:'absolute', bottom:'calc(100% + 6px)', left:0, right:0, background:'#151c27', border:'2px solid #1e2a3a', borderRadius:'10px', overflow:'hidden', zIndex:9999, boxShadow:'0 -8px 24px rgba(0,0,0,0.5)', pointerEvents:'auto' }}>
-                                    <div style={{ padding:'8px 12px', borderBottom:'1px solid #1e2a3a', fontSize:'0.72rem', fontWeight:'700', color:'rgba(255,255,255,0.3)', textTransform:'uppercase', letterSpacing:'0.06em' }}>
-                                      Choose Agent
-                                    </div>
+                                    <div style={{ padding:'8px 12px', borderBottom:'1px solid #1e2a3a', fontSize:'0.72rem', fontWeight:'700', color:'rgba(255,255,255,0.3)', textTransform:'uppercase', letterSpacing:'0.06em' }}>Choose Agent</div>
                                     {AGENTS.map(agent => (
-                                      <button
-                                        key={agent.name}
-                                        className="agent-option"
+                                      <button key={agent.name} className="agent-option"
                                         onClick={e => { e.stopPropagation(); setSelectedAgent(agent); setShowAgentPicker(false); }}
                                         style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:'10px 14px', background: selectedAgent.name === agent.name ? 'rgba(77,212,172,0.12)' : 'transparent', border:'none', borderBottom:'1px solid #1e2a3a', cursor:'pointer', fontFamily:'inherit', transition:'background 0.15s' }}>
                                         <span style={{ fontSize:'1.1rem' }}>{agent.avatar}</span>
@@ -934,29 +898,21 @@ export default function AdminDashboard({ user, setView }) {
                                           <div style={{ width:'7px', height:'7px', borderRadius:'50%', background: agent.online ? '#22c55e' : '#475569' }} />
                                           <span style={{ fontSize:'0.68rem', color:'rgba(255,255,255,0.28)' }}>{agent.online ? 'Online' : 'Offline'}</span>
                                         </div>
-                                        {selectedAgent.name === agent.name && (
-                                          <span style={{ color:'#4dd4ac', fontSize:'0.8rem' }}>✓</span>
-                                        )}
+                                        {selectedAgent.name === agent.name && <span style={{ color:'#4dd4ac', fontSize:'0.8rem' }}>✓</span>}
                                       </button>
                                     ))}
                                   </div>
                                 )}
                               </div>
                             </div>
-
                             <div style={{ display:'flex', gap:'8px' }}>
-                              <input
-                                value={replyText}
-                                onChange={e => setReplyText(e.target.value)}
+                              <input value={replyText} onChange={e => setReplyText(e.target.value)}
                                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(); } }}
-                                placeholder={`Message as ${selectedAgent.name}…`}
-                                className="adm-in"
+                                placeholder={`Message as ${selectedAgent.name}…`} className="adm-in"
                                 style={{ flex:1, background:'#1a2230', border:'1.5px solid #1e2a3a', borderRadius:'8px', color:'#fff', fontFamily:'inherit', fontSize:'0.875rem', padding:'10px 14px', outline:'none', boxSizing:'border-box', minWidth:0 }}
                                 onFocus={e => e.target.style.borderColor='#4dd4ac'}
-                                onBlur={e => e.target.style.borderColor='#1e2a3a'}
-                              />
-                              <button
-                                onClick={sendReply}
+                                onBlur={e => e.target.style.borderColor='#1e2a3a'} />
+                              <button onClick={sendReply}
                                 style={{ padding:'10px 22px', background: replyText.trim() ? '#4dd4ac' : '#1e2a3a', color: replyText.trim() ? '#000' : 'rgba(255,255,255,0.2)', border:'none', borderRadius:'8px', cursor:'pointer', fontWeight:'700', fontFamily:'inherit', transition:'background 0.15s', whiteSpace:'nowrap', flexShrink:0 }}
                                 onMouseEnter={e => { e.currentTarget.style.background = replyText.trim() ? '#3bc495' : '#253040'; }}
                                 onMouseLeave={e => { e.currentTarget.style.background = replyText.trim() ? '#4dd4ac' : '#1e2a3a'; }}>
@@ -1007,35 +963,18 @@ export default function AdminDashboard({ user, setView }) {
                 <label style={{ display:'block', fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.5)', marginBottom:'5px' }}>Condition</label>
                 <select value={editF.condition||'Like New'} onChange={e=>setEditF(p=>({...p,condition:e.target.value}))} className="adm-in" style={IS}>{CONDS.map(c=><option key={c}>{c}</option>)}</select>
               </div>
-
               <div style={{ gridColumn:'1/-1' }}>
-                <label style={{ display:'block', fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.5)', marginBottom:'5px' }}>
-                  Listing Status
-                </label>
+                <label style={{ display:'block', fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.5)', marginBottom:'5px' }}>Listing Status</label>
                 <div style={{ position:'relative' }}>
-                  <select
-                    value={editF.status || 'active'}
-                    onChange={e => setEditF(p => ({ ...p, status: e.target.value }))}
-                    className="adm-in"
+                  <select value={editF.status || 'active'} onChange={e => setEditF(p => ({ ...p, status: e.target.value }))} className="adm-in"
                     style={{ ...IS, paddingLeft:'40px', appearance:'none', WebkitAppearance:'none' }}>
                     {STATUSES.map(s => (
                       <option key={s} value={s}>
-                        {s === 'active' ? 'Active — visible to buyers' :
-                         s === 'sold'   ? 'Sold — marked as sold' :
-                         s === 'pending' ? 'Pending — awaiting review' :
-                         'Out of Stock — temporarily unavailable'}
+                        {s === 'active' ? 'Active — visible to buyers' : s === 'sold' ? 'Sold — marked as sold' : s === 'pending' ? 'Pending — awaiting review' : 'Out of Stock — temporarily unavailable'}
                       </option>
                     ))}
                   </select>
-                  <div style={{
-                    position:'absolute', left:'13px', top:'50%', transform:'translateY(-50%)',
-                    width:'10px', height:'10px', borderRadius:'50%', pointerEvents:'none',
-                    background:
-                      editF.status === 'active'       ? '#4ade80' :
-                      editF.status === 'sold'         ? '#60a5fa' :
-                      editF.status === 'pending'      ? '#fbbf24' :
-                      editF.status === 'out_of_stock' ? '#fb923c' : '#aaa',
-                  }} />
+                  <div style={{ position:'absolute', left:'13px', top:'50%', transform:'translateY(-50%)', width:'10px', height:'10px', borderRadius:'50%', pointerEvents:'none', background: editF.status === 'active' ? '#4ade80' : editF.status === 'sold' ? '#60a5fa' : editF.status === 'pending' ? '#fbbf24' : editF.status === 'out_of_stock' ? '#fb923c' : '#aaa' }} />
                   <div style={{ position:'absolute', right:'13px', top:'50%', transform:'translateY(-50%)', pointerEvents:'none', color:'rgba(255,255,255,0.3)', fontSize:'0.8rem' }}>▼</div>
                 </div>
                 <div style={{ marginTop:'8px', display:'flex', alignItems:'center', gap:'8px' }}>
@@ -1049,27 +988,13 @@ export default function AdminDashboard({ user, setView }) {
               <textarea rows={3} value={editF.description||''} onChange={e=>setEditF(p=>({...p,description:e.target.value}))} className="adm-in" style={{ ...IS, resize:'vertical' }} />
             </div>
 
+            {/* ── Edit image pickers with live preview ── */}
             <div style={{ border:'2px dashed #1e2a3a', borderRadius:'8px', padding:'14px', background:'#0e1117', marginBottom:'16px' }}>
-              <p style={{ fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.4)', marginBottom:'10px' }}>📷 Current Images</p>
-              <div className="mob-edit-imgs" style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'10px', marginBottom:'14px' }}>
-                {[0,1,2].map(slot => (
-                  <div key={slot} style={{ display:'flex', flexDirection:'column', gap:'6px', alignItems:'center' }}>
-                    <div style={{ width:'100%', aspectRatio:'1', borderRadius:'8px', overflow:'hidden', background:'#1e2a3a', border:'1.5px solid #1e2a3a', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                      {editExistingImgs[slot]
-                        ? <img src={editExistingImgs[slot]} alt={`Image ${slot+1}`} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-                        : <span style={{ color:'rgba(255,255,255,0.15)', fontSize:'1.6rem' }}>📷</span>}
-                    </div>
-                    <span style={{ fontSize:'10px', color:'rgba(255,255,255,0.3)', textAlign:'center' }}>
-                      {slot === 0 ? 'Main' : `Detail ${slot}`}{editExistingImgs[slot] ? '' : ' — empty'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <p style={{ fontSize:'0.75rem', fontWeight:'600', color:'rgba(255,255,255,0.35)', marginBottom:'10px' }}>Replace Images (leave blank to keep existing)</p>
+              <p style={{ fontSize:'0.78rem', fontWeight:'600', color:'rgba(255,255,255,0.4)', marginBottom:'12px' }}>📷 Images (click to replace)</p>
               <div className="mob-edit-imgs" style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'10px' }}>
-                <FileField label="New Main Image" onChange={setEImg0} />
-                <FileField label="New Detail 1" onChange={setEImg1} />
-                <FileField label="New Detail 2" onChange={setEImg2} />
+                <FileField label="Main Image"  value={eImg0} onChange={setEImg0} existingUrl={editExistingImgs[0]} />
+                <FileField label="Detail 1"    value={eImg1} onChange={setEImg1} existingUrl={editExistingImgs[1]} />
+                <FileField label="Detail 2"    value={eImg2} onChange={setEImg2} existingUrl={editExistingImgs[2]} />
               </div>
             </div>
 
