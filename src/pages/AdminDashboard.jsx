@@ -312,25 +312,7 @@ export default function AdminDashboard({ user, setView }) {
     );
   };
 
-  const FileField = ({ label, onChange, cls = '' }) => {
-    const [fileName, setFileName] = React.useState('');
-    const inputRef = useRef(null);
-    return (
-      <div>
-        <p style={{ fontSize: '0.75rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', marginBottom: '5px' }}>{label}</p>
-        <input ref={inputRef} type="file" accept="image/*" className={cls}
-          onChange={e => { const f = e.target.files[0]; onChange(f); setFileName(f?.name || ''); }}
-          style={{ display: 'none' }} />
-        <button type="button" onClick={() => inputRef.current?.click()}
-          style={{ width: '100%', border: `2px dashed ${fileName ? '#4dd4ac' : '#1e2a3a'}`, borderRadius: '8px', padding: '10px', background: '#0a1018', cursor: 'pointer', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-          <span style={{ fontSize: '1.1rem' }}>{fileName ? '✅' : '📷'}</span>
-          <span style={{ fontSize: '0.7rem', color: fileName ? '#4dd4ac' : 'rgba(255,255,255,0.35)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>
-            {fileName || 'Tap to choose'}
-          </span>
-        </button>
-      </div>
-    );
-  };
+  // FileField is defined outside this component (see bottom of file) to prevent remount/state-reset on parent re-render
 
   // Sidebar inner content — shared between desktop and mobile drawer
   const NavContent = () => (
@@ -922,7 +904,25 @@ function OutlineBtn({ children, color, onClick }) {
     </button>
   );
 }
-function Empty({ icon, title, sub }) {
+function FileField({ label, onChange, cls = '' }) {
+  const [fileName, setFileName] = React.useState('');
+  const inputRef = React.useRef(null);
+  return (
+    <div>
+      <p style={{ fontSize: '0.75rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', marginBottom: '5px' }}>{label}</p>
+      <input ref={inputRef} type="file" accept="image/*" className={cls}
+        onChange={e => { const f = e.target.files[0]; onChange(f); setFileName(f?.name || ''); }}
+        style={{ display: 'none' }} />
+      <button type="button" onClick={() => inputRef.current?.click()}
+        style={{ width: '100%', border: `2px dashed ${fileName ? '#4dd4ac' : '#1e2a3a'}`, borderRadius: '8px', padding: '10px', background: '#0a1018', cursor: 'pointer', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+        <span style={{ fontSize: '1.1rem' }}>{fileName ? '✅' : '📷'}</span>
+        <span style={{ fontSize: '0.7rem', color: fileName ? '#4dd4ac' : 'rgba(255,255,255,0.35)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>
+          {fileName || 'Tap to choose'}
+        </span>
+      </button>
+    </div>
+  );
+}
   return (
     <div style={{ textAlign: 'center', padding: '44px 20px', border: '2px dashed #1e2a3a', borderRadius: '12px', background: '#151c27' }}>
       <div style={{ fontSize: '2.5rem', marginBottom: '9px' }}>{icon}</div>
