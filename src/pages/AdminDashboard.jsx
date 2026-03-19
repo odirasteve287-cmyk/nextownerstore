@@ -350,10 +350,10 @@ export default function AdminDashboard({ user, setView }) {
       <div style={{ padding: inDropdown ? '10px 12px' : '14px', borderBottom:'2px solid #1e2a3a' }}>
         <div style={{ display:'grid', gridTemplateColumns: inDropdown ? 'repeat(4,1fr)' : '1fr 1fr', gap: inDropdown ? '6px' : '8px' }}>
           {[
-            { v:stats.pending,  l:'Pending',  c:'#fbbf24', bg:'rgba(251,191,36,0.08)'  },
-            { v:stats.listings, l:'Active',   c:'#4dd4ac', bg:'rgba(77,212,172,0.08)'  },
-            { v:stats.bookings, l:'Bookings', c:'#60a5fa', bg:'rgba(96,165,250,0.08)'  },
-            { v:stats.messages, l:'Chats',    c:'#c084fc', bg:'rgba(192,132,252,0.08)' },
+            { v:stats.pending,  l:'PENDING',  c:'#fbbf24', bg:'rgba(251,191,36,0.08)'  },
+            { v:stats.listings, l:'ACTIVE',   c:'#4dd4ac', bg:'rgba(77,212,172,0.08)'  },
+            { v:stats.bookings, l:'BOOKINGS', c:'#60a5fa', bg:'rgba(96,165,250,0.08)'  },
+            { v:stats.messages, l:'CHATS',    c:'#c084fc', bg:'rgba(192,132,252,0.08)' },
           ].map(s=>(
             <div key={s.l} style={{ padding: inDropdown ? '7px 4px' : '10px 6px', borderRadius:'8px', textAlign:'center', background:s.bg, border:`1px solid ${s.c}22` }}>
               <div style={{ fontSize: inDropdown ? '1.1rem' : '1.5rem', fontWeight:'800', color:s.c, lineHeight:1 }}>{s.v}</div>
@@ -443,10 +443,27 @@ export default function AdminDashboard({ user, setView }) {
         .adm-dropdown::-webkit-scrollbar{width:4px}
         .adm-dropdown::-webkit-scrollbar-thumb{background:#1e2a3a;border-radius:4px}
 
+        /* Force mobile styles */
         @media (max-width:768px) {
-          .adm-topbar  { display:flex; align-items:center; justify-content:space-between; padding:11px 14px; background:#090d14; border-bottom:2px solid #1e2a3a; position:sticky; top:0; z-index:500; flex-shrink:0; gap:10px; }
-          .adm-sidebar { display:none; }
-          .adm-main    { padding:16px 14px; }
+          .adm-topbar  { 
+            display: flex !important; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 11px 14px; 
+            background: #090d14; 
+            border-bottom: 2px solid #1e2a3a; 
+            position: sticky; 
+            top: 0; 
+            z-index: 500; 
+            flex-shrink: 0; 
+            gap: 10px; 
+          }
+          .adm-sidebar { 
+            display: none !important; 
+          }
+          .adm-main    { 
+            padding: 16px 14px !important; 
+          }
           .mob-col     { flex-direction:column !important; }
           .mob-acts    { flex-direction:row !important; flex-wrap:wrap !important; }
           .mob-lst-acts{ width:100% !important; flex-wrap:wrap !important; justify-content:flex-start !important; }
