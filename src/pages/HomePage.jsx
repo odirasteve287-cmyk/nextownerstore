@@ -104,6 +104,13 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
     setView('listings');
   };
 
+  // ── UPDATED: Category click stores the category so Listings filters by it ──
+  const handleCategoryClick = (label) => {
+    sessionStorage.setItem('selectedCategory', label);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setView('listings');
+  };
+
   const categoryIcons = [
     { label: 'Furniture', icon: <><rect x="8" y="40" width="64" height="12" rx="2"/><rect x="16" y="28" width="48" height="12" rx="2"/><line x1="20" y1="52" x2="20" y2="68"/><line x1="60" y1="52" x2="60" y2="68"/></> },
     { label: 'Decor', icon: <><path d="M24 56c0-8.837 7.163-16 16-16s16 7.163 16 16"/><path d="M40 40V28"/><path d="M28 44l-6-6M52 44l6-6"/><circle cx="40" cy="24" r="4"/><line x1="16" y1="56" x2="64" y2="56"/></> },
@@ -159,11 +166,11 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
             </button>
           </div>
 
-          {/* Category Icons */}
+          {/* ── Category Icons — now filter on click ── */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', maxWidth: '480px', margin: '0 auto' }} className="category-grid">
             <style>{`@media (min-width: 640px) { .category-grid { display: flex !important; flex-wrap: nowrap !important; justify-content: center !important; max-width: 100% !important; } }`}</style>
             {categoryIcons.map(({ label, icon }) => (
-              <button key={label} onClick={() => setView('listings')}
+              <button key={label} onClick={() => handleCategoryClick(label)}
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '16px 12px', backgroundColor: '#111827', border: '1.5px solid #1e293b', borderRadius: '10px', cursor: 'pointer', width: '100%', transition: 'background-color 0.2s, border-color 0.2s, transform 0.15s' }}
                 onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#1e293b'; e.currentTarget.style.borderColor = '#ffffff'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
                 onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#111827'; e.currentTarget.style.borderColor = '#1e293b'; e.currentTarget.style.transform = 'translateY(0)'; }}>
@@ -216,7 +223,6 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
                     </div>
                     <div style={{ padding: '14px 4px 8px' }}>
                       <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#64748b', marginBottom: '5px' }}>{product.category || 'General'}</p>
-                      {/* CHANGED: color updated from #e2e8f0 to #0bbfaa (green) */}
                       <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '17px', fontWeight: '500', color: '#0bbfaa', marginBottom: '8px', lineHeight: 1.35 }}>{product.title}</p>
                       <p style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '15px', fontWeight: '600', color: '#ffffff' }}>{formattedPrice}</p>
                     </div>
