@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../utils/supabase';
 
@@ -51,6 +50,91 @@ function Empty({ icon, title, sub }) {
     </div>
   );
 }
+
+// ── Functional image upload field matching SellerDashboard style ─────────────
+function FileField({ label, value, onChange, existingUrl = null, required = false }) {
+  const ref = useRef(null);
+  const [preview, setPreview] = useState(existingUrl);
+
+  useEffect(() => {
+    if (!value) setPreview(existingUrl);
+  }, [existingUrl, value]);
+
+  const handleChange = (e) => {
+    const f = e.target.files[0];
+    if (f) {
+      onChange(f);
+      setPreview(URL.createObjectURL(f));
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: 0 }}>
+        {label}{required && <span style={{ color: '#ff6b6b' }}> *</span>}
+      </p>
+      <div
+        onClick={() => ref.current?.click()}
+        style={{
+          width: '100%',
+          aspectRatio: '1',
+          borderRadius: '10px',
+          overflow: 'hidden',
+          background: '#0a1018',
+          border: `2px dashed ${value ? '#4dd4ac' : preview ? '#334155' : '#1e2a3a'}`,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          position: 'relative',
+          transition: 'border-color 0.2s',
+        }}
+        onMouseEnter={e => { if (!preview) e.currentTarget.style.borderColor = '#4dd4ac'; }}
+        onMouseLeave={e => { if (!preview) e.currentTarget.style.borderColor = value ? '#4dd4ac' : '#1e2a3a'; }}
+      >
+        {preview ? (
+          <>
+            <img
+              src={preview}
+              alt=""
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+            <div style={{
+              position: 'absolute', top: '6px', right: '6px',
+              background: 'rgba(0,0,0,0.7)', borderRadius: '5px',
+              padding: '3px 7px', fontSize: '9px', fontWeight: '700', color: '#fff',
+              backdropFilter: 'blur(4px)',
+            }}>
+              Change
+            </div>
+            {value && (
+              <div style={{
+                position: 'absolute', bottom: '6px', left: '6px',
+                background: 'rgba(77,212,172,0.9)', borderRadius: '5px',
+                padding: '3px 7px', fontSize: '9px', fontWeight: '700', color: '#000',
+              }}>
+                ✓ New
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <div style={{ fontSize: '1.8rem', opacity: 0.3, marginBottom: '4px' }}>📷</div>
+            <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', fontWeight: '600' }}>Click to upload</span>
+          </>
+        )}
+      </div>
+      <input
+        ref={ref}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleChange}
+      />
+    </div>
+  );
+}
 // ────────────────────────────────────────────────────────────────────────────
 
 export default function AdminDashboard({ user, setView }) {
@@ -69,6 +153,7 @@ export default function AdminDashboard({ user, setView }) {
   const [diag,         setDiag]         = useState([]);
   const [showDiag,     setShowDiag]     = useState(false);
   const [actionBusy,   setActionBusy]   = useState({});
+  const [mobileShowChat, setMobileShowChat] = useState(false);
 
   // edit modal
   const [editOpen, setEditOpen] = useState(false);
@@ -78,7 +163,7 @@ export default function AdminDashboard({ user, setView }) {
   const [eImg1,    setEImg1]    = useState(null);
   const [eImg2,    setEImg2]    = useState(null);
   const [editBusy, setEditBusy] = useState(false);
-  const [editExistingImgs, setEditExistingImgs] = useState([]);
+  const [editExistingImgs, setEditExistingImgs] = useState([null, null, null]);
 
   // add listing
   const [nProd,   setNProd]   = useState({ title: '', price: '', category: 'Furniture', condition: 'Like New', description: '', location: '', business_name: '' });
@@ -177,6 +262,7 @@ export default function AdminDashboard({ user, setView }) {
 
   const loadMsgs = async (conv) => {
     setSelConv(conv);
+    setMobileShowChat(true);
     const { data, error } = await supabase.from('agent_messages').select('*').eq('conversation_id', conv.id).order('created_at', { ascending: true });
     if (!error && data) setMsgs(data);
   };
@@ -324,24 +410,6 @@ export default function AdminDashboard({ user, setView }) {
     );
   };
 
-  const FileField = ({ label, value, onChange, existingUrl = null }) => {
-    const ref = useRef(null);
-    const [prev, setPrev] = useState(existingUrl);
-    useEffect(() => { if (!value) setPrev(existingUrl); }, [existingUrl, value]);
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: 0 }}>{label}</p>
-        <div onClick={() => ref.current?.click()} style={{ width: '100%', aspectRatio: '1', borderRadius: '10px', overflow: 'hidden', background: '#0a1018', border: `2px dashed ${value ? '#4dd4ac' : prev ? '#334155' : '#1e2a3a'}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}>
-          {prev
-            ? <><img src={prev} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} /><div style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(0,0,0,0.65)', borderRadius: '5px', padding: '2px 6px', fontSize: '9px', fontWeight: '700', color: '#fff' }}>Change</div></>
-            : <><div style={{ fontSize: '1.8rem', opacity: 0.3 }}>📷</div><span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', fontWeight: '600' }}>Click</span></>
-          }
-        </div>
-        <input ref={ref} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files[0]; if (f) { onChange(f); setPrev(URL.createObjectURL(f)); } }} />
-      </div>
-    );
-  };
-
   // ── tab pages ──
   const Pages = {
     pending: () => (
@@ -407,35 +475,53 @@ export default function AdminDashboard({ user, setView }) {
         <h2 style={{ fontFamily: 'Georgia,serif', fontSize: 'clamp(1.2rem,4vw,1.7rem)', color: '#4dd4ac', margin: '0 0 6px' }}>Add Listing</h2>
         <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.85rem', margin: '0 0 20px' }}>Publish a new product to the store</p>
         <div style={{ background: '#151c27', border: '2px solid #1e2a3a', borderRadius: '12px', padding: '20px' }}>
-          {addMsg.text && <div style={{ padding: '10px 14px', borderRadius: '8px', marginBottom: '16px', background: addMsg.type === 'ok' ? 'rgba(77,212,172,0.1)' : 'rgba(239,68,68,0.1)', color: addMsg.type === 'ok' ? '#4dd4ac' : '#fca5a5', fontSize: '0.85rem', fontWeight: '600' }}>{addMsg.text}</div>}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: '16px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {[['Title', 'title', 'text'], ['Price', 'price', 'number'], ['Location', 'location', 'text'], ['Business Name', 'business_name', 'text']].map(([lbl, key, type]) => (
-                <div key={key}>
-                  <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>{lbl}</p>
-                  <input className="adm-in" type={type} value={nProd[key]} onChange={e => setNProd(p => ({ ...p, [key]: e.target.value }))} style={IS} placeholder={lbl} />
-                </div>
-              ))}
-              <div>
-                <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Category</p>
-                <select className="adm-in" value={nProd.category} onChange={e => setNProd(p => ({ ...p, category: e.target.value }))} style={IS}>{CATS.map(c => <option key={c}>{c}</option>)}</select>
-              </div>
-              <div>
-                <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Condition</p>
-                <select className="adm-in" value={nProd.condition} onChange={e => setNProd(p => ({ ...p, condition: e.target.value }))} style={IS}>{CONDS.map(c => <option key={c}>{c}</option>)}</select>
-              </div>
-              <div>
-                <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Description</p>
-                <textarea className="adm-in" value={nProd.description} onChange={e => setNProd(p => ({ ...p, description: e.target.value }))} style={{ ...IS, minHeight: '90px', resize: 'vertical' }} placeholder="Describe the item..." />
-              </div>
+          {addMsg.text && (
+            <div style={{ padding: '10px 14px', borderRadius: '8px', marginBottom: '16px', background: addMsg.type === 'ok' ? 'rgba(77,212,172,0.1)' : 'rgba(239,68,68,0.1)', color: addMsg.type === 'ok' ? '#4dd4ac' : '#fca5a5', fontSize: '0.85rem', fontWeight: '600' }}>
+              {addMsg.text}
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', alignContent: 'start' }}>
-              <FileField label="Main *" value={nImg0} onChange={setNImg0} />
-              <FileField label="Image 2" value={nImg1} onChange={setNImg1} />
-              <FileField label="Image 3" value={nImg2} onChange={setNImg2} />
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {[
+              ['Title', 'title', 'text'],
+              ['Price', 'price', 'number'],
+              ['Location', 'location', 'text'],
+              ['Business Name', 'business_name', 'text'],
+            ].map(([lbl, key, type]) => (
+              <div key={key}>
+                <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>{lbl}</p>
+                <input className="adm-in" type={type} value={nProd[key]} onChange={e => setNProd(p => ({ ...p, [key]: e.target.value }))} style={IS} placeholder={lbl} />
+              </div>
+            ))}
+            <div>
+              <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Category</p>
+              <select className="adm-in" value={nProd.category} onChange={e => setNProd(p => ({ ...p, category: e.target.value }))} style={IS}>
+                {CATS.map(c => <option key={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Condition</p>
+              <select className="adm-in" value={nProd.condition} onChange={e => setNProd(p => ({ ...p, condition: e.target.value }))} style={IS}>
+                {CONDS.map(c => <option key={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Description</p>
+              <textarea className="adm-in" value={nProd.description} onChange={e => setNProd(p => ({ ...p, description: e.target.value }))} style={{ ...IS, minHeight: '90px', resize: 'vertical' }} placeholder="Describe the item…" />
+            </div>
+
+            {/* Image upload section — matching SellerDashboard */}
+            <div>
+              <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: '0 0 10px' }}>Images</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                <FileField label="Main" value={nImg0} onChange={setNImg0} required />
+                <FileField label="Image 2" value={nImg1} onChange={setNImg1} />
+                <FileField label="Image 3" value={nImg2} onChange={setNImg2} />
+              </div>
             </div>
           </div>
-          <button onClick={addListing} disabled={addBusy} style={{ marginTop: '20px', width: '100%', padding: '13px', background: addBusy ? '#1e2a3a' : '#4dd4ac', color: addBusy ? 'rgba(255,255,255,0.3)' : '#000', border: 'none', borderRadius: '10px', fontWeight: '700', fontSize: '0.95rem', cursor: addBusy ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
+
+          <button onClick={addListing} disabled={addBusy}
+            style={{ marginTop: '20px', width: '100%', padding: '13px', background: addBusy ? '#1e2a3a' : '#4dd4ac', color: addBusy ? 'rgba(255,255,255,0.3)' : '#000', border: 'none', borderRadius: '10px', fontWeight: '700', fontSize: '0.95rem', cursor: addBusy ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
             {addBusy ? '⏳ Publishing…' : '➕ Publish Listing'}
           </button>
         </div>
@@ -465,18 +551,74 @@ export default function AdminDashboard({ user, setView }) {
       <div>
         <h2 style={{ fontFamily: 'Georgia,serif', fontSize: 'clamp(1.2rem,4vw,1.7rem)', color: '#4dd4ac', margin: '0 0 6px' }}>Messages</h2>
         <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.85rem', margin: '0 0 20px' }}>Agent conversations</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(140px,200px) 1fr', gap: '14px', minHeight: '400px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            {convs.length === 0 ? <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.82rem' }}>No conversations</p>
-              : convs.map(cv => (
-                <button key={cv.id} onClick={() => loadMsgs(cv)} style={{ padding: '10px 12px', background: selConv?.id === cv.id ? 'rgba(77,212,172,0.15)' : '#151c27', border: `2px solid ${selConv?.id === cv.id ? '#4dd4ac' : '#1e2a3a'}`, borderRadius: '9px', cursor: 'pointer', textAlign: 'left', color: 'inherit', fontFamily: 'inherit' }}>
-                  <p style={{ color: '#4dd4ac', fontWeight: '700', margin: '0 0 2px', fontSize: '0.82rem' }}>#{cv.id?.slice(0, 6)}</p>
-                  <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.72rem', margin: 0 }}>{new Date(cv.last_message_at).toLocaleString()}</p>
-                </button>
-              ))}
+        <div className="adm-chat-shell">
+          {/* Left conversation list */}
+          <div className={`adm-chat-left${mobileShowChat ? ' adm-hidden' : ''}`}>
+            <div style={{ padding: '12px 14px', borderBottom: '2px solid #1e2a3a', background: '#131920' }}>
+              <p style={{ color: '#fff', fontWeight: '700', margin: 0, fontSize: '0.9rem' }}>Conversations</p>
+              <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', margin: '2px 0 0' }}>All user chats</p>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              {convs.length === 0
+                ? <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.82rem', padding: '20px 14px' }}>No conversations</p>
+                : convs.map(cv => (
+                  <button
+                    key={cv.id}
+                    onClick={() => loadMsgs(cv)}
+                    style={{
+                      width: '100%', padding: '12px 14px',
+                      background: selConv?.id === cv.id ? 'rgba(77,212,172,0.14)' : 'transparent',
+                      borderLeft: `3px solid ${selConv?.id === cv.id ? '#4dd4ac' : 'transparent'}`,
+                      borderRight: 'none', borderTop: 'none', borderBottom: '1px solid #1a2030',
+                      cursor: 'pointer', textAlign: 'left', color: 'inherit', fontFamily: 'inherit',
+                      display: 'flex', alignItems: 'center', gap: '10px',
+                    }}
+                  >
+                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg,#4dd4ac,#2a9d7c)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '0.85rem', color: '#000', flexShrink: 0 }}>
+                      #{cv.id?.slice(0, 1).toUpperCase()}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ color: selConv?.id === cv.id ? '#4dd4ac' : '#fff', fontWeight: '700', margin: '0 0 2px', fontSize: '0.82rem' }}>#{cv.id?.slice(0, 6)}</p>
+                      <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.72rem', margin: 0 }}>{new Date(cv.last_message_at).toLocaleString()}</p>
+                    </div>
+                  </button>
+                ))}
+            </div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', background: '#151c27', border: '2px solid #1e2a3a', borderRadius: '12px', overflow: 'hidden' }}>
-            <div style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px', minHeight: '260px' }}>
+
+          {/* Right chat panel */}
+          <div className={`adm-chat-right${!mobileShowChat ? ' adm-hidden-mobile' : ''}`} style={{ display: 'flex', flexDirection: 'column' }}>
+            {/* Chat topbar */}
+            <div style={{ padding: '12px 16px', background: '#131920', borderBottom: '2px solid #1e2a3a', display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+              <button
+                onClick={() => setMobileShowChat(false)}
+                className="adm-back-btn"
+                style={{ background: 'none', border: 'none', color: '#4dd4ac', cursor: 'pointer', fontSize: '1.2rem', padding: '0 4px', display: 'none' }}
+              >←</button>
+              {selConv && (
+                <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'linear-gradient(135deg,#4dd4ac,#2a9d7c)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', color: '#000', flexShrink: 0 }}>
+                  #
+                </div>
+              )}
+              <div>
+                <p style={{ color: '#fff', fontWeight: '700', margin: 0, fontSize: '0.88rem' }}>
+                  {selConv ? `Conv #${selConv.id?.slice(0, 6)}` : 'Select a conversation'}
+                </p>
+                {selConv && <p style={{ color: '#4dd4ac', fontSize: '0.7rem', margin: '1px 0 0' }}>● Active</p>}
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: '8px', minHeight: 0 }}>
+              {msgs.length === 0 && selConv && (
+                <div style={{ textAlign: 'center', paddingTop: '40px', color: 'rgba(255,255,255,0.3)', fontSize: '0.85rem' }}>No messages yet</div>
+              )}
+              {!selConv && (
+                <div style={{ textAlign: 'center', paddingTop: '60px' }}>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>💬</div>
+                  <p style={{ color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>Select a conversation</p>
+                </div>
+              )}
               {msgs.map(m => (
                 <div key={m.id} style={{ alignSelf: m.is_agent ? 'flex-end' : 'flex-start', maxWidth: '75%' }}>
                   {m.is_agent && <p style={{ fontSize: '10px', color: '#4dd4ac', margin: '0 0 3px', textAlign: 'right', fontWeight: '600' }}>{m.agent_name || 'Agent'}</p>}
@@ -487,15 +629,19 @@ export default function AdminDashboard({ user, setView }) {
               ))}
               <div ref={msgsEnd} />
             </div>
-            <div style={{ padding: '12px', borderTop: '2px solid #1e2a3a', display: 'flex', gap: '8px' }}>
+
+            {/* Input bar */}
+            <div style={{ padding: '10px 12px', borderTop: '2px solid #1e2a3a', display: 'flex', gap: '8px', flexShrink: 0, background: '#131920' }}>
               <div ref={pickerRef} style={{ position: 'relative' }}>
-                <button onClick={() => setShowPicker(p => !p)} style={{ padding: '8px 10px', background: '#1e2a3a', border: '2px solid #2a3a4a', borderRadius: '8px', color: '#4dd4ac', cursor: 'pointer', fontSize: '0.78rem', fontWeight: '600', fontFamily: 'inherit' }}>
+                <button onClick={() => setShowPicker(p => !p)}
+                  style={{ padding: '8px 10px', background: '#1e2a3a', border: '2px solid #2a3a4a', borderRadius: '8px', color: '#4dd4ac', cursor: 'pointer', fontSize: '0.78rem', fontWeight: '600', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
                   {selAgent.avatar} ▾
                 </button>
                 {showPicker && (
                   <div style={{ position: 'absolute', bottom: '100%', left: 0, background: '#0d1520', border: '2px solid #1e2a3a', borderRadius: '10px', padding: '6px', zIndex: 100, marginBottom: '4px', minWidth: '180px' }}>
                     {AGENTS.map(a => (
-                      <button key={a.name} onClick={() => { setSelAgent(a); setShowPicker(false); }} style={{ width: '100%', padding: '8px 10px', background: 'transparent', border: 'none', borderRadius: '7px', color: a.name === selAgent.name ? '#4dd4ac' : 'rgba(255,255,255,0.7)', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <button key={a.name} onClick={() => { setSelAgent(a); setShowPicker(false); }}
+                        style={{ width: '100%', padding: '8px 10px', background: 'transparent', border: 'none', borderRadius: '7px', color: a.name === selAgent.name ? '#4dd4ac' : 'rgba(255,255,255,0.7)', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span>{a.avatar}</span><span>{a.name}</span>
                         {a.online && <span style={{ marginLeft: 'auto', width: '7px', height: '7px', borderRadius: '50%', background: '#4dd4ac' }} />}
                       </button>
@@ -503,8 +649,18 @@ export default function AdminDashboard({ user, setView }) {
                   </div>
                 )}
               </div>
-              <input value={replyText} onChange={e => setReplyText(e.target.value)} onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendReply()} placeholder={`Reply as ${selAgent.name}…`} className="adm-in" style={{ flex: 1, background: '#0e1117', border: '2px solid #1e2a3a', color: '#fff', padding: '8px 12px', borderRadius: '8px', outline: 'none', fontFamily: 'inherit', fontSize: '0.85rem' }} />
-              <button onClick={sendReply} style={{ padding: '8px 16px', background: '#4dd4ac', color: '#000', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit' }}>Send</button>
+              <input
+                value={replyText}
+                onChange={e => setReplyText(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendReply()}
+                placeholder={`Reply as ${selAgent.name}…`}
+                className="adm-in"
+                style={{ flex: 1, background: '#0e1117', border: '2px solid #1e2a3a', color: '#fff', padding: '8px 12px', borderRadius: '8px', outline: 'none', fontFamily: 'inherit', fontSize: '0.85rem', minWidth: 0 }}
+              />
+              <button onClick={sendReply}
+                style={{ padding: '8px 14px', background: '#4dd4ac', color: '#000', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
+                Send
+              </button>
             </div>
           </div>
         </div>
@@ -517,7 +673,6 @@ export default function AdminDashboard({ user, setView }) {
   // ── dropdown panel ──
   const DropdownPanel = () => (
     <div style={{ position: 'absolute', top: 'calc(100% + 8px)', left: 0, width: '260px', background: '#0d1520', border: '2px solid #1e2a3a', borderRadius: '14px', zIndex: 9999, overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.7)' }}>
-      {/* header */}
       <div style={{ padding: '14px 16px', borderBottom: '2px solid #1e2a3a', display: 'flex', alignItems: 'center', gap: '10px' }}>
         <div style={{ width: '28px', height: '28px', borderRadius: '7px', background: 'linear-gradient(135deg,#4dd4ac,#1e7a5e)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', flexShrink: 0 }}>⚙</div>
         <div>
@@ -525,7 +680,6 @@ export default function AdminDashboard({ user, setView }) {
           <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', marginTop: '2px' }}>Store Management</div>
         </div>
       </div>
-      {/* stats */}
       <div style={{ padding: '12px', borderBottom: '2px solid #1e2a3a' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
           {[
@@ -541,7 +695,6 @@ export default function AdminDashboard({ user, setView }) {
           ))}
         </div>
       </div>
-      {/* nav */}
       <nav style={{ padding: '8px' }}>
         {NAV.map(item => (
           <button key={item.id} onClick={() => { setTab(item.id); setMenuOpen(false); }}
@@ -553,7 +706,6 @@ export default function AdminDashboard({ user, setView }) {
           </button>
         ))}
       </nav>
-      {/* footer */}
       <div style={{ padding: '10px 12px', borderTop: '2px solid #1e2a3a', display: 'flex', flexDirection: 'column', gap: '7px' }}>
         <div style={{ display: 'flex', gap: '7px' }}>
           <button onClick={() => { setShowDiag(p => !p); setMenuOpen(false); }} style={{ flex: 1, padding: '8px', background: 'rgba(96,165,250,0.08)', border: '1px solid #1e2a3a', borderRadius: '8px', color: '#60a5fa', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.74rem', fontWeight: '600' }}>
@@ -563,7 +715,8 @@ export default function AdminDashboard({ user, setView }) {
             ↻ Refresh
           </button>
         </div>
-        <button onClick={() => setView('home')} style={{ width: '100%', padding: '9px', background: 'transparent', border: '2px solid #1e2a3a', borderRadius: '9px', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.82rem', fontWeight: '600' }}
+        <button onClick={() => setView('home')}
+          style={{ width: '100%', padding: '9px', background: 'transparent', border: '2px solid #1e2a3a', borderRadius: '9px', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.82rem', fontWeight: '600' }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = '#4dd4ac'; e.currentTarget.style.color = '#4dd4ac'; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = '#1e2a3a'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; }}>
           ← Back to Store
@@ -572,9 +725,6 @@ export default function AdminDashboard({ user, setView }) {
     </div>
   );
 
-  // ══════════════════════════════════════════════════════
-  //  RENDER — single layout, hamburger only, NO sidebar
-  // ══════════════════════════════════════════════════════
   return (
     <>
       <style>{`
@@ -583,14 +733,70 @@ export default function AdminDashboard({ user, setView }) {
         .adm-sb::-webkit-scrollbar-thumb{background:#1e2a3a;border-radius:4px}
         .adm-in::placeholder{color:rgba(255,255,255,0.22)}
         .adm-in option{background:#111}
+
+        /* ── Chat shell ── */
+        .adm-chat-shell {
+          display: flex;
+          height: calc(100vh - 220px);
+          min-height: 500px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 2px solid #1e2a3a;
+        }
+        .adm-chat-left {
+          width: 220px;
+          flex-shrink: 0;
+          background: #0e1117;
+          border-right: 2px solid #1e2a3a;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+        .adm-chat-right {
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+        }
+        .adm-hidden { display: none !important; }
+
+        /* ── Mobile overrides ── */
+        @media (max-width: 640px) {
+          /* Chat shell: stack vertically, fill viewport */
+          .adm-chat-shell {
+            flex-direction: column;
+            height: calc(100vh - 130px);
+            min-height: 0;
+            border-radius: 10px;
+          }
+          .adm-chat-left {
+            width: 100%;
+            flex: none;
+            height: 200px;
+            border-right: none;
+            border-bottom: 2px solid #1e2a3a;
+          }
+          .adm-chat-right {
+            flex: 1;
+            min-height: 0;
+          }
+          /* Show back button on mobile */
+          .adm-back-btn { display: block !important; }
+          /* Hide chat panel when contact list is shown (no mobileShowChat) */
+          .adm-hidden-mobile { display: none !important; }
+        }
+        @media (min-width: 641px) {
+          /* On desktop always show both panels */
+          .adm-chat-left { display: flex !important; }
+          .adm-chat-right { display: flex !important; }
+          .adm-back-btn { display: none !important; }
+        }
       `}</style>
 
       <div style={{ background: '#090d14', minHeight: '100vh', color: '#fff', fontFamily: "'Poppins',-apple-system,sans-serif", display: 'flex', flexDirection: 'column' }}>
 
         {/* ── TOP BAR ── */}
         <div style={{ position: 'sticky', top: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', background: '#090d14', borderBottom: '2px solid #1e2a3a' }}>
-
-          {/* hamburger */}
           <div ref={menuRef} style={{ position: 'relative' }}>
             <button onClick={() => setMenuOpen(p => !p)} aria-label="Menu"
               style={{ width: '42px', height: '42px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '5px', background: menuOpen ? 'rgba(77,212,172,0.15)' : '#0e1825', border: `2px solid ${menuOpen ? '#4dd4ac' : '#1e2a3a'}`, borderRadius: '10px', cursor: 'pointer', padding: 0, transition: 'all 0.2s' }}>
@@ -601,12 +807,10 @@ export default function AdminDashboard({ user, setView }) {
             {menuOpen && <DropdownPanel />}
           </div>
 
-          {/* current tab label */}
           <span style={{ fontSize: '0.9rem', fontWeight: '700', color: '#4dd4ac' }}>
             {currentNav?.icon}&nbsp;{currentNav?.label}
           </span>
 
-          {/* back */}
           <button onClick={() => setView('home')}
             style={{ padding: '7px 12px', background: 'transparent', border: '1.5px solid #1e2a3a', borderRadius: '8px', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.76rem', fontWeight: '600' }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = '#4dd4ac'; e.currentTarget.style.color = '#4dd4ac'; }}
@@ -615,11 +819,10 @@ export default function AdminDashboard({ user, setView }) {
           </button>
         </div>
 
-        {/* backdrop */}
         {menuOpen && <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 499, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(2px)' }} />}
 
         {/* ── CONTENT ── */}
-        <main className="adm-sb" style={{ flex: 1, overflowY: 'auto', padding: '20px 16px' }}>
+        <main className="adm-sb" style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
           <div style={{ maxWidth: '900px', margin: '0 auto' }}>
 
             {showDiag && (
@@ -641,14 +844,19 @@ export default function AdminDashboard({ user, setView }) {
 
         {/* ── EDIT MODAL ── */}
         {editOpen && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-            <div className="adm-sb" style={{ background: '#0d1520', border: '2px solid #1e2a3a', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '560px', maxHeight: '90vh', overflowY: 'auto' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h3 style={{ fontFamily: 'Georgia,serif', color: '#4dd4ac', margin: 0 }}>Edit Listing</h3>
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+            <div className="adm-sb" style={{ background: '#0d1520', border: '2px solid #1e2a3a', borderRadius: '16px', padding: '20px', width: '100%', maxWidth: '520px', maxHeight: '92vh', overflowY: 'auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+                <h3 style={{ fontFamily: 'Georgia,serif', color: '#4dd4ac', margin: 0, fontSize: '1.1rem' }}>Edit Listing</h3>
                 <button onClick={() => setEditOpen(false)} style={{ background: '#1e2a3a', border: 'none', borderRadius: '7px', color: 'rgba(255,255,255,0.5)', width: '32px', height: '32px', cursor: 'pointer', fontSize: '1rem' }}>✕</button>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {[['Title', 'title', 'text'], ['Price', 'price', 'number'], ['Location', 'location', 'text'], ['Business Name', 'business_name', 'text']].map(([lbl, key, type]) => (
+                {[
+                  ['Title', 'title', 'text'],
+                  ['Price', 'price', 'number'],
+                  ['Location', 'location', 'text'],
+                  ['Business Name', 'business_name', 'text'],
+                ].map(([lbl, key, type]) => (
                   <div key={key}>
                     <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>{lbl}</p>
                     <input className="adm-in" type={type} value={editF[key] || ''} onChange={e => setEditF(f => ({ ...f, [key]: e.target.value }))} style={IS} />
@@ -664,12 +872,18 @@ export default function AdminDashboard({ user, setView }) {
                   <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Description</p>
                   <textarea className="adm-in" value={editF.description || ''} onChange={e => setEditF(f => ({ ...f, description: e.target.value }))} style={{ ...IS, minHeight: '80px', resize: 'vertical' }} />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
-                  <FileField label="Image 1" value={eImg0} onChange={setEImg0} existingUrl={editExistingImgs[0]} />
-                  <FileField label="Image 2" value={eImg1} onChange={setEImg1} existingUrl={editExistingImgs[1]} />
-                  <FileField label="Image 3" value={eImg2} onChange={setEImg2} existingUrl={editExistingImgs[2]} />
+
+                {/* Functional image upload — matching SellerDashboard */}
+                <div>
+                  <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: '0 0 10px' }}>Images</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                    <FileField label="Image 1" value={eImg0} onChange={setEImg0} existingUrl={editExistingImgs[0]} required />
+                    <FileField label="Image 2" value={eImg1} onChange={setEImg1} existingUrl={editExistingImgs[1]} />
+                    <FileField label="Image 3" value={eImg2} onChange={setEImg2} existingUrl={editExistingImgs[2]} />
+                  </div>
                 </div>
               </div>
+
               <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
                 <button onClick={() => setEditOpen(false)} style={{ flex: 1, padding: '11px', background: 'transparent', border: '2px solid #1e2a3a', borderRadius: '9px', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600' }}>Cancel</button>
                 <button onClick={saveEdit} disabled={editBusy} style={{ flex: 2, padding: '11px', background: editBusy ? '#1e2a3a' : '#4dd4ac', color: editBusy ? 'rgba(255,255,255,0.3)' : '#000', border: 'none', borderRadius: '9px', fontWeight: '700', cursor: editBusy ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
