@@ -10,13 +10,10 @@ const AGENTS = [
 ];
 
 export default function AdminDashboard({ user, setView }) {
-  // Add mobile detection
   const [isMobile, setIsMobile] = useState(false);
-  
+
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -80,7 +77,6 @@ export default function AdminDashboard({ user, setView }) {
 
   useEffect(() => { msgsEnd.current?.scrollIntoView({ behavior:'smooth' }); }, [msgs]);
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClick = (e) => {
       if (agentPickerRef.current && !agentPickerRef.current.contains(e.target)) setShowAgentPicker(false);
@@ -355,20 +351,64 @@ export default function AdminDashboard({ user, setView }) {
     );
   };
 
-  // ── Sidebar nav content — reused in both desktop sidebar and mobile dropdown ──
-  const SidebarNav = ({ inDropdown=false }) => (
-    <>
+  // ── Hamburger Icon ──
+  const HamburgerIcon = ({ open }) => (
+    <div style={{ display:'flex', flexDirection:'column', justifyContent:'center', gap:'5px', width:'20px' }}>
+      <span style={{
+        display:'block', height:'2px', borderRadius:'2px', background:'#4dd4ac',
+        width: open ? '20px' : '20px',
+        transform: open ? 'translateY(7px) rotate(45deg)' : 'none',
+        transition:'all 0.2s ease',
+      }} />
+      <span style={{
+        display:'block', height:'2px', borderRadius:'2px', background:'#4dd4ac',
+        width:'14px',
+        opacity: open ? 0 : 1,
+        transition:'all 0.2s ease',
+      }} />
+      <span style={{
+        display:'block', height:'2px', borderRadius:'2px', background:'#4dd4ac',
+        width: open ? '20px' : '20px',
+        transform: open ? 'translateY(-7px) rotate(-45deg)' : 'none',
+        transition:'all 0.2s ease',
+      }} />
+    </div>
+  );
+
+  // ── Full Dropdown Menu Content ──
+  const DropdownMenu = () => (
+    <div style={{
+      position:'absolute',
+      top:'calc(100% + 6px)',
+      left:0,
+      width:'260px',
+      background:'#0d1520',
+      border:'2px solid #1e2a3a',
+      borderRadius:'14px',
+      zIndex:9999,
+      overflow:'hidden',
+      boxShadow:'0 20px 60px rgba(0,0,0,0.6)',
+    }}>
+      {/* Admin Panel Header inside dropdown */}
+      <div style={{ padding:'14px 16px', borderBottom:'2px solid #1e2a3a', display:'flex', alignItems:'center', gap:'10px' }}>
+        <div style={{ width:'28px', height:'28px', borderRadius:'7px', background:'linear-gradient(135deg,#4dd4ac,#1e7a5e)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'13px', flexShrink:0 }}>⚙</div>
+        <div>
+          <div style={{ fontFamily:'Georgia,serif', fontSize:'0.95rem', fontWeight:'700', color:'#4dd4ac', lineHeight:1 }}>Admin Panel</div>
+          <div style={{ fontSize:'10px', color:'rgba(255,255,255,0.25)', marginTop:'2px' }}>Store Management</div>
+        </div>
+      </div>
+
       {/* Stats grid */}
-      <div style={{ padding: inDropdown ? '10px 12px' : '14px', borderBottom:'2px solid #1e2a3a' }}>
-        <div style={{ display:'grid', gridTemplateColumns: inDropdown ? 'repeat(4,1fr)' : '1fr 1fr', gap: inDropdown ? '6px' : '8px' }}>
+      <div style={{ padding:'12px', borderBottom:'2px solid #1e2a3a' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
           {[
             { v:stats.pending,  l:'PENDING',  c:'#fbbf24', bg:'rgba(251,191,36,0.08)'  },
             { v:stats.listings, l:'ACTIVE',   c:'#4dd4ac', bg:'rgba(77,212,172,0.08)'  },
             { v:stats.bookings, l:'BOOKINGS', c:'#60a5fa', bg:'rgba(96,165,250,0.08)'  },
             { v:stats.messages, l:'CHATS',    c:'#c084fc', bg:'rgba(192,132,252,0.08)' },
           ].map(s=>(
-            <div key={s.l} style={{ padding: inDropdown ? '7px 4px' : '10px 6px', borderRadius:'8px', textAlign:'center', background:s.bg, border:`1px solid ${s.c}22` }}>
-              <div style={{ fontSize: inDropdown ? '1.1rem' : '1.5rem', fontWeight:'800', color:s.c, lineHeight:1 }}>{s.v}</div>
+            <div key={s.l} style={{ padding:'10px 6px', borderRadius:'8px', textAlign:'center', background:s.bg, border:`1px solid ${s.c}22` }}>
+              <div style={{ fontSize:'1.4rem', fontWeight:'800', color:s.c, lineHeight:1 }}>{s.v}</div>
               <div style={{ fontSize:'9px', color:'rgba(255,255,255,0.35)', marginTop:'2px', textTransform:'uppercase', letterSpacing:'0.04em' }}>{s.l}</div>
             </div>
           ))}
@@ -376,68 +416,105 @@ export default function AdminDashboard({ user, setView }) {
       </div>
 
       {/* Nav items */}
-      <nav style={{ padding: inDropdown ? '8px 10px' : '10px', flex: inDropdown ? 'none' : 1 }}>
+      <nav style={{ padding:'8px' }}>
         {menuItems.map(item => (
-          <button key={item.id} onClick={() => { setTab(item.id); setMenuOpen(false); }} className="adm-nav"
-            style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding: inDropdown ? '11px 14px' : '9px 13px', marginBottom:'3px', borderRadius:'9px', background:tab===item.id?'#4dd4ac':'transparent', color:tab===item.id?'#000':'#4dd4ac', border:'none', cursor:'pointer', fontFamily:'inherit', fontSize: inDropdown ? '0.92rem' : '0.85rem', fontWeight:tab===item.id?'700':'500', transition:'all 0.15s' }}>
-            <span style={{ display:'flex', alignItems:'center', gap:'10px' }}><span>{item.icon}</span>{item.label}</span>
-            {item.count > 0 && <span style={{ padding:'2px 7px', borderRadius:'20px', fontSize:'10px', fontWeight:'700', background:tab===item.id?'rgba(0,0,0,0.2)':'rgba(77,212,172,0.15)', color:tab===item.id?'#000':'#4dd4ac' }}>{item.count}</span>}
+          <button key={item.id}
+            onClick={() => { setTab(item.id); setMenuOpen(false); }}
+            style={{
+              width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between',
+              padding:'10px 13px', marginBottom:'2px', borderRadius:'9px',
+              background: tab===item.id ? '#4dd4ac' : 'transparent',
+              color: tab===item.id ? '#000' : '#4dd4ac',
+              border:'none', cursor:'pointer', fontFamily:'inherit',
+              fontSize:'0.87rem', fontWeight: tab===item.id ? '700' : '500',
+              transition:'all 0.15s',
+            }}
+            onMouseEnter={e=>{ if(tab!==item.id) e.currentTarget.style.background='rgba(77,212,172,0.1)'; }}
+            onMouseLeave={e=>{ if(tab!==item.id) e.currentTarget.style.background='transparent'; }}>
+            <span style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+              <span>{item.icon}</span>{item.label}
+            </span>
+            {item.count > 0 && (
+              <span style={{ padding:'2px 7px', borderRadius:'20px', fontSize:'10px', fontWeight:'700', background: tab===item.id ? 'rgba(0,0,0,0.2)' : 'rgba(77,212,172,0.15)', color: tab===item.id ? '#000' : '#4dd4ac' }}>
+                {item.count}
+              </span>
+            )}
           </button>
         ))}
       </nav>
 
       {/* Footer actions */}
-      <div style={{ padding: inDropdown ? '10px 14px' : '12px 14px', borderTop:'2px solid #1e2a3a', display:'flex', flexDirection: inDropdown ? 'row' : 'column', flexWrap:'wrap', gap:'8px' }}>
-        <button onClick={()=>{ setShowDiag(p=>!p); setMenuOpen(false); }}
-          style={{ flex: inDropdown ? 1 : 'none', padding:'7px 12px', background:'rgba(96,165,250,0.08)', border:'1px solid #1e2a3a', borderRadius:'8px', color:'#60a5fa', cursor:'pointer', fontFamily:'inherit', fontSize:'0.78rem', fontWeight:'600', whiteSpace:'nowrap' }}>
-          🔍 {showDiag?'Hide':'Show'} Diag
-        </button>
-        <button onClick={()=>{ load(); setMenuOpen(false); }}
-          style={{ flex: inDropdown ? 1 : 'none', padding:'7px 12px', background:'rgba(77,212,172,0.08)', border:'1px solid #1e2a3a', borderRadius:'8px', color:'#4dd4ac', cursor:'pointer', fontFamily:'inherit', fontSize:'0.78rem', fontWeight:'600', whiteSpace:'nowrap' }}>
-          ↻ Refresh
-        </button>
-        <button onClick={()=>setView('home')}
-          style={{ flex: inDropdown ? 1 : 'none', padding:'9px 12px', background:'transparent', border:'2px solid #1e2a3a', borderRadius:'9px', color:'rgba(255,255,255,0.4)', cursor:'pointer', fontFamily:'inherit', fontSize:'0.82rem', fontWeight:'600', whiteSpace:'nowrap', transition:'all 0.15s' }}
-          onMouseEnter={e=>{e.currentTarget.style.borderColor='#4dd4ac';e.currentTarget.style.color='#4dd4ac';}}
-          onMouseLeave={e=>{e.currentTarget.style.borderColor='#1e2a3a';e.currentTarget.style.color='rgba(255,255,255,0.4)';}}>
+      <div style={{ padding:'10px 12px', borderTop:'2px solid #1e2a3a', display:'flex', flexDirection:'column', gap:'7px' }}>
+        <div style={{ display:'flex', gap:'7px' }}>
+          <button
+            onClick={() => { setShowDiag(p=>!p); setMenuOpen(false); }}
+            style={{ flex:1, padding:'8px 10px', background:'rgba(96,165,250,0.08)', border:'1px solid #1e2a3a', borderRadius:'8px', color:'#60a5fa', cursor:'pointer', fontFamily:'inherit', fontSize:'0.76rem', fontWeight:'600' }}>
+            🔍 {showDiag ? 'Hide' : 'Show'} Diag
+          </button>
+          <button
+            onClick={() => { load(); setMenuOpen(false); }}
+            style={{ flex:1, padding:'8px 10px', background:'rgba(77,212,172,0.08)', border:'1px solid #1e2a3a', borderRadius:'8px', color:'#4dd4ac', cursor:'pointer', fontFamily:'inherit', fontSize:'0.76rem', fontWeight:'600' }}>
+            ↻ Refresh
+          </button>
+        </div>
+        <button
+          onClick={() => setView('home')}
+          style={{ width:'100%', padding:'9px 12px', background:'transparent', border:'2px solid #1e2a3a', borderRadius:'9px', color:'rgba(255,255,255,0.4)', cursor:'pointer', fontFamily:'inherit', fontSize:'0.82rem', fontWeight:'600', transition:'all 0.15s' }}
+          onMouseEnter={e=>{ e.currentTarget.style.borderColor='#4dd4ac'; e.currentTarget.style.color='#4dd4ac'; }}
+          onMouseLeave={e=>{ e.currentTarget.style.borderColor='#1e2a3a'; e.currentTarget.style.color='rgba(255,255,255,0.4)'; }}>
           ← Back to Store
         </button>
       </div>
-    </>
+    </div>
   );
 
-  // If on mobile, render mobile version directly
+  // ── Mobile Layout ──
   if (isMobile) {
     return (
       <div style={{ background:'#090d14', minHeight:'100vh', color:'#fff' }}>
         {/* Mobile Topbar */}
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'11px 14px', background:'#090d14', borderBottom:'2px solid #1e2a3a', position:'sticky', top:0, zIndex:500 }}>
+        <div style={{
+          display:'flex', alignItems:'center', justifyContent:'space-between',
+          padding:'11px 14px', background:'#090d14', borderBottom:'2px solid #1e2a3a',
+          position:'sticky', top:0, zIndex:500,
+        }}>
+          {/* Hamburger button + dropdown */}
           <div ref={menuRef} style={{ position:'relative' }}>
-            <button onClick={() => setMenuOpen(p=>!p)}
-              style={{ display:'flex', alignItems:'center', gap:'8px', background:menuOpen?'#4dd4ac':'#1e2a3a', border:'none', borderRadius:'9px', padding:'9px 14px', cursor:'pointer', color:menuOpen?'#000':'#4dd4ac', fontSize:'0.87rem', fontWeight:'700' }}>
-              <span>{menuOpen ? '✕' : '☰'}</span>
-              Menu
+            <button
+              onClick={() => setMenuOpen(p=>!p)}
+              style={{
+                display:'flex', alignItems:'center', justifyContent:'center',
+                width:'40px', height:'40px',
+                background: menuOpen ? 'rgba(77,212,172,0.15)' : '#0e1825',
+                border: `2px solid ${menuOpen ? '#4dd4ac' : '#1e2a3a'}`,
+                borderRadius:'10px', cursor:'pointer',
+                transition:'all 0.2s',
+              }}
+              aria-label="Toggle menu">
+              <HamburgerIcon open={menuOpen} />
             </button>
-            {menuOpen && (
-              <div style={{ position:'absolute', top:'100%', left:0, right:0, background:'#0d1520', border:'2px solid #1e2a3a', borderTop:'none', borderRadius:'0 0 16px 16px', zIndex:9999, maxHeight:'80vh', overflowY:'auto' }}>
-                <SidebarNav inDropdown />
-              </div>
-            )}
+
+            {menuOpen && <DropdownMenu />}
           </div>
+
+          {/* Current tab label (center) */}
           <span style={{ fontSize:'0.92rem', fontWeight:'700', color:'#4dd4ac', flex:1, textAlign:'center' }}>
             {menuItems.find(m=>m.id===tab)?.icon} {menuItems.find(m=>m.id===tab)?.label}
           </span>
-          <button onClick={()=>setView('home')} style={{ background:'transparent', border:'1px solid #1e2a3a', borderRadius:'7px', color:'rgba(255,255,255,0.4)', padding:'6px 10px', fontSize:'0.74rem', fontWeight:'600' }}>
-            ← Store
-          </button>
+
+          {/* Right side placeholder for balance */}
+          <div style={{ width:'40px' }} />
         </div>
 
-        {/* Mobile Backdrop */}
+        {/* Backdrop */}
         {menuOpen && (
-          <div onClick={()=>setMenuOpen(false)} style={{ position:'fixed', inset:0, zIndex:498, background:'rgba(0,0,0,0.45)' }} />
+          <div
+            onClick={() => setMenuOpen(false)}
+            style={{ position:'fixed', inset:0, zIndex:498, background:'rgba(0,0,0,0.5)', backdropFilter:'blur(2px)' }}
+          />
         )}
 
-        {/* Mobile Main Content */}
+        {/* Main Content */}
         <main style={{ padding:'16px 14px' }}>
           <div style={{ maxWidth:'1080px', margin:'0 auto' }}>
             {showDiag && (
@@ -458,7 +535,6 @@ export default function AdminDashboard({ user, setView }) {
               </div>
             )}
 
-            {/* Rest of your content - copy the same tab content from your original component */}
             {tab==='pending' && (
               <div>
                 <h2 style={{ fontFamily:'Georgia,serif', fontSize:'clamp(1.2rem,5vw,1.7rem)', color:'#4dd4ac', marginBottom:'6px' }}>Pending Submissions</h2>
@@ -494,7 +570,6 @@ export default function AdminDashboard({ user, setView }) {
               </div>
             )}
 
-            {/* Add similar mobile-friendly versions for other tabs */}
             {tab==='listings' && (
               <div>
                 <h2 style={{ fontFamily:'Georgia,serif', fontSize:'clamp(1.2rem,5vw,1.7rem)', color:'#4dd4ac', marginBottom:'6px' }}>All Listings</h2>
@@ -521,14 +596,57 @@ export default function AdminDashboard({ user, setView }) {
               </div>
             )}
 
-            {/* Add similar for other tabs... */}
+            {tab==='add' && (
+              <div>
+                <h2 style={{ fontFamily:'Georgia,serif', fontSize:'clamp(1.2rem,5vw,1.7rem)', color:'#4dd4ac', marginBottom:'6px' }}>Add Listing</h2>
+                <p style={{ color:'rgba(255,255,255,0.35)', fontSize:'0.85rem', marginBottom:'20px' }}>Publish a new product directly to the store</p>
+                {/* Add listing form content goes here */}
+              </div>
+            )}
+
+            {tab==='bookings' && (
+              <div>
+                <h2 style={{ fontFamily:'Georgia,serif', fontSize:'clamp(1.2rem,5vw,1.7rem)', color:'#4dd4ac', marginBottom:'6px' }}>Bookings</h2>
+                <p style={{ color:'rgba(255,255,255,0.35)', fontSize:'0.85rem', marginBottom:'20px' }}>Manage customer bookings and appointments</p>
+                {bookings.length===0 ? <Empty icon="📅" title="No bookings yet" sub="Bookings will appear here." />
+                  : bookings.map(b=>(
+                    <Card key={b.id}>
+                      <p style={{ color:'#4dd4ac', fontWeight:'700', margin:'0 0 4px' }}>{b.product_title || b.product_id}</p>
+                      <p style={{ color:'rgba(255,255,255,0.45)', fontSize:'0.8rem', margin:'0 0 8px' }}>{b.customer_name} · {new Date(b.created_at).toLocaleDateString()}</p>
+                      <div style={{ display:'flex', gap:'8px', flexWrap:'wrap' }}>
+                        {statusBadge(b.status, statusConfig)}
+                        <OutlineBtn color="#4dd4ac" onClick={()=>updateBooking(b.id,'confirmed')}>Confirm</OutlineBtn>
+                        <OutlineBtn color="#ff6b6b" onClick={()=>updateBooking(b.id,'cancelled')}>Cancel</OutlineBtn>
+                      </div>
+                    </Card>
+                  ))
+                }
+              </div>
+            )}
+
+            {tab==='messages' && (
+              <div>
+                <h2 style={{ fontFamily:'Georgia,serif', fontSize:'clamp(1.2rem,5vw,1.7rem)', color:'#4dd4ac', marginBottom:'6px' }}>Messages</h2>
+                <p style={{ color:'rgba(255,255,255,0.35)', fontSize:'0.85rem', marginBottom:'20px' }}>Agent conversations with customers</p>
+                {convs.length===0 ? <Empty icon="💬" title="No conversations yet" sub="Customer messages will appear here." />
+                  : convs.map(cv=>(
+                    <Card key={cv.id} color={selConv?.id===cv.id?'#4dd4ac':'#1e2a3a'}>
+                      <button onClick={()=>loadMsgs(cv)} style={{ width:'100%', background:'none', border:'none', cursor:'pointer', textAlign:'left', padding:0, color:'inherit' }}>
+                        <p style={{ color:'#4dd4ac', fontWeight:'700', margin:'0 0 2px', fontSize:'0.9rem' }}>Conversation #{cv.id?.slice(0,8)}</p>
+                        <p style={{ color:'rgba(255,255,255,0.35)', fontSize:'0.75rem', margin:0 }}>{new Date(cv.last_message_at).toLocaleString()}</p>
+                      </button>
+                    </Card>
+                  ))
+                }
+              </div>
+            )}
           </div>
         </main>
       </div>
     );
   }
 
-  // Desktop version (original)
+  // ── Desktop Layout ──
   return (
     <>
       <style>{`
@@ -537,7 +655,6 @@ export default function AdminDashboard({ user, setView }) {
         .adm-in::placeholder{color:rgba(255,255,255,0.22)}.adm-in option{background:#111}
         .adm-nav:hover{background:rgba(77,212,172,0.1)!important}
         .agent-option:hover{background:rgba(77,212,172,0.1)!important}
-
         .adm-root   { display:flex; flex-direction:column; min-height:100vh; background:#090d14; color:#fff; font-family:'Poppins',-apple-system,sans-serif; }
         .adm-body   { display:flex; flex:1; min-height:0; }
         .adm-sidebar{ width:252px; min-width:252px; border-right:2px solid #1e2a3a; display:flex; flex-direction:column; overflow-y:auto; background:#090d14; position:sticky; top:0; max-height:100vh; }
@@ -555,13 +672,57 @@ export default function AdminDashboard({ user, setView }) {
               </div>
               <p style={{ fontSize:'10px', color:'rgba(255,255,255,0.25)', marginLeft:'40px' }}>Store Management</p>
             </div>
-            <SidebarNav />
+
+            {/* Stats */}
+            <div style={{ padding:'14px', borderBottom:'2px solid #1e2a3a' }}>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
+                {[
+                  { v:stats.pending,  l:'PENDING',  c:'#fbbf24', bg:'rgba(251,191,36,0.08)'  },
+                  { v:stats.listings, l:'ACTIVE',   c:'#4dd4ac', bg:'rgba(77,212,172,0.08)'  },
+                  { v:stats.bookings, l:'BOOKINGS', c:'#60a5fa', bg:'rgba(96,165,250,0.08)'  },
+                  { v:stats.messages, l:'CHATS',    c:'#c084fc', bg:'rgba(192,132,252,0.08)' },
+                ].map(s=>(
+                  <div key={s.l} style={{ padding:'10px 6px', borderRadius:'8px', textAlign:'center', background:s.bg, border:`1px solid ${s.c}22` }}>
+                    <div style={{ fontSize:'1.5rem', fontWeight:'800', color:s.c, lineHeight:1 }}>{s.v}</div>
+                    <div style={{ fontSize:'9px', color:'rgba(255,255,255,0.35)', marginTop:'2px', textTransform:'uppercase', letterSpacing:'0.04em' }}>{s.l}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Nav */}
+            <nav style={{ padding:'10px', flex:1 }}>
+              {menuItems.map(item => (
+                <button key={item.id} onClick={() => setTab(item.id)} className="adm-nav"
+                  style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'9px 13px', marginBottom:'3px', borderRadius:'9px', background:tab===item.id?'#4dd4ac':'transparent', color:tab===item.id?'#000':'#4dd4ac', border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:'0.85rem', fontWeight:tab===item.id?'700':'500', transition:'all 0.15s' }}>
+                  <span style={{ display:'flex', alignItems:'center', gap:'10px' }}><span>{item.icon}</span>{item.label}</span>
+                  {item.count > 0 && <span style={{ padding:'2px 7px', borderRadius:'20px', fontSize:'10px', fontWeight:'700', background:tab===item.id?'rgba(0,0,0,0.2)':'rgba(77,212,172,0.15)', color:tab===item.id?'#000':'#4dd4ac' }}>{item.count}</span>}
+                </button>
+              ))}
+            </nav>
+
+            {/* Footer */}
+            <div style={{ padding:'12px 14px', borderTop:'2px solid #1e2a3a', display:'flex', flexDirection:'column', gap:'8px' }}>
+              <button onClick={()=>setShowDiag(p=>!p)}
+                style={{ padding:'7px 12px', background:'rgba(96,165,250,0.08)', border:'1px solid #1e2a3a', borderRadius:'8px', color:'#60a5fa', cursor:'pointer', fontFamily:'inherit', fontSize:'0.78rem', fontWeight:'600' }}>
+                🔍 {showDiag?'Hide':'Show'} Diag
+              </button>
+              <button onClick={load}
+                style={{ padding:'7px 12px', background:'rgba(77,212,172,0.08)', border:'1px solid #1e2a3a', borderRadius:'8px', color:'#4dd4ac', cursor:'pointer', fontFamily:'inherit', fontSize:'0.78rem', fontWeight:'600' }}>
+                ↻ Refresh
+              </button>
+              <button onClick={()=>setView('home')}
+                style={{ padding:'9px 12px', background:'transparent', border:'2px solid #1e2a3a', borderRadius:'9px', color:'rgba(255,255,255,0.4)', cursor:'pointer', fontFamily:'inherit', fontSize:'0.82rem', fontWeight:'600', transition:'all 0.15s' }}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor='#4dd4ac';e.currentTarget.style.color='#4dd4ac';}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor='#1e2a3a';e.currentTarget.style.color='rgba(255,255,255,0.4)';}}>
+                ← Back to Store
+              </button>
+            </div>
           </aside>
 
           <main className="adm-main adm-sb">
             <div style={{ maxWidth:'1080px', margin:'0 auto' }}>
-              {/* Desktop content - copy from your original component */}
-              {/* ... (keep all your existing desktop content) ... */}
+              {/* Desktop tab content goes here */}
             </div>
           </main>
         </div>
@@ -570,7 +731,6 @@ export default function AdminDashboard({ user, setView }) {
   );
 }
 
-// Keep your helper components (Card, Btn, OutlineBtn, Empty) at the bottom
 function Card({ children, color='#1e2a3a' }) {
   const [hov, setHov] = React.useState(false);
   return (
