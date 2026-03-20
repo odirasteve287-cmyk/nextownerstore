@@ -83,6 +83,7 @@ export default function AdminDashboard({ user, setView }) {
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+  .adm-sidebar { display: none !important; }
 
   useEffect(() => {
     if (!selConv) return;
