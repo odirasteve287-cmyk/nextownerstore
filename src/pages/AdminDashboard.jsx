@@ -1,746 +1,873 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../utils/supabase';
 
-const AGENTS = [
-  { name: 'Agent Sarah K.', avatar: '👩‍💼', online: false },
-  { name: 'Agent James M.', avatar: '👨‍💼', online: true },
-  { name: 'Agent Amara T.', avatar: '👩‍🔬', online: false },
-  { name: 'Agent Leo B.',   avatar: '🧑‍💻', online: true },
-  { name: 'Agent Nina R.',  avatar: '👩‍🎨', online: false },
-];
+export default function SellerDashboard({ user, setView }) {
+  const [activeTab, setActiveTab] = useState('new');
+  const [products, setProducts] = useState([]);
+  const [productImages, setProductImages] = useState({});
+  const [stats, setStats] = useState({ total: 0, pending: 0, active: 0, sold: 0 });
+  const [statusFilter, setStatusFilter] = useState('all');
 
-const CATS  = ['Furniture','Electronics','Appliances','For Kids','Decor','Kitchenware','Household'];
-const CONDS = ['Brand New','Like New','Excellent','Good','Fair','For Parts'];
+  const [itemName, setItemName] = useState('');
+  const [price, setPrice] = useState('');
+  const [category, setCategory] = useState('Furniture');
+  const [condition, setCondition] = useState('Like New');
+  const [description, setDescription] = useState('');
+  const [location, setLocation] = useState('');
+  const [businessName, setBusinessName] = useState('');
+  const [mainImage, setMainImage] = useState(null);
+  const [detailImage1, setDetailImage1] = useState(null);
+  const [detailImage2, setDetailImage2] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [postSuccess, setPostSuccess] = useState(false);
+  const [postError, setPostError] = useState('');
 
-const STATUS_CFG = {
-  active:       { bg: 'rgba(74,222,128,0.12)',  color: '#4ade80', label: 'Active'       },
-  sold:         { bg: 'rgba(96,165,250,0.12)',  color: '#60a5fa', label: 'Sold'         },
-  pending:      { bg: 'rgba(251,191,36,0.12)',  color: '#fbbf24', label: 'Pending'      },
-  out_of_stock: { bg: 'rgba(249,115,22,0.12)',  color: '#fb923c', label: 'Out of Stock' },
-};
+  const [conversations, setConversations] = useState([]);
+  const [selectedConvIdx, setSelectedConvIdx] = useState(0);
+  const [selectedConv, setSelectedConv] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [msgLoading, setMsgLoading] = useState(false);
+  const [mobileShowChat, setMobileShowChat] = useState(false);
+  const [agentNames, setAgentNames] = useState({});
+  const msgsEndRef = useRef(null);
+  const pollRef = useRef(null);
+  const textareaRef = useRef(null);
+  const pendingMsgSentRef = useRef(false);
+  // Track whether we should auto-scroll (only after user sends a message)
+  const shouldScrollRef = useRef(false);
 
-function Badge(props) {
-  var s = props.s;
-  var c = STATUS_CFG[s] || { bg: '#1e2a3a', color: '#aaa', label: s };
-  return React.createElement('span', {
-    style: { padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', background: c.bg, color: c.color }
-  }, c.label);
-}
+  const categories = ['Furniture', 'Electronics', 'Appliances', 'For Kids', 'Decor', 'Household'];
+  const conditions = ['Brand New', 'Like New', 'Excellent', 'Good', 'Fair', 'For Parts'];
 
-function Card(props) {
-  var color = props.color || '#1e2a3a';
-  var hov = props._hov;
-  return (
-    <div style={{ background: '#151c27', border: '2px solid ' + color, borderRadius: '12px', padding: '16px 18px', marginBottom: '10px' }}>
-      {props.children}
-    </div>
-  );
-}
-
-function Btn(props) {
-  var disabled = props.disabled || false;
-  return (
-    <button
-      onClick={disabled ? undefined : props.onClick}
-      style={{ padding: '8px 16px', background: disabled ? '#1e2a3a' : props.color, color: disabled ? 'rgba(255,255,255,0.25)' : '#fff', border: 'none', borderRadius: '7px', cursor: disabled ? 'not-allowed' : 'pointer', fontWeight: '600', fontSize: '0.8rem', fontFamily: 'inherit', whiteSpace: 'nowrap', opacity: disabled ? 0.6 : 1 }}>
-      {props.children}
-    </button>
-  );
-}
-
-function OutlineBtn(props) {
-  var color = props.color;
-  return (
-    <button
-      onClick={props.onClick}
-      style={{ padding: '7px 14px', background: 'transparent', border: '1.5px solid ' + color, color: color, borderRadius: '7px', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
-      {props.children}
-    </button>
-  );
-}
-
-function Empty(props) {
-  return (
-    <div style={{ textAlign: 'center', padding: '56px 20px', border: '2px dashed #1e2a3a', borderRadius: '12px', background: '#151c27' }}>
-      <div style={{ fontSize: '2.8rem', marginBottom: '10px' }}>{props.icon}</div>
-      <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '1rem', fontWeight: '600', marginBottom: '4px' }}>{props.title}</p>
-      <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.82rem' }}>{props.sub}</p>
-    </div>
-  );
-}
-
-export default function AdminDashboard({ user, setView }) {
-  var [tab, setTab] = useState('pending');
-  var [menuOpen, setMenuOpen] = useState(false);
-  var [pending, setPending] = useState([]);
-  var [listings, setListings] = useState([]);
-  var [bookings, setBookings] = useState([]);
-  var [convs, setConvs] = useState([]);
-  var [msgs, setMsgs] = useState([]);
-  var [selConv, setSelConv] = useState(null);
-  var [replyText, setReplyText] = useState('');
-  var [selAgent, setSelAgent] = useState(AGENTS[0]);
-  var [showPicker, setShowPicker] = useState(false);
-  var [stats, setStats] = useState({ pending: 0, listings: 0, bookings: 0, messages: 0 });
-  var [diag, setDiag] = useState([]);
-  var [showDiag, setShowDiag] = useState(false);
-  var [actionBusy, setActionBusy] = useState({});
-  var [editOpen, setEditOpen] = useState(false);
-  var [editProd, setEditProd] = useState(null);
-  var [editF, setEditF] = useState({});
-  var [eImg0, setEImg0] = useState(null);
-  var [eImg1, setEImg1] = useState(null);
-  var [eImg2, setEImg2] = useState(null);
-  var [editBusy, setEditBusy] = useState(false);
-  var [editExistingImgs, setEditExistingImgs] = useState([]);
-  var [nProd, setNProd] = useState({ title: '', price: '', category: 'Furniture', condition: 'Like New', description: '', location: '', business_name: '' });
-  var [nImg0, setNImg0] = useState(null);
-  var [nImg1, setNImg1] = useState(null);
-  var [nImg2, setNImg2] = useState(null);
-  var [addBusy, setAddBusy] = useState(false);
-  var [addMsg, setAddMsg] = useState({ type: '', text: '' });
-
-  var msgsEnd = useRef(null);
-  var pickerRef = useRef(null);
-  var menuRef = useRef(null);
-
-  var IS = { background: '#0e1117', border: '2px solid #1e2a3a', color: '#fff', width: '100%', padding: '10px 14px', borderRadius: '8px', outline: 'none', fontFamily: 'inherit', fontSize: '0.875rem', boxSizing: 'border-box' };
-
-  useEffect(function() {
-    if (user) {
-      load();
-      var iv = setInterval(load, 10000);
-      return function() { clearInterval(iv); };
+  useEffect(() => {
+    const requestedTab = sessionStorage.getItem('dashboardTab');
+    if (requestedTab) {
+      setActiveTab(requestedTab);
+      sessionStorage.removeItem('dashboardTab');
     }
-  }, [user]);
-
-  useEffect(function() {
-    if (msgsEnd.current) msgsEnd.current.scrollIntoView({ behavior: 'smooth' });
-  }, [msgs]);
-
-  useEffect(function() {
-    function fn(e) {
-      if (pickerRef.current && !pickerRef.current.contains(e.target)) setShowPicker(false);
-      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
-    }
-    document.addEventListener('mousedown', fn);
-    return function() { document.removeEventListener('mousedown', fn); };
   }, []);
 
-  useEffect(function() {
-    if (!selConv) return;
-    var convId = selConv.id;
-    var iv = setInterval(function() {
-      supabase.from('agent_messages').select('*').eq('conversation_id', convId).order('created_at', { ascending: true }).then(function(res) {
-        if (!res.error && res.data) setMsgs(res.data);
-      });
-    }, 5000);
-    return function() { clearInterval(iv); };
-  }, [selConv ? selConv.id : null]);
-
-  function attachImages(products) {
-    if (!products || !products.length) return Promise.resolve(products);
-    var ids = products.map(function(p) { return p.id; });
-    return supabase.from('product_images').select('product_id,image_url,is_primary,sort_order').in('product_id', ids).order('sort_order', { ascending: true }).then(function(res) {
-      if (!res.data) return products;
-      var map = {};
-      res.data.forEach(function(i) {
-        if (!map[i.product_id]) map[i.product_id] = [];
-        map[i.product_id].push(i);
-      });
-      return products.map(function(p) { return Object.assign({}, p, { extra_imgs: map[p.id] || [] }); });
-    });
-  }
-
-  function buildImages(p) {
-    var def = 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=900&h=600&fit=crop';
-    if (p.extra_imgs && p.extra_imgs.length) {
-      var arr = p.extra_imgs.map(function(i) { return i.image_url; }).filter(Boolean);
-      if (arr.length) {
-        while (arr.length < 3) arr.push(arr[arr.length - 1]);
-        return arr.slice(0, 3);
-      }
+  useEffect(() => {
+    if (user) {
+      loadSellerData();
+      loadProfile();
+      loadConversations();
     }
-    var base = p.image_url || def;
-    return [base, base, base];
-  }
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, [user]);
 
-  function load() {
-    var log = [];
-    return supabase.from('products').select('*').eq('status', 'pending').order('created_at', { ascending: false }).then(function(r1) {
-      log.push({ label: 'pending', ok: !r1.error, count: r1.data ? r1.data.length : 0, error: r1.error ? r1.error.message : null });
-      var p1 = r1.error ? Promise.resolve() : attachImages(r1.data || []).then(function(d) { setPending(d); });
-      return supabase.from('products').select('*').in('status', ['active', 'sold']).order('created_at', { ascending: false }).then(function(r2) {
-        log.push({ label: 'active/sold', ok: !r2.error, count: r2.data ? r2.data.length : 0, error: r2.error ? r2.error.message : null });
-        var p2 = r2.error ? Promise.resolve() : attachImages(r2.data || []).then(function(d) { setListings(d); });
-        return supabase.from('bookings').select('*').order('created_at', { ascending: false }).then(function(r3) {
-          log.push({ label: 'bookings', ok: !r3.error, count: r3.data ? r3.data.length : 0, error: r3.error ? r3.error.message : null });
-          if (!r3.error) setBookings(r3.data || []);
-          return supabase.from('agent_conversations').select('*').order('last_message_at', { ascending: false }).then(function(r4) {
-            log.push({ label: 'conversations', ok: !r4.error, count: r4.data ? r4.data.length : 0, error: r4.error ? r4.error.message : null });
-            if (!r4.error) {
-              setConvs(r4.data || []);
-              if (r4.data && r4.data.length) setSelConv(function(prev) { return prev || r4.data[0]; });
-            }
-            setDiag(log);
-            setStats({
-              pending: r1.data ? r1.data.length : 0,
-              listings: r2.data ? r2.data.length : 0,
-              bookings: r3.data ? r3.data.length : 0,
-              messages: r4.data ? r4.data.length : 0,
-            });
-          });
-        });
-      });
-    });
-  }
+  const [convsLoaded, setConvsLoaded] = useState(false);
 
-  function loadMsgs(conv) {
-    setSelConv(conv);
-    supabase.from('agent_messages').select('*').eq('conversation_id', conv.id).order('created_at', { ascending: true }).then(function(res) {
-      if (!res.error && res.data) setMsgs(res.data);
-    });
-  }
+  useEffect(() => {
+    if (!user || !convsLoaded) return;
+    const raw = sessionStorage.getItem('pendingChatMessage');
+    if (!raw || pendingMsgSentRef.current) return;
 
-  function uploadImg(file) {
-    if (!file) return Promise.resolve(null);
-    var ext = file.name.split('.').pop();
-    var path = 'admin/' + Date.now() + '_' + Math.random().toString(36).slice(2) + '.' + ext;
-    return supabase.storage.from('product-images').upload(path, file).then(function(res) {
-      if (res.error) return null;
-      return supabase.storage.from('product-images').getPublicUrl(path).data.publicUrl;
-    });
-  }
+    const pending = (() => { try { return JSON.parse(raw); } catch { return null; } })();
+    if (!pending) return;
 
-  function notifySeller(sellerId, text) {
-    if (!sellerId) return Promise.resolve();
-    return supabase.from('agent_conversations').select('id').eq('user_id', sellerId).limit(1).then(function(r) {
-      var cidPromise;
-      if (r.data && r.data.length) {
-        cidPromise = Promise.resolve(r.data[0].id);
-      } else {
-        cidPromise = supabase.from('agent_conversations').insert([{ user_id: sellerId, created_at: new Date().toISOString(), last_message_at: new Date().toISOString() }]).select().single().then(function(nc) {
-          if (nc.error) return null;
-          return nc.data.id;
-        });
+    pendingMsgSentRef.current = true;
+    sessionStorage.removeItem('pendingChatMessage');
+
+    handlePendingMessage(pending.text);
+  }, [convsLoaded, user]);
+
+  // ── Only scroll when shouldScrollRef is true ──
+  useEffect(() => {
+    if (shouldScrollRef.current) {
+      msgsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      shouldScrollRef.current = false;
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    if (pollRef.current) clearInterval(pollRef.current);
+    if (selectedConv) {
+      pollRef.current = setInterval(() => loadMessages(selectedConv, true), 5000);
+    }
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, [selectedConv]);
+
+  const handleTextareaInput = (e) => {
+    const ta = e.target;
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 110) + 'px';
+    setNewMessage(ta.value);
+  };
+
+  const handlePendingMessage = async (text) => {
+    if (!text || !user) return;
+    try {
+      const { data: freshConvs } = await supabase
+        .from('agent_conversations')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('last_message_at', { ascending: false })
+        .limit(1);
+
+      let conv = (freshConvs && freshConvs.length > 0) ? freshConvs[0] : null;
+
+      if (!conv) {
+        const { data: newConv, error: ce } = await supabase
+          .from('agent_conversations')
+          .insert([{ user_id: user.id, created_at: new Date().toISOString(), last_message_at: new Date().toISOString() }])
+          .select().single();
+        if (ce) { console.error('conv create error:', ce.message); return; }
+        conv = newConv;
       }
-      return cidPromise.then(function(cid) {
-        if (!cid) return;
-        var since = new Date(Date.now() - 60000).toISOString();
-        return supabase.from('agent_messages').select('id').eq('conversation_id', cid).eq('is_agent', true).eq('content', text).gte('created_at', since).limit(1).then(function(dup) {
-          if (dup.data && dup.data.length) return;
-          return supabase.from('agent_messages').insert([{ conversation_id: cid, sender_id: user.id, is_agent: true, content: '[' + selAgent.name + '] ' + text, agent_name: selAgent.name, created_at: new Date().toISOString() }]).then(function() {
-            return supabase.from('agent_conversations').update({ last_message_at: new Date().toISOString() }).eq('id', cid);
-          });
-        });
-      });
-    }).catch(function(err) { console.error(err); });
-  }
 
-  function approve(product) {
-    if (actionBusy[product.id]) return;
-    setActionBusy(function(b) { return Object.assign({}, b, { [product.id]: 'approve' }); });
-    supabase.from('products').update({ status: 'active' }).eq('id', product.id).then(function(res) {
-      if (res.error) { alert('Approve failed: ' + res.error.message); return; }
-      return notifySeller(product.seller_id, 'Your item "' + product.title + '" is now LIVE on the marketplace!').then(function() { load(); });
-    }).catch(function(err) { alert(err.message); }).finally(function() {
-      setActionBusy(function(b) { var n = Object.assign({}, b); delete n[product.id]; return n; });
-    });
-  }
+      if (!conv) return;
 
-  function reject(product) {
-    if (actionBusy[product.id]) return;
-    if (!window.confirm('Reject "' + product.title + '"? This will delete it.')) return;
-    setActionBusy(function(b) { return Object.assign({}, b, { [product.id]: 'reject' }); });
-    notifySeller(product.seller_id, 'Your item "' + product.title + '" could not be approved.').then(function() {
-      return supabase.from('products').delete().eq('id', product.id).then(function(res) {
-        if (res.error) { alert('Delete failed: ' + res.error.message); return; }
-        load();
-      });
-    }).catch(function(err) { alert(err.message); }).finally(function() {
-      setActionBusy(function(b) { var n = Object.assign({}, b); delete n[product.id]; return n; });
-    });
-  }
+      const { error: me } = await supabase
+        .from('agent_messages')
+        .insert([{ conversation_id: conv.id, sender_id: user.id, is_agent: false, content: text, created_at: new Date().toISOString() }]);
 
-  function deleteProd(id) {
-    if (!window.confirm('Delete this listing permanently?')) return;
-    supabase.from('products').delete().eq('id', id).then(function(res) {
-      if (!res.error) load(); else alert(res.error.message);
-    });
-  }
+      if (me) { console.error('message insert error:', me.message); return; }
 
-  function updateBooking(id, status) {
-    supabase.from('bookings').update({ status: status, updated_at: new Date().toISOString() }).eq('id', id).then(function(res) {
-      if (!res.error) load(); else alert(res.error.message);
-    });
-  }
+      await supabase.from('agent_conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conv.id);
 
-  function openEdit(p) {
-    setEditProd(p);
-    setEditF({ title: p.title || '', price: p.price || '', category: p.category || 'Furniture', condition: p.condition || 'Like New', description: p.description || '', location: p.location || '', business_name: p.business_name || '', status: p.status || 'active' });
-    setEImg0(null); setEImg1(null); setEImg2(null);
-    supabase.from('product_images').select('image_url,sort_order').eq('product_id', p.id).order('sort_order', { ascending: true }).then(function(res) {
-      var slots = [null, null, null];
-      if (res.data) res.data.forEach(function(i) { if (i.sort_order < 3) slots[i.sort_order] = i.image_url; });
-      if (!slots[0]) slots[0] = p.image_url || null;
-      setEditExistingImgs(slots);
-      setEditOpen(true);
-    });
-  }
+      const { data: convs } = await supabase
+        .from('agent_conversations').select('*').eq('user_id', user.id)
+        .order('last_message_at', { ascending: false });
 
-  function saveEdit() {
-    if (!editProd) return;
-    setEditBusy(true);
-    var upd = Object.assign({}, editF, { price: parseFloat(editF.price), updated_at: new Date().toISOString() });
-    var chain = Promise.resolve();
-    if (eImg0) chain = chain.then(function() { return uploadImg(eImg0).then(function(u) { if (u) { upd.image_url = u; return supabase.from('product_images').upsert([{ product_id: editProd.id, image_url: u, is_primary: true, sort_order: 0 }]); } }); });
-    if (eImg1) chain = chain.then(function() { return uploadImg(eImg1).then(function(u) { if (u) return supabase.from('product_images').upsert([{ product_id: editProd.id, image_url: u, is_primary: false, sort_order: 1 }]); }); });
-    if (eImg2) chain = chain.then(function() { return uploadImg(eImg2).then(function(u) { if (u) return supabase.from('product_images').upsert([{ product_id: editProd.id, image_url: u, is_primary: false, sort_order: 2 }]); }); });
-    chain.then(function() {
-      return supabase.from('products').update(upd).eq('id', editProd.id).then(function(res) {
-        if (res.error) throw res.error;
-        setEditOpen(false); load();
-      });
-    }).catch(function(err) { alert('Save failed: ' + err.message); }).finally(function() { setEditBusy(false); });
-  }
+      if (convs && convs.length > 0) {
+        const enriched = await enrichConversations(convs);
+        setConversations(enriched);
+        setSelectedConv(enriched[0]);
+        setSelectedConvIdx(0);
+        setMobileShowChat(true);
 
-  function sendReply() {
-    var text = replyText.trim(); if (!text) return;
-    var conv = selConv;
-    if (!conv) { if (!convs.length) return; conv = convs[0]; setSelConv(conv); }
-    supabase.from('agent_messages').insert([{ conversation_id: conv.id, sender_id: user.id, is_agent: true, content: '[' + selAgent.name + '] ' + text, agent_name: selAgent.name, created_at: new Date().toISOString() }]).select().single().then(function(res) {
-      if (!res.error && res.data) {
-        setMsgs(function(p) { return p.concat([res.data]); });
-        setReplyText('');
-        supabase.from('agent_conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conv.id).then(function() { load(); });
-      } else if (res.error) alert('Send failed: ' + res.error.message);
-    });
-  }
-
-  function addListing(e) {
-    e.preventDefault();
-    if (!nImg0) { setAddMsg({ type: 'err', text: 'Main image is required.' }); return; }
-    setAddBusy(true); setAddMsg({ type: '', text: '' });
-    supabase.from('products').insert([Object.assign({ seller_id: user.id }, nProd, { price: parseFloat(nProd.price), status: 'active', created_at: new Date().toISOString() })]).select().single().then(function(res) {
-      if (res.error) throw res.error;
-      var prodId = res.data.id;
-      return uploadImg(nImg0).then(function(url0) {
-        var chain = Promise.resolve();
-        if (url0) {
-          chain = chain.then(function() { return supabase.from('product_images').insert([{ product_id: prodId, image_url: url0, is_primary: true, sort_order: 0 }]); }).then(function() { return supabase.from('products').update({ image_url: url0 }).eq('id', prodId); });
+        const { data: msgs } = await supabase
+          .from('agent_messages').select('*').eq('conversation_id', enriched[0].id)
+          .order('created_at', { ascending: true });
+        if (msgs) {
+          shouldScrollRef.current = true;
+          setMessages(msgs);
         }
-        if (nImg1) chain = chain.then(function() { return uploadImg(nImg1).then(function(u) { if (u) return supabase.from('product_images').insert([{ product_id: prodId, image_url: u, is_primary: false, sort_order: 1 }]); }); });
-        if (nImg2) chain = chain.then(function() { return uploadImg(nImg2).then(function(u) { if (u) return supabase.from('product_images').insert([{ product_id: prodId, image_url: u, is_primary: false, sort_order: 2 }]); }); });
-        return chain;
-      });
-    }).then(function() {
-      setNProd({ title: '', price: '', category: 'Furniture', condition: 'Like New', description: '', location: '', business_name: '' });
-      setNImg0(null); setNImg1(null); setNImg2(null);
-      setAddMsg({ type: 'ok', text: 'Listing published!' });
-      load();
-    }).catch(function(err) { setAddMsg({ type: 'err', text: err.message }); }).finally(function() { setAddBusy(false); });
-  }
+      }
+    } catch (err) { console.error('pendingMessage error:', err.message); }
+  };
 
-  function ThumbStrip(tprops) {
-    var product = tprops.product;
-    var selState = useState(0);
-    var sel = selState[0];
-    var setSel = selState[1];
-    var imgs = buildImages(product);
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
-        <div style={{ width: '80px', height: '80px', borderRadius: '8px', overflow: 'hidden', background: '#0e1117', border: '2px solid #1e2a3a' }}>
-          <img src={imgs[sel]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
-        <div style={{ display: 'flex', gap: '4px' }}>
-          {imgs.map(function(img, i) {
-            return (
-              <button key={i} onClick={function() { setSel(i); }}
-                style={{ width: '22px', height: '22px', borderRadius: '4px', overflow: 'hidden', padding: 0, border: '1.5px solid ' + (sel === i ? '#4dd4ac' : '#1e2a3a'), cursor: 'pointer', background: '#0e1117', opacity: sel === i ? 1 : 0.5 }}>
-                <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
+  const fetchAgentNames = async (convs) => {
+    const names = {};
+    for (const conv of convs) {
+      try {
+        const { data: agentMsg } = await supabase
+          .from('agent_messages').select('sender_id').eq('conversation_id', conv.id)
+          .eq('is_agent', true).limit(1);
 
-  function FileField(fprops) {
-    var label = fprops.label;
-    var value = fprops.value;
-    var onChange = fprops.onChange;
-    var existingUrl = fprops.existingUrl || null;
-    var ref = useRef(null);
-    var prevState = useState(existingUrl);
-    var prev = prevState[0];
-    var setPrev = prevState[1];
-    useEffect(function() { if (!value) setPrev(existingUrl); }, [existingUrl, value]);
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: 0 }}>{label}</p>
-        <div onClick={function() { if (ref.current) ref.current.click(); }}
-          style={{ width: '100%', aspectRatio: '1', borderRadius: '10px', overflow: 'hidden', background: '#0a1018', border: '2px dashed ' + (value ? '#4dd4ac' : prev ? '#334155' : '#1e2a3a'), display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}>
-          {prev
-            ? <><img src={prev} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} /><div style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(0,0,0,0.65)', borderRadius: '5px', padding: '2px 6px', fontSize: '9px', fontWeight: '700', color: '#fff' }}>Change</div></>
-            : <><div style={{ fontSize: '1.8rem', opacity: 0.3 }}>+</div><span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', fontWeight: '600' }}>Click</span></>
+        if (agentMsg && agentMsg.length > 0) {
+          const agentId = agentMsg[0].sender_id;
+          const { data: profile } = await supabase
+            .from('seller_profiles').select('business_name, full_name, name').eq('user_id', agentId).single();
+
+          if (profile) {
+            names[conv.id] = profile.business_name || profile.full_name || profile.name || 'Support Agent';
+          } else {
+            const { data: authUser } = await supabase
+              .from('profiles').select('full_name, username, name').eq('id', agentId).single();
+            names[conv.id] = authUser?.full_name || authUser?.username || authUser?.name || 'Support Agent';
           }
-        </div>
-        <input ref={ref} type="file" accept="image/*" style={{ display: 'none' }} onChange={function(e) { var f = e.target.files[0]; if (f) { onChange(f); setPrev(URL.createObjectURL(f)); } }} />
-      </div>
-    );
-  }
+        } else {
+          names[conv.id] = 'Support Team';
+        }
+      } catch { names[conv.id] = 'Support Team'; }
+    }
+    return names;
+  };
 
-  var NAV = [
-    { id: 'pending',  icon: 'P', label: 'Pending',     count: stats.pending  },
-    { id: 'listings', icon: 'L', label: 'Listings',    count: stats.listings },
-    { id: 'add',      icon: '+', label: 'Add Listing', count: 0              },
-    { id: 'bookings', icon: 'B', label: 'Bookings',    count: stats.bookings },
-    { id: 'messages', icon: 'M', label: 'Messages',    count: stats.messages },
-  ];
+  const enrichConversations = async (convs) => {
+    return await Promise.all(convs.map(async (conv) => {
+      const { data: lastMsg } = await supabase
+        .from('agent_messages').select('content, is_agent, created_at')
+        .eq('conversation_id', conv.id).order('created_at', { ascending: false }).limit(1);
+      return { ...conv, lastMsg: lastMsg?.[0] || null };
+    }));
+  };
 
-  var currentNav = null;
-  for (var ni = 0; ni < NAV.length; ni++) { if (NAV[ni].id === tab) { currentNav = NAV[ni]; break; } }
-  if (!currentNav) currentNav = NAV[0];
+  const loadProfile = async () => {
+    const { data } = await supabase.from('seller_profiles').select('*').eq('user_id', user.id).single();
+    if (data) { setBusinessName(data.business_name || ''); setLocation(data.location || ''); }
+  };
 
-  function DropdownPanel() {
-    return (
-      <div style={{ position: 'absolute', top: 'calc(100% + 8px)', left: 0, width: '260px', background: '#0d1520', border: '2px solid #1e2a3a', borderRadius: '14px', zIndex: 9999, overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.7)' }}>
-        <div style={{ padding: '14px 16px', borderBottom: '2px solid #1e2a3a', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: '28px', height: '28px', borderRadius: '7px', background: 'linear-gradient(135deg,#4dd4ac,#1e7a5e)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', flexShrink: 0, color: '#000', fontWeight: '700' }}>A</div>
-          <div>
-            <div style={{ fontFamily: 'Georgia,serif', fontSize: '0.95rem', fontWeight: '700', color: '#4dd4ac', lineHeight: 1 }}>Admin Panel</div>
-            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', marginTop: '2px' }}>Store Management</div>
-          </div>
-        </div>
+  const loadConversations = async () => {
+    const { data: convs, error } = await supabase
+      .from('agent_conversations').select('*').eq('user_id', user.id)
+      .order('last_message_at', { ascending: false });
+    if (error) { console.error('convs error:', error.message); setConvsLoaded(true); return; }
 
-        <div style={{ padding: '12px', borderBottom: '2px solid #1e2a3a' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-            {[
-              { v: stats.pending,  l: 'PENDING',  c: '#fbbf24', bg: 'rgba(251,191,36,0.08)'  },
-              { v: stats.listings, l: 'ACTIVE',   c: '#4dd4ac', bg: 'rgba(77,212,172,0.08)'  },
-              { v: stats.bookings, l: 'BOOKINGS', c: '#60a5fa', bg: 'rgba(96,165,250,0.08)'  },
-              { v: stats.messages, l: 'CHATS',    c: '#c084fc', bg: 'rgba(192,132,252,0.08)' },
-            ].map(function(s) {
-              return (
-                <div key={s.l} style={{ padding: '10px 6px', borderRadius: '8px', textAlign: 'center', background: s.bg, border: '1px solid ' + s.c + '44' }}>
-                  <div style={{ fontSize: '1.4rem', fontWeight: '800', color: s.c, lineHeight: 1 }}>{s.v}</div>
-                  <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.35)', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.l}</div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+    if (convs && convs.length > 0) {
+      const enriched = await enrichConversations(convs);
+      setConversations(enriched);
+      fetchAgentNames(convs).then(names => setAgentNames(names));
 
-        <nav style={{ padding: '8px' }}>
-          {NAV.map(function(item) {
-            var active = tab === item.id;
-            return (
-              <button key={item.id}
-                onClick={function() { setTab(item.id); setMenuOpen(false); }}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 13px', marginBottom: '2px', borderRadius: '9px', background: active ? '#4dd4ac' : 'transparent', color: active ? '#000' : '#4dd4ac', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.87rem', fontWeight: active ? '700' : '500' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>{item.label}</span>
-                {item.count > 0 && <span style={{ padding: '2px 7px', borderRadius: '20px', fontSize: '10px', fontWeight: '700', background: active ? 'rgba(0,0,0,0.2)' : 'rgba(77,212,172,0.15)', color: active ? '#000' : '#4dd4ac' }}>{item.count}</span>}
-              </button>
-            );
-          })}
-        </nav>
+      if (!selectedConv) {
+        setSelectedConv(enriched[0]);
+        setSelectedConvIdx(0);
+        loadMessages(enriched[0]);
+      }
+    } else {
+      setConversations([]);
+    }
+    setConvsLoaded(true);
+  };
 
-        <div style={{ padding: '10px 12px', borderTop: '2px solid #1e2a3a', display: 'flex', flexDirection: 'column', gap: '7px' }}>
-          <div style={{ display: 'flex', gap: '7px' }}>
-            <button onClick={function() { setShowDiag(function(p) { return !p; }); setMenuOpen(false); }}
-              style={{ flex: 1, padding: '8px', background: 'rgba(96,165,250,0.08)', border: '1px solid #1e2a3a', borderRadius: '8px', color: '#60a5fa', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.74rem', fontWeight: '600' }}>
-              {showDiag ? 'Hide Diag' : 'Show Diag'}
-            </button>
-            <button onClick={function() { load(); setMenuOpen(false); }}
-              style={{ flex: 1, padding: '8px', background: 'rgba(77,212,172,0.08)', border: '1px solid #1e2a3a', borderRadius: '8px', color: '#4dd4ac', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.74rem', fontWeight: '600' }}>
-              Refresh
-            </button>
-          </div>
-          <button onClick={function() { setView('home'); }}
-            style={{ width: '100%', padding: '9px', background: 'transparent', border: '2px solid #1e2a3a', borderRadius: '9px', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.82rem', fontWeight: '600' }}>
-            Back to Store
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const loadMessages = async (conv, silent = false) => {
+    if (!conv) return;
+    if (!silent) setMsgLoading(true);
+    const { data, error } = await supabase
+      .from('agent_messages').select('*').eq('conversation_id', conv.id)
+      .order('created_at', { ascending: true });
+    // Do NOT auto-scroll on silent poll or initial load
+    if (!error && data) setMessages(data);
+    if (!silent) setMsgLoading(false);
+  };
+
+  const selectConv = (conv, idx) => {
+    setSelectedConv(conv);
+    setSelectedConvIdx(idx);
+    loadMessages(conv);
+    setMobileShowChat(true);
+    setTimeout(() => textareaRef.current?.focus(), 100);
+  };
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !user) return;
+    try {
+      let conv = selectedConv;
+      if (!conv) {
+        const { data } = await supabase
+          .from('agent_conversations')
+          .insert([{ user_id: user.id, created_at: new Date().toISOString(), last_message_at: new Date().toISOString() }])
+          .select().single();
+        conv = data;
+        setSelectedConv(data);
+        setConversations([data]);
+      }
+      const { data: msg } = await supabase
+        .from('agent_messages')
+        .insert([{ conversation_id: conv.id, sender_id: user.id, is_agent: false, content: newMessage, created_at: new Date().toISOString() }])
+        .select().single();
+      if (msg) {
+        // Only scroll when user explicitly sends a message
+        shouldScrollRef.current = true;
+        setMessages(p => [...p, msg]);
+        setNewMessage('');
+        if (textareaRef.current) { textareaRef.current.value = ''; textareaRef.current.style.height = 'auto'; }
+        await supabase.from('agent_conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conv.id);
+        loadConversations();
+      }
+    } catch (err) { console.error('send error:', err.message); }
+  };
+
+  const loadSellerData = async () => {
+    const { data: productsData } = await supabase
+      .from('products').select('*').eq('seller_id', user.id)
+      .order('created_at', { ascending: false });
+    if (productsData) {
+      setProducts(productsData);
+      setStats({
+        total:   productsData.length,
+        pending: productsData.filter(p => p.status === 'pending').length,
+        active:  productsData.filter(p => p.status === 'active').length,
+        sold:    productsData.filter(p => p.status === 'sold').length,
+      });
+      productsData.forEach(async (product) => {
+        const { data: imgs } = await supabase
+          .from('product_images').select('*').eq('product_id', product.id)
+          .order('sort_order', { ascending: true });
+        if (imgs) setProductImages(prev => ({ ...prev, [product.id]: imgs }));
+      });
+    }
+  };
+
+  const handleImageUpload = async (file) => {
+    if (!file) return null;
+    const ext = file.name.split('.').pop();
+    const path = `${user.id}/${Math.random()}.${ext}`;
+    const { error } = await supabase.storage.from('product-images').upload(path, file);
+    if (error) return null;
+    return supabase.storage.from('product-images').getPublicUrl(path).data.publicUrl;
+  };
+
+  const handlePostSubmit = async (e) => {
+    e.preventDefault();
+    setUploading(true); setPostError(''); setPostSuccess(false);
+    try {
+      if (!itemName || !price || !description || !mainImage || !location || !businessName)
+        throw new Error('Please fill in all required fields');
+      const { data: product, error: productError } = await supabase
+        .from('products')
+        .insert([{ seller_id: user.id, title: itemName, price: parseFloat(price), category, condition, description, location, business_name: businessName, status: 'pending', created_at: new Date().toISOString() }])
+        .select().single();
+      if (productError) throw new Error(productError.message);
+      const mainUrl = await handleImageUpload(mainImage);
+      if (mainUrl) {
+        await supabase.from('product_images').insert([{ product_id: product.id, image_url: mainUrl, is_primary: true, sort_order: 0 }]);
+        await supabase.from('products').update({ image_url: mainUrl }).eq('id', product.id);
+      }
+      for (const [file, order] of [[detailImage1, 1], [detailImage2, 2]]) {
+        if (file) {
+          const url = await handleImageUpload(file);
+          if (url) await supabase.from('product_images').insert([{ product_id: product.id, image_url: url, is_primary: false, sort_order: order }]);
+        }
+      }
+      setItemName(''); setPrice(''); setCategory('Furniture'); setCondition('Like New');
+      setDescription(''); setMainImage(null); setDetailImage1(null); setDetailImage2(null);
+      document.querySelectorAll('input[type="file"]').forEach(i => { i.value = ''; });
+      setPostSuccess(true);
+      await loadSellerData();
+      setActiveTab('listings');
+    } catch (err) { setPostError(`Failed to post item: ${err.message}`); }
+    finally { setUploading(false); }
+  };
+
+  const filteredProducts = statusFilter === 'all' ? products : products.filter(p => p.status === statusFilter);
+
+  const formatTime = (ts) => ts ? new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+  const formatDate = (ts) => {
+    if (!ts) return '';
+    const d = new Date(ts), today = new Date(), yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    if (d.toDateString() === today.toDateString()) return formatTime(ts);
+    if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+    return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  };
+
+  const getDateChip = (ts) => {
+    const d = new Date(ts), today = new Date(), yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    if (d.toDateString() === today.toDateString()) return 'Today';
+    if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+    return d.toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' });
+  };
+
+  const messagesWithDateChips = messages.reduce((acc, msg, i) => {
+    const msgDate = new Date(msg.created_at).toDateString();
+    const prevDate = i > 0 ? new Date(messages[i-1].created_at).toDateString() : null;
+    if (msgDate !== prevDate) acc.push({ type: 'chip', label: getDateChip(msg.created_at) });
+    acc.push({ type: 'msg', msg });
+    return acc;
+  }, []);
+
+  const getAgentName = (conv) => {
+    if (!conv) return 'Support Team';
+    return agentNames[conv.id] || 'Support Team';
+  };
+
+  const statusColor = (s) => ({
+    active:   { bg: 'rgba(74,222,128,0.15)',  text: '#4ade80'  },
+    pending:  { bg: 'rgba(251,191,36,0.15)',  text: '#fbbf24'  },
+    sold:     { bg: 'rgba(255,255,255,0.08)', text: 'rgba(255,255,255,0.45)' },
+    approved: { bg: 'rgba(74,222,128,0.15)',  text: '#4ade80'  },
+    rejected: { bg: 'rgba(255,107,107,0.15)', text: '#ff6b6b'  },
+  }[s] || { bg: 'rgba(255,255,255,0.08)', text: 'rgba(255,255,255,0.45)' });
 
   return (
-    <div style={{ background: '#090d14', minHeight: '100vh', color: '#fff', fontFamily: 'Poppins,-apple-system,sans-serif', display: 'flex', flexDirection: 'column' }}>
-      <style dangerouslySetInnerHTML={{ __html: '.adm-sb::-webkit-scrollbar{width:4px}.adm-sb::-webkit-scrollbar-thumb{background:#1e2a3a;border-radius:4px}.adm-in::placeholder{color:rgba(255,255,255,0.22)}.adm-in option{background:#111}' }} />
+    <div style={{ background: '#0e1117', minHeight: '100vh', color: '#ffffff', fontFamily: "'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+      <style>{`
+        .dash-input::placeholder { color: rgba(255,255,255,0.25); }
+        .dash-input option { background: #1c1c1c; }
+        .dash-input:focus { border-color: #4dd4ac !important; outline: none; }
+        .dash-file { color-scheme: dark; }
 
-      <div style={{ position: 'sticky', top: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', background: '#090d14', borderBottom: '2px solid #1e2a3a' }}>
-        <div ref={menuRef} style={{ position: 'relative' }}>
-          <button onClick={function() { setMenuOpen(function(p) { return !p; }); }}
-            style={{ width: '42px', height: '42px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '5px', background: menuOpen ? 'rgba(77,212,172,0.15)' : '#0e1825', border: '2px solid ' + (menuOpen ? '#4dd4ac' : '#1e2a3a'), borderRadius: '10px', cursor: 'pointer', padding: 0 }}>
-            <span style={{ display: 'block', width: '18px', height: '2px', background: '#4dd4ac', borderRadius: '2px', transform: menuOpen ? 'translateY(7px) rotate(45deg)' : 'none', transition: 'transform 0.2s' }} />
-            <span style={{ display: 'block', width: '13px', height: '2px', background: '#4dd4ac', borderRadius: '2px', alignSelf: 'flex-start', marginLeft: '12px', opacity: menuOpen ? 0 : 1, transition: 'opacity 0.2s' }} />
-            <span style={{ display: 'block', width: '18px', height: '2px', background: '#4dd4ac', borderRadius: '2px', transform: menuOpen ? 'translateY(-7px) rotate(-45deg)' : 'none', transition: 'transform 0.2s' }} />
+        .dash-tabbar { background: #131920; border-bottom: 2px solid #1a2030; display: flex; align-items: center; padding: 0 40px; position: sticky; top: 0; z-index: 100; overflow-x: auto; }
+        .dash-tabbar::-webkit-scrollbar { display: none; }
+        .dash-tab { display: inline-flex; align-items: center; gap: 8px; padding: 20px 28px; color: rgba(255,255,255,0.45); font-size: 0.95rem; font-weight: 600; border: none; border-bottom: 3px solid transparent; background: none; cursor: pointer; white-space: nowrap; transition: all 0.2s; font-family: inherit; }
+        .dash-tab:hover { color: #FFD700; }
+        .dash-tab.active { color: #FFD700; border-bottom-color: #FFD700; }
+        .tab-badge { background: #4dd4ac; color: #000; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; margin-left: 4px; }
+
+        .alert { padding: 13px 18px; border-radius: 8px; margin-bottom: 24px; font-size: 0.88rem; font-weight: 500; border: 1px solid; display: flex; align-items: flex-start; gap: 10px; }
+        .alert-success { background: rgba(77,212,172,0.07); border-color: #4dd4ac; color: #4dd4ac; }
+        .alert-error   { background: rgba(255,107,107,0.07); border-color: #ff6b6b; color: #ff6b6b; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 7px; color: rgba(255,255,255,0.65); font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+        .form-control { width: 100%; padding: 12px 16px; border: 1px solid #1e2a3a; border-radius: 8px; background: #0e1117; color: #fff; font-size: 0.9rem; font-family: inherit; transition: border-color 0.2s; box-sizing: border-box; }
+        .form-control:focus { outline: none; border-color: #4dd4ac; }
+        .form-control::placeholder { color: rgba(255,255,255,0.22); }
+        textarea.form-control { min-height: 115px; resize: vertical; }
+        select.form-control { cursor: pointer; }
+        select.form-control option { background: #1c1c1c; }
+
+        .upload-zone { border: 2px dashed #1e2a3a; border-radius: 10px; padding: 28px; text-align: center; transition: border-color 0.2s; cursor: pointer; background: #0e1117; width: 100%; box-sizing: border-box; }
+        .upload-zone:hover { border-color: #4dd4ac; }
+        @media (max-width: 768px) { .upload-zone { border-radius: 0; border-left: none; border-right: none; margin-left: -16px; margin-right: -16px; width: calc(100% + 32px); padding: 24px 16px; } }
+
+        .ftab { padding: 7px 15px; background: #1a2030; color: rgba(255,255,255,0.45); font-weight: 600; font-size: 0.8rem; border-radius: 20px; border: 1px solid #1e2a3a; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-family: inherit; }
+        .ftab:hover { color: #4dd4ac; border-color: #4dd4ac; }
+        .ftab.active { background: #4dd4ac; color: #000; border-color: #4dd4ac; }
+        .ftab span { font-size: 0.72rem; font-weight: 700; opacity: 0.75; }
+
+        .listings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+        .listing-card { background: #151c27; border-radius: 12px; overflow: hidden; border: 1px solid #1e2a3a; transition: all 0.22s; }
+        .listing-card:hover { transform: translateY(-4px); border-color: #4dd4ac; box-shadow: 0 8px 24px rgba(77,212,172,0.1); }
+        .lc-img { position: relative; height: 175px; background: #111; overflow: hidden; }
+        .lc-img img { width: 100%; height: 100%; object-fit: cover; }
+        .lc-status-badge { position: absolute; top: 10px; right: 10px; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+        .lc-body { padding: 16px; }
+        .lc-title { font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 5px; }
+        .lc-price { font-size: 1.2rem; font-weight: 700; color: #4dd4ac; margin-bottom: 11px; }
+        .lc-veri { padding: 8px 11px; border-radius: 7px; margin-bottom: 10px; font-size: 0.78rem; font-weight: 600; display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.25); }
+        .lc-actions { display: flex; gap: 8px; padding-top: 11px; margin-top: 4px; border-top: 1px solid #1e2a3a; }
+        .lc-btn { flex: 1; padding: 8px; border-radius: 7px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; border: 1px solid; font-family: inherit; transition: all 0.2s; background: transparent; }
+        .btn-view { color: #4dd4ac; border-color: #4dd4ac; }
+        .btn-view:hover { background: #4dd4ac; color: #000; }
+        .btn-del { color: #ff6b6b; border-color: #ff6b6b; }
+        .btn-del:hover { background: #ff6b6b; color: #fff; }
+
+        /* ── Chat shell: desktop ── */
+        .wa-shell {
+          display: flex;
+          height: calc(100vh - 200px);
+          min-height: 600px;
+          border-radius: 14px;
+          overflow: hidden;
+          border: 1px solid #1e2a3a;
+          box-shadow: 0 16px 50px rgba(0,0,0,0.5);
+        }
+        .wa-left { width: 300px; flex-shrink: 0; background: #0e1117; border-right: 1px solid #1e2a3a; display: flex; flex-direction: column; }
+        .wa-left-top { padding: 16px 20px; background: #131920; border-bottom: 1px solid #1e2a3a; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+        .wa-left-top h3 { font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0; }
+        .wa-left-sub { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 2px; }
+        .wa-contact-list { flex: 1; overflow-y: auto; }
+        .wa-contact { display: flex; align-items: center; gap: 13px; padding: 14px 20px; cursor: pointer; border-bottom: 1px solid #1a2030; transition: background 0.15s; border-left: 3px solid transparent; }
+        .wa-contact:hover { background: rgba(77,212,172,0.07); }
+        .wa-contact.active { background: rgba(77,212,172,0.14); border-left-color: #4dd4ac; }
+        .wa-ava { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #4dd4ac, #2a9d7c); display: flex; align-items: center; justify-content: center; color: #000; font-weight: 700; font-size: 1rem; flex-shrink: 0; position: relative; }
+        .wa-dot { width: 10px; height: 10px; background: #4dd4ac; border-radius: 50%; border: 2px solid #111; position: absolute; bottom: 1px; right: 1px; box-shadow: 0 0 5px rgba(77,212,172,0.7); }
+        .wa-ci { flex: 1; min-width: 0; }
+        .wa-cname { font-size: 0.88rem; font-weight: 600; color: #fff; }
+        .wa-cprev { font-size: 0.75rem; color: rgba(255,255,255,0.38); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+        .wa-ctime { font-size: 0.68rem; color: rgba(255,255,255,0.28); }
+
+        .wa-right { flex: 1; display: flex; flex-direction: column; background: #0a1018; background-image: radial-gradient(circle at 1px 1px, rgba(77,212,172,0.02) 1px, transparent 0); background-size: 28px 28px; min-width: 0; }
+        .wa-topbar { padding: 14px 20px; background: #131920; border-bottom: 1px solid #1e2a3a; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+        .wa-topbar-ava { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #4dd4ac, #2a9d7c); display: flex; align-items: center; justify-content: center; color: #000; font-weight: 700; font-size: 0.92rem; flex-shrink: 0; }
+        .wa-topbar-name { font-size: 0.9rem; font-weight: 600; color: #fff; margin: 0 0 2px; }
+        .wa-topbar-status { font-size: 0.72rem; color: #4dd4ac; margin: 0; display: flex; align-items: center; gap: 5px; }
+        .wa-topbar-status::before { content: ''; width: 6px; height: 6px; background: #4dd4ac; border-radius: 50%; display: inline-block; box-shadow: 0 0 5px rgba(77,212,172,0.6); }
+        .wa-topbar-sub { font-size: 0.65rem; color: rgba(255,255,255,0.3); letter-spacing: 0.04em; text-transform: uppercase; }
+
+        .wa-msgs { flex: 1; overflow-y: auto; padding: 22px 28px; display: flex; flex-direction: column; gap: 3px; }
+        .wa-msgs::-webkit-scrollbar { width: 5px; }
+        .wa-msgs::-webkit-scrollbar-thumb { background: #1e2a3a; border-radius: 4px; }
+
+        .wa-datechip { text-align: center; margin: 10px 0; }
+        .wa-datechip span { background: #1a2520; color: rgba(255,255,255,0.4); font-size: 0.7rem; padding: 4px 13px; border-radius: 9px; display: inline-block; border: 1px solid rgba(77,212,172,0.1); }
+
+        .wa-msg { display: flex; margin-bottom: 1px; }
+        .wa-msg.sent { justify-content: flex-end; }
+        .wa-msg.received { justify-content: flex-start; }
+        .wa-msg-inner { display: flex; flex-direction: column; max-width: 72%; }
+        .wa-msg.sent .wa-msg-inner { align-items: flex-end; }
+        .wa-msg.received .wa-msg-inner { align-items: flex-start; }
+        .wa-sender-label { font-size: 0.68rem; font-weight: 700; color: #4dd4ac; margin-bottom: 3px; padding-left: 2px; }
+        .wa-bubble { width: 100%; padding: 8px 12px 6px; border-radius: 10px; word-wrap: break-word; line-height: 1.55; font-size: 0.87rem; box-shadow: 0 1px 2px rgba(0,0,0,0.35); animation: waPop 0.18s ease; }
+        @keyframes waPop { from { opacity:0; transform: scale(0.95) translateY(5px); } to { opacity:1; transform: scale(1) translateY(0); } }
+        .wa-msg.received .wa-bubble { background: #1e2b27; color: #e0f5ef; border-top-left-radius: 2px; }
+        .wa-msg.sent .wa-bubble { background: #1d4b39; color: #e0f5ef; border-top-right-radius: 2px; }
+        .wa-foot { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-top: 2px; }
+        .wa-time { font-size: 0.62rem; color: rgba(255,255,255,0.36); }
+        .wa-tick { color: #4dd4ac; font-size: 0.68rem; }
+
+        .wa-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 40px; }
+        .wa-empty-icon { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #1d4b39, #163326); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #4dd4ac; }
+
+        .wa-inputbar { padding: 12px 18px; background: #131920; border-top: 1px solid #1e2a3a; display: flex; align-items: flex-end; gap: 10px; flex-shrink: 0; }
+        .wa-ta { flex: 1; background: #1a2230; border: 1px solid #1e2a3a; border-radius: 22px; color: #fff; font-family: inherit; font-size: 0.87rem; padding: 10px 16px; resize: none; min-height: 42px; max-height: 110px; overflow-y: hidden; line-height: 1.5; transition: border-color 0.2s; }
+        .wa-ta:focus { outline: none; border-color: #4dd4ac; }
+        .wa-ta::placeholder { color: rgba(255,255,255,0.28); }
+        .wa-sendbtn { width: 42px; height: 42px; border-radius: 50%; background: #4dd4ac; color: #000; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; transition: all 0.2s; box-shadow: 0 2px 8px rgba(77,212,172,0.3); }
+        .wa-sendbtn:hover { background: #3bc495; transform: scale(1.08); }
+        .wa-sendbtn:disabled { background: #1e2a3a; cursor: default; transform: none; box-shadow: none; }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.3); }
+        .empty-state h3 { color: rgba(255,255,255,0.45); margin-bottom: 8px; font-size: 1rem; }
+
+        .settings-card { background: #151c27; border: 1px solid #1e2a3a; border-radius: 14px; padding: 40px; }
+        .settings-label { font-size: 0.72rem; font-weight: 700; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 18px; }
+
+        /* ── Mobile overrides ── */
+        @media (max-width: 768px) {
+          .dash-tabbar { padding: 0 16px; }
+          .dash-page { padding: 24px 16px; }
+          .form-row { grid-template-columns: 1fr; }
+          .listings-grid { grid-template-columns: 1fr; }
+
+          /* Chat: full-screen height on mobile, stacked layout */
+          .wa-shell {
+            flex-direction: column;
+            height: calc(100vh - 120px); /* much taller on mobile */
+            min-height: 0;
+            border-radius: 10px;
+          }
+          /* Contact list panel */
+          .wa-left {
+            width: 100%;
+            flex: none;
+            height: 240px;             /* fixed compact height when visible */
+            border-right: none;
+            border-bottom: 1px solid #1e2a3a;
+          }
+          .wa-left.hidden { display: none; }
+
+          /* Chat panel fills remaining space */
+          .wa-right {
+            flex: 1;
+            min-height: 0;
+          }
+          .wa-right.hidden { display: none; }
+
+          .wa-msg-inner { max-width: 85%; }
+          .wa-back-btn { display: block !important; }
+        }
+      `}</style>
+
+      {/* ── Tab Bar ── */}
+      <div className="dash-tabbar">
+        {[
+          { id: 'new',      label: 'Add New'  },
+          { id: 'listings', label: 'My Ads'   },
+          { id: 'messages', label: 'Messages' },
+          { id: 'settings', label: 'Settings' },
+        ].map(({ id, label }) => (
+          <button key={id} onClick={() => setActiveTab(id)}
+            className={`dash-tab ${activeTab === id ? 'active' : ''}`}>
+            {label}
+            {id === 'messages' && stats.pending > 0 && (
+              <span className="tab-badge">{stats.pending}</span>
+            )}
           </button>
-          {menuOpen && <DropdownPanel />}
-        </div>
-
-        <span style={{ fontSize: '0.9rem', fontWeight: '700', color: '#4dd4ac' }}>{currentNav.label}</span>
-
-        <button onClick={function() { setView('home'); }}
-          style={{ padding: '7px 12px', background: 'transparent', border: '1.5px solid #1e2a3a', borderRadius: '8px', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.76rem', fontWeight: '600' }}>
-          Store
-        </button>
+        ))}
       </div>
 
-      {menuOpen && <div onClick={function() { setMenuOpen(false); }} style={{ position: 'fixed', inset: 0, zIndex: 499, background: 'rgba(0,0,0,0.5)' }} />}
+      {/* ── Page Content ── */}
+      <div className="dash-page" style={{ maxWidth: '1200px', margin: '0 auto', padding: '44px 40px' }}>
 
-      <main className="adm-sb" style={{ flex: 1, overflowY: 'auto', padding: '20px 16px' }}>
-        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+        {postSuccess && activeTab !== 'new' && (
+          <div className="alert alert-success">✓ Item submitted successfully! It will be visible after agent approval.</div>
+        )}
 
-          {showDiag && (
-            <div style={{ marginBottom: '24px', background: '#0a1018', border: '2px solid #1e3a5f', borderRadius: '10px', padding: '16px' }}>
-              <p style={{ fontWeight: '700', color: '#60a5fa', marginBottom: '12px', fontSize: '0.85rem' }}>DB Diagnostics</p>
-              {diag.map(function(d, i) {
-                return (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 12px', borderRadius: '6px', marginBottom: '4px', background: d.ok ? 'rgba(77,212,172,0.06)' : 'rgba(239,68,68,0.1)' }}>
-                    <span style={{ color: d.ok ? '#4dd4ac' : '#fca5a5', fontSize: '0.82rem', fontWeight: '700' }}>{d.ok ? 'OK' : 'ERR'}</span>
-                    <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.82rem', flex: 1 }}>{d.label}</span>
-                    <span style={{ color: d.ok ? '#4dd4ac' : '#fca5a5', fontSize: '0.82rem', fontWeight: '700' }}>{d.ok ? d.count + ' rows' : d.error}</span>
+        {/* ══ ADD NEW ══ */}
+        {activeTab === 'new' && (
+          <div>
+            <div style={{ marginBottom: '28px' }}>
+              <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#4dd4ac', marginBottom: '4px' }}>Add New Listing</div>
+              <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.32)' }}>Fill in the details and submit — your listing will be reviewed before going live.</div>
+            </div>
+            {postSuccess && <div className="alert alert-success">✓ Listing submitted! It will be visible after admin verification.</div>}
+            {postError   && <div className="alert alert-error">⚠ {postError}</div>}
+            <div style={{ background: '#151c27', border: '1px solid #1e2a3a', borderRadius: '14px', padding: '40px' }}>
+              <form onSubmit={handlePostSubmit}>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Business Name</label>
+                    <input type="text" value={businessName} onChange={e => setBusinessName(e.target.value)} required placeholder="e.g. Steve's Electronics" className="form-control" />
                   </div>
-                );
-              })}
-            </div>
-          )}
-
-          {tab === 'pending' && (
-            <div>
-              <h2 style={{ fontFamily: 'Georgia,serif', fontSize: 'clamp(1.2rem,4vw,1.7rem)', color: '#4dd4ac', margin: '0 0 6px' }}>Pending Submissions</h2>
-              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.85rem', margin: '0 0 20px' }}>Approve or reject seller submissions</p>
-              {pending.length === 0
-                ? <Empty icon="✓" title="All caught up!" sub="No pending submissions." />
-                : pending.map(function(p) {
-                  return (
-                    <Card key={p.id} color="#fbbf24">
-                      <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
-                        <ThumbStrip product={p} />
-                        <div style={{ flex: 1, minWidth: '160px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '6px', marginBottom: '8px' }}>
-                            <h3 style={{ fontWeight: '700', color: '#4dd4ac', margin: 0, fontSize: '1rem', flex: 1 }}>{p.title}</h3>
-                            <span style={{ background: 'rgba(251,191,36,0.12)', color: '#fbbf24', padding: '3px 10px', borderRadius: '20px', fontSize: '10px', fontWeight: '700', flexShrink: 0 }}>PENDING</span>
-                          </div>
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px 12px', fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', marginBottom: '10px' }}>
-                            <span><b style={{ color: 'rgba(255,255,255,0.7)' }}>Price:</b> ${p.price}</span>
-                            <span><b style={{ color: 'rgba(255,255,255,0.7)' }}>Cat:</b> {p.category}</span>
-                            <span><b style={{ color: 'rgba(255,255,255,0.7)' }}>Cond:</b> {p.condition}</span>
-                            <span><b style={{ color: 'rgba(255,255,255,0.7)' }}>Loc:</b> {p.location}</span>
-                          </div>
-                          <div style={{ display: 'flex', gap: '7px', flexWrap: 'wrap' }}>
-                            <Btn color="#16a34a" hover="#15803d" disabled={!!actionBusy[p.id]} onClick={function() { approve(p); }}>{actionBusy[p.id] === 'approve' ? 'Approving...' : 'Approve'}</Btn>
-                            <Btn color="#dc2626" hover="#b91c1c" disabled={!!actionBusy[p.id]} onClick={function() { reject(p); }}>{actionBusy[p.id] === 'reject' ? 'Rejecting...' : 'Reject'}</Btn>
-                            <Btn color="#60a5fa" hover="#3b82f6" onClick={function() { openEdit(p); }}>Edit</Btn>
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  );
-                })}
-            </div>
-          )}
-
-          {tab === 'listings' && (
-            <div>
-              <h2 style={{ fontFamily: 'Georgia,serif', fontSize: 'clamp(1.2rem,4vw,1.7rem)', color: '#4dd4ac', margin: '0 0 6px' }}>All Listings</h2>
-              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.85rem', margin: '0 0 20px' }}>Active and sold products</p>
-              {listings.length === 0
-                ? <Empty icon="[]" title="No listings yet" sub="Add one using Add Listing." />
-                : listings.map(function(p) {
-                  return (
-                    <Card key={p.id} color="#1e2a3a">
-                      <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
-                        <ThumbStrip product={p} />
-                        <div style={{ flex: 1, minWidth: '160px' }}>
-                          <h3 style={{ fontWeight: '700', color: '#4dd4ac', margin: '0 0 4px', fontSize: '0.95rem' }}>{p.title}</h3>
-                          <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', margin: '0 0 8px' }}>{p.category} · <span style={{ color: '#4dd4ac', fontWeight: '700' }}>${p.price}</span></p>
-                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-                            <Badge s={p.status} />
-                            <OutlineBtn color="#60a5fa" onClick={function() { openEdit(p); }}>Edit</OutlineBtn>
-                            <OutlineBtn color="#ff6b6b" onClick={function() { deleteProd(p.id); }}>Delete</OutlineBtn>
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  );
-                })}
-            </div>
-          )}
-
-          {tab === 'add' && (
-            <div>
-              <h2 style={{ fontFamily: 'Georgia,serif', fontSize: 'clamp(1.2rem,4vw,1.7rem)', color: '#4dd4ac', margin: '0 0 6px' }}>Add Listing</h2>
-              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.85rem', margin: '0 0 20px' }}>Publish a new product</p>
-              <div style={{ background: '#151c27', border: '2px solid #1e2a3a', borderRadius: '12px', padding: '20px' }}>
-                {addMsg.text && <div style={{ padding: '10px 14px', borderRadius: '8px', marginBottom: '16px', background: addMsg.type === 'ok' ? 'rgba(77,212,172,0.1)' : 'rgba(239,68,68,0.1)', color: addMsg.type === 'ok' ? '#4dd4ac' : '#fca5a5', fontSize: '0.85rem', fontWeight: '600' }}>{addMsg.text}</div>}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: '16px' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {[['Title','title','text'],['Price','price','number'],['Location','location','text'],['Business Name','business_name','text']].map(function(row) {
-                      return (
-                        <div key={row[1]}>
-                          <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>{row[0]}</p>
-                          <input className="adm-in" type={row[2]} value={nProd[row[1]]} onChange={function(e) { var v = e.target.value; setNProd(function(prev) { return Object.assign({}, prev, { [row[1]]: v }); }); }} style={IS} placeholder={row[0]} />
-                        </div>
-                      );
-                    })}
-                    <div>
-                      <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Category</p>
-                      <select className="adm-in" value={nProd.category} onChange={function(e) { var v = e.target.value; setNProd(function(p) { return Object.assign({}, p, { category: v }); }); }} style={IS}>{CATS.map(function(c) { return <option key={c}>{c}</option>; })}</select>
-                    </div>
-                    <div>
-                      <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Condition</p>
-                      <select className="adm-in" value={nProd.condition} onChange={function(e) { var v = e.target.value; setNProd(function(p) { return Object.assign({}, p, { condition: v }); }); }} style={IS}>{CONDS.map(function(c) { return <option key={c}>{c}</option>; })}</select>
-                    </div>
-                    <div>
-                      <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Description</p>
-                      <textarea className="adm-in" value={nProd.description} onChange={function(e) { var v = e.target.value; setNProd(function(p) { return Object.assign({}, p, { description: v }); }); }} style={Object.assign({}, IS, { minHeight: '90px', resize: 'vertical' })} placeholder="Describe the item..." />
-                    </div>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', alignContent: 'start' }}>
-                    <FileField label="Main *" value={nImg0} onChange={setNImg0} existingUrl={null} />
-                    <FileField label="Image 2" value={nImg1} onChange={setNImg1} existingUrl={null} />
-                    <FileField label="Image 3" value={nImg2} onChange={setNImg2} existingUrl={null} />
+                  <div className="form-group">
+                    <label>Category</label>
+                    <select value={category} onChange={e => setCategory(e.target.value)} required className="form-control">
+                      {categories.map(c => <option key={c}>{c}</option>)}
+                    </select>
                   </div>
                 </div>
-                <button onClick={addListing} disabled={addBusy} style={{ marginTop: '20px', width: '100%', padding: '13px', background: addBusy ? '#1e2a3a' : '#4dd4ac', color: addBusy ? 'rgba(255,255,255,0.3)' : '#000', border: 'none', borderRadius: '10px', fontWeight: '700', fontSize: '0.95rem', cursor: addBusy ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
-                  {addBusy ? 'Publishing...' : 'Publish Listing'}
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Item Name</label>
+                    <input type="text" value={itemName} onChange={e => setItemName(e.target.value)} required placeholder='e.g. Samsung 55" TV' className="form-control" />
+                  </div>
+                  <div className="form-group">
+                    <label>Condition</label>
+                    <select value={condition} onChange={e => setCondition(e.target.value)} required className="form-control">
+                      {conditions.map(c => <option key={c}>{c}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Price ($)</label>
+                    <input type="number" value={price} onChange={e => setPrice(e.target.value)} required min="0" step="0.01" placeholder="0.00" className="form-control" />
+                  </div>
+                  <div className="form-group">
+                    <label>Location</label>
+                  <input type="text" value={location} onChange={e => setLocation(e.target.value)} required placeholder="e.g. USA, Newyork" className="form-control" />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Description</label>
+                  <textarea value={description} onChange={e => setDescription(e.target.value)} required rows="5" className="form-control" placeholder="Describe your item — condition, features, reason for selling…" />
+                </div>
+                <div className="form-group">
+                  <label>Images</label>
+                  <div className="upload-zone">
+                    <div style={{ fontSize: '2rem', color: '#4dd4ac', marginBottom: '10px' }}>↑</div>
+                    <div style={{ marginBottom: '16px' }}>
+                      {[
+                        { label: 'Main Image *', setter: setMainImage, req: true },
+                        { label: 'Detail Image 1 (Optional)', setter: setDetailImage1 },
+                        { label: 'Detail Image 2 (Optional)', setter: setDetailImage2 },
+                      ].map(({ label, setter, req }) => (
+                        <div key={label} style={{ marginBottom: '12px', textAlign: 'left' }}>
+                          <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.55)', marginBottom: '6px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</div>
+                          <input type="file" accept="image/*" required={req} onChange={e => setter(e.target.files[0])}
+                            style={{ width: '100%', padding: '10px', background: '#0e1117', border: '1px solid #1e2a3a', borderRadius: '8px', color: '#fff', cursor: 'pointer', colorScheme: 'dark' }} />
+                        </div>
+                      ))}
+                    </div>
+                    <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.82rem' }}>JPG, PNG or GIF · 1 main + 2 optional detail images</p>
+                  </div>
+                </div>
+                <button type="submit" disabled={uploading}
+                  style={{ padding: '12px 28px', background: uploading ? 'rgba(77,212,172,0.5)' : '#4dd4ac', color: '#000', border: 'none', borderRadius: '8px', fontSize: '0.9rem', fontWeight: '600', cursor: uploading ? 'default' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px', fontFamily: 'inherit', transition: 'all 0.2s' }}
+                  onMouseEnter={e => { if (!uploading) e.currentTarget.style.background = '#3bc495'; }}
+                  onMouseLeave={e => { if (!uploading) e.currentTarget.style.background = '#4dd4ac'; }}>
+                  ✈ {uploading ? 'Submitting…' : 'Submit for Verification'}
                 </button>
-              </div>
-            </div>
-          )}
-
-          {tab === 'bookings' && (
-            <div>
-              <h2 style={{ fontFamily: 'Georgia,serif', fontSize: 'clamp(1.2rem,4vw,1.7rem)', color: '#4dd4ac', margin: '0 0 6px' }}>Bookings</h2>
-              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.85rem', margin: '0 0 20px' }}>Manage customer bookings</p>
-              {bookings.length === 0
-                ? <Empty icon="[]" title="No bookings yet" sub="Bookings will appear here." />
-                : bookings.map(function(b) {
-                  return (
-                    <Card key={b.id} color="#1e2a3a">
-                      <p style={{ color: '#4dd4ac', fontWeight: '700', margin: '0 0 4px' }}>{b.product_title || b.product_id}</p>
-                      <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.8rem', margin: '0 0 8px' }}>{b.customer_name} · {new Date(b.created_at).toLocaleDateString()}</p>
-                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-                        <Badge s={b.status} />
-                        <OutlineBtn color="#4dd4ac" onClick={function() { updateBooking(b.id, 'confirmed'); }}>Confirm</OutlineBtn>
-                        <OutlineBtn color="#ff6b6b" onClick={function() { updateBooking(b.id, 'cancelled'); }}>Cancel</OutlineBtn>
-                      </div>
-                    </Card>
-                  );
-                })}
-            </div>
-          )}
-
-          {tab === 'messages' && (
-            <div>
-              <h2 style={{ fontFamily: 'Georgia,serif', fontSize: 'clamp(1.2rem,4vw,1.7rem)', color: '#4dd4ac', margin: '0 0 6px' }}>Messages</h2>
-              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.85rem', margin: '0 0 20px' }}>Agent conversations</p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(140px,200px) 1fr', gap: '14px', minHeight: '400px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {convs.length === 0
-                    ? <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.82rem' }}>No conversations</p>
-                    : convs.map(function(cv) {
-                      return (
-                        <button key={cv.id} onClick={function() { loadMsgs(cv); }}
-                          style={{ padding: '10px 12px', background: selConv && selConv.id === cv.id ? 'rgba(77,212,172,0.15)' : '#151c27', border: '2px solid ' + (selConv && selConv.id === cv.id ? '#4dd4ac' : '#1e2a3a'), borderRadius: '9px', cursor: 'pointer', textAlign: 'left', color: 'inherit', fontFamily: 'inherit' }}>
-                          <p style={{ color: '#4dd4ac', fontWeight: '700', margin: '0 0 2px', fontSize: '0.82rem' }}>#{cv.id ? cv.id.slice(0, 6) : ''}</p>
-                          <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.72rem', margin: 0 }}>{new Date(cv.last_message_at).toLocaleString()}</p>
-                        </button>
-                      );
-                    })}
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', background: '#151c27', border: '2px solid #1e2a3a', borderRadius: '12px', overflow: 'hidden' }}>
-                  <div style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px', minHeight: '260px' }}>
-                    {msgs.map(function(m) {
-                      return (
-                        <div key={m.id} style={{ alignSelf: m.is_agent ? 'flex-end' : 'flex-start', maxWidth: '75%' }}>
-                          {m.is_agent && <p style={{ fontSize: '10px', color: '#4dd4ac', margin: '0 0 3px', textAlign: 'right', fontWeight: '600' }}>{m.agent_name || 'Agent'}</p>}
-                          <div style={{ padding: '9px 13px', borderRadius: '10px', background: m.is_agent ? 'rgba(77,212,172,0.15)' : '#1e2a3a', color: 'rgba(255,255,255,0.85)', fontSize: '0.83rem', lineHeight: 1.5 }}>
-                            {m.content ? m.content.replace(/^\[.+?\]\s*/, '') : ''}
-                          </div>
-                        </div>
-                      );
-                    })}
-                    <div ref={msgsEnd} />
-                  </div>
-                  <div style={{ padding: '12px', borderTop: '2px solid #1e2a3a', display: 'flex', gap: '8px' }}>
-                    <div ref={pickerRef} style={{ position: 'relative' }}>
-                      <button onClick={function() { setShowPicker(function(p) { return !p; }); }}
-                        style={{ padding: '8px 10px', background: '#1e2a3a', border: '2px solid #2a3a4a', borderRadius: '8px', color: '#4dd4ac', cursor: 'pointer', fontSize: '0.78rem', fontWeight: '600', fontFamily: 'inherit' }}>
-                        {selAgent.avatar} v
-                      </button>
-                      {showPicker && (
-                        <div style={{ position: 'absolute', bottom: '100%', left: 0, background: '#0d1520', border: '2px solid #1e2a3a', borderRadius: '10px', padding: '6px', zIndex: 100, marginBottom: '4px', minWidth: '180px' }}>
-                          {AGENTS.map(function(a) {
-                            return (
-                              <button key={a.name} onClick={function() { setSelAgent(a); setShowPicker(false); }}
-                                style={{ width: '100%', padding: '8px 10px', background: 'transparent', border: 'none', borderRadius: '7px', color: a.name === selAgent.name ? '#4dd4ac' : 'rgba(255,255,255,0.7)', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span>{a.avatar}</span><span>{a.name}</span>
-                                {a.online && <span style={{ marginLeft: 'auto', width: '7px', height: '7px', borderRadius: '50%', background: '#4dd4ac' }} />}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                    <input value={replyText} onChange={function(e) { setReplyText(e.target.value); }} onKeyDown={function(e) { if (e.key === 'Enter' && !e.shiftKey) sendReply(); }}
-                      placeholder={'Reply as ' + selAgent.name} className="adm-in"
-                      style={{ flex: 1, background: '#0e1117', border: '2px solid #1e2a3a', color: '#fff', padding: '8px 12px', borderRadius: '8px', outline: 'none', fontFamily: 'inherit', fontSize: '0.85rem' }} />
-                    <button onClick={sendReply} style={{ padding: '8px 16px', background: '#4dd4ac', color: '#000', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit' }}>Send</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-        </div>
-      </main>
-
-      {editOpen && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div className="adm-sb" style={{ background: '#0d1520', border: '2px solid #1e2a3a', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '560px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ fontFamily: 'Georgia,serif', color: '#4dd4ac', margin: 0 }}>Edit Listing</h3>
-              <button onClick={function() { setEditOpen(false); }} style={{ background: '#1e2a3a', border: 'none', borderRadius: '7px', color: 'rgba(255,255,255,0.5)', width: '32px', height: '32px', cursor: 'pointer', fontSize: '1rem' }}>X</button>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {[['Title','title','text'],['Price','price','number'],['Location','location','text'],['Business Name','business_name','text']].map(function(row) {
-                return (
-                  <div key={row[1]}>
-                    <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>{row[0]}</p>
-                    <input className="adm-in" type={row[2]} value={editF[row[1]] || ''} onChange={function(e) { var v = e.target.value; setEditF(function(f) { return Object.assign({}, f, { [row[1]]: v }); }); }} style={IS} />
-                  </div>
-                );
-              })}
-              <div>
-                <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Status</p>
-                <select className="adm-in" value={editF.status || 'active'} onChange={function(e) { var v = e.target.value; setEditF(function(f) { return Object.assign({}, f, { status: v }); }); }} style={IS}>
-                  {['active','sold','pending','out_of_stock'].map(function(s) { return <option key={s}>{s}</option>; })}
-                </select>
-              </div>
-              <div>
-                <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Description</p>
-                <textarea className="adm-in" value={editF.description || ''} onChange={function(e) { var v = e.target.value; setEditF(function(f) { return Object.assign({}, f, { description: v }); }); }} style={Object.assign({}, IS, { minHeight: '80px', resize: 'vertical' })} />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
-                <FileField label="Image 1" value={eImg0} onChange={setEImg0} existingUrl={editExistingImgs[0]} />
-                <FileField label="Image 2" value={eImg1} onChange={setEImg1} existingUrl={editExistingImgs[1]} />
-                <FileField label="Image 3" value={eImg2} onChange={setEImg2} existingUrl={editExistingImgs[2]} />
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-              <button onClick={function() { setEditOpen(false); }} style={{ flex: 1, padding: '11px', background: 'transparent', border: '2px solid #1e2a3a', borderRadius: '9px', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600' }}>Cancel</button>
-              <button onClick={saveEdit} disabled={editBusy} style={{ flex: 2, padding: '11px', background: editBusy ? '#1e2a3a' : '#4dd4ac', color: editBusy ? 'rgba(255,255,255,0.3)' : '#000', border: 'none', borderRadius: '9px', fontWeight: '700', cursor: editBusy ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
-                {editBusy ? 'Saving...' : 'Save Changes'}
-              </button>
+              </form>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* ══ MY ADS ══ */}
+        {activeTab === 'listings' && (
+          <div>
+            <div style={{ marginBottom: '28px' }}>
+              <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#4dd4ac', marginBottom: '4px' }}>My Ads</div>
+              <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.32)' }}>Track and manage all your listings.</div>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
+              {[
+                { key: 'all',     label: 'All',     count: stats.total   },
+                { key: 'pending', label: 'Pending', count: stats.pending },
+                { key: 'active',  label: 'Active',  count: stats.active  },
+                { key: 'sold',    label: 'Sold',    count: stats.sold    },
+              ].map(({ key, label, count }) => (
+                <button key={key} onClick={() => setStatusFilter(key)} className={`ftab ${statusFilter === key ? 'active' : ''}`}>
+                  {label} <span>{count}</span>
+                </button>
+              ))}
+            </div>
+            {filteredProducts.length === 0 ? (
+              <div className="empty-state">
+                <div style={{ fontSize: '3.5rem', marginBottom: '16px', color: '#1e2a3a' }}>□</div>
+                <h3>No listings found</h3>
+                <p style={{ fontSize: '0.82rem' }}>You haven't posted any items in this category yet.</p>
+                {statusFilter === 'all' && (
+                  <button onClick={() => setActiveTab('new')}
+                    style={{ marginTop: '16px', padding: '10px 24px', background: '#4dd4ac', color: '#000', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}>
+                    Post Your First Item
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="listings-grid">
+                {filteredProducts.map(product => {
+                  const sc = statusColor(product.status);
+                  const statusLabel = { pending: 'Pending', active: 'Active', sold: 'Sold', approved: 'Approved', rejected: 'Rejected' }[product.status] || product.status;
+                  const veriLabel = { pending: '⏳ Waiting for Verification', active: '✓ Live & Active', approved: '✓ Live & Approved', sold: '● Sold', rejected: '✗ Rejected' }[product.status] || product.status;
+                  return (
+                    <div key={product.id} className="listing-card">
+                      <div className="lc-img">
+                        {product.image_url
+                          ? <img src={product.image_url} alt={product.title} />
+                          : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', fontSize: '0.8rem', background: '#111' }}>No image</div>}
+                        <span className="lc-status-badge" style={{ background: sc.bg, color: sc.text }}>{statusLabel}</span>
+                      </div>
+                      <div className="lc-body">
+                        <div className="lc-title">{product.title}</div>
+                        <div className="lc-price">${parseFloat(product.price).toFixed(2)}</div>
+                        <div className="lc-veri" style={{ borderLeft: `3px solid ${sc.text}`, color: sc.text }}>{veriLabel}</div>
+                        <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', marginBottom: '10px' }}>{product.category} · {product.condition} · {product.location}</div>
+                        {(product.status === 'active' || product.status === 'approved' || product.status === 'pending') && (
+                          <div className="lc-actions">
+                            {(product.status === 'active' || product.status === 'approved') && (
+                              <button className="lc-btn btn-view" onClick={() => { sessionStorage.setItem('selectedProductId', product.id); setView('listings'); }}>👁 View</button>
+                            )}
+                            {product.status === 'pending' && (
+                              <button className="lc-btn btn-del" onClick={async () => { if (window.confirm('Delete this listing?')) { await supabase.from('products').delete().eq('id', product.id); loadSellerData(); } }}>🗑 Delete</button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ══ MESSAGES ══ */}
+        {activeTab === 'messages' && (
+          <div>
+            <div style={{ marginBottom: '28px' }}>
+              <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#4dd4ac', marginBottom: '4px' }}>Messages</div>
+              <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.32)' }}>Your conversations with marketplace agents.</div>
+            </div>
+
+            <div className="wa-shell">
+              {/* Left: thread list — hidden on mobile when chat is open */}
+              <div className={`wa-left${mobileShowChat ? ' hidden' : ''}`}>
+                <div className="wa-left-top">
+                  <div>
+                    <h3>Chats</h3>
+                    <div className="wa-left-sub">Support &amp; notifications</div>
+                  </div>
+                </div>
+                <div className="wa-contact-list">
+                  {conversations.length === 0 ? (
+                    <div style={{ padding: '40px 16px', textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '0.82rem' }}>
+                      <div style={{ fontSize: '2rem', marginBottom: '10px' }}>💬</div>
+                      <p>No conversations yet</p>
+                      <p style={{ fontSize: '11px', marginTop: '6px' }}>Browse listings and tap Chat on any product to start</p>
+                      <button onClick={() => { setSelectedConv(null); setMessages([]); setMobileShowChat(true); }}
+                        style={{ marginTop: '14px', width: '100%', padding: '10px', background: 'rgba(77,212,172,0.1)', border: '1px solid #4dd4ac', borderRadius: '8px', color: '#4dd4ac', cursor: 'pointer', fontSize: '0.82rem', fontWeight: '600', fontFamily: 'inherit' }}>
+                        + Start a conversation
+                      </button>
+                    </div>
+                  ) : conversations.map((conv, idx) => (
+                    <div key={conv.id} className={`wa-contact ${selectedConvIdx === idx ? 'active' : ''}`} onClick={() => selectConv(conv, idx)}>
+                      <div className="wa-ava">
+                        {getAgentName(conv).charAt(0).toUpperCase()}
+                        <span className="wa-dot" />
+                      </div>
+                      <div className="wa-ci">
+                        <div className="wa-cname">{getAgentName(conv)}</div>
+                        <div className="wa-cprev">{conv.lastMsg ? (conv.lastMsg.is_agent ? '🤝 ' : 'You: ') + conv.lastMsg.content : 'No messages yet'}</div>
+                      </div>
+                      <div className="wa-ctime">{formatDate(conv.last_message_at)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right: chat panel — hidden on mobile when contact list is showing */}
+              <div className={`wa-right${!mobileShowChat && conversations.length > 0 ? ' hidden' : ''}`} style={{ display: 'flex', flexDirection: 'column' }}>
+                {conversations.length === 0 && !mobileShowChat ? (
+                  <div className="wa-empty">
+                    <div className="wa-empty-icon">💬</div>
+                    <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1rem' }}>No messages yet</h3>
+                    <p style={{ color: 'rgba(255,255,255,0.28)', fontSize: '0.8rem', maxWidth: '260px', lineHeight: '1.6' }}>
+                      Browse listings and tap <strong>Chat</strong> on any product to start a conversation with an agent.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="wa-topbar">
+                      {/* Back button — visible only on mobile */}
+                      <button onClick={() => setMobileShowChat(false)}
+                        style={{ background: 'none', border: 'none', color: '#4dd4ac', cursor: 'pointer', fontSize: '1.2rem', padding: '0 4px', display: 'none' }}
+                        className="wa-back-btn">←</button>
+                      <div className="wa-topbar-ava">{getAgentName(selectedConv).charAt(0).toUpperCase()}</div>
+                      <div>
+                        <div className="wa-topbar-name">{getAgentName(selectedConv)}</div>
+                        <div className="wa-topbar-status">Online</div>
+                        <div className="wa-topbar-sub">Verified Marketplace Agent</div>
+                      </div>
+                    </div>
+
+                    <div className="wa-msgs">
+                      {msgLoading ? (
+                        <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', paddingTop: '60px' }}>Loading…</div>
+                      ) : messagesWithDateChips.length === 0 ? (
+                        <div style={{ textAlign: 'center', paddingTop: '60px' }}>
+                          <div style={{ fontSize: '2.5rem', marginBottom: '14px' }}>👋</div>
+                          <p style={{ color: 'rgba(255,255,255,0.55)', fontWeight: '600', marginBottom: '6px' }}>Welcome to Support</p>
+                          <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.85rem' }}>How can we help you today?</p>
+                        </div>
+                      ) : messagesWithDateChips.map((item, i) => {
+                        if (item.type === 'chip') return (
+                          <div key={`chip-${i}`} className="wa-datechip"><span>{item.label}</span></div>
+                        );
+                        const { msg } = item;
+                        const isMe = !msg.is_agent;
+                        return (
+                          <div key={msg.id || i} className={`wa-msg ${isMe ? 'sent' : 'received'}`}>
+                            <div className="wa-msg-inner">
+                              {!isMe && <div className="wa-sender-label">{getAgentName(selectedConv)}</div>}
+                              <div className="wa-bubble">
+                                <p style={{ fontSize: '0.875rem', lineHeight: '1.5', margin: 0, whiteSpace: 'pre-wrap' }}>{msg.content}</p>
+                                <div className="wa-foot">
+                                  <span className="wa-time">{formatTime(msg.created_at)}</span>
+                                  {isMe && <span className="wa-tick">✓✓</span>}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <div ref={msgsEndRef} />
+                    </div>
+
+                    <div className="wa-inputbar">
+                      <textarea
+                        ref={textareaRef}
+                        value={newMessage}
+                        onChange={handleTextareaInput}
+                        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (newMessage.trim()) handleSendMessage(); } }}
+                        placeholder="Type a message…"
+                        rows={1}
+                        className="wa-ta"
+                      />
+                      <button onClick={handleSendMessage} disabled={!newMessage.trim()} className="wa-sendbtn">➤</button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ══ SETTINGS ══ */}
+        {activeTab === 'settings' && (
+          <div>
+            <div style={{ marginBottom: '28px' }}>
+              <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#4dd4ac', marginBottom: '4px' }}>Settings</div>
+              <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.32)' }}>Manage your account security.</div>
+            </div>
+            <div className="settings-card">
+              <div className="settings-label">Change Password</div>
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                const fd = new FormData(e.target);
+                const cur = fd.get('current_password'), nw = fd.get('new_password'), con = fd.get('confirm_password');
+                if (nw !== con) { alert("Passwords don't match"); return; }
+                if (nw.length < 6) { alert("Min 6 characters"); return; }
+                const { error } = await supabase.auth.updateUser({ password: nw });
+                if (error) alert(error.message); else { alert('Password updated!'); e.target.reset(); }
+              }}>
+                <div className="form-row" style={{ gridTemplateColumns: '1fr' }}>
+                  <div className="form-group">
+                    <label>Current Password</label>
+                    <input type="password" name="current_password" className="form-control" placeholder="••••••••" required />
+                  </div>
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>New Password</label>
+                    <input type="password" name="new_password" className="form-control" placeholder="Min. 6 characters" required />
+                  </div>
+                  <div className="form-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" name="confirm_password" className="form-control" placeholder="Repeat new password" required />
+                  </div>
+                </div>
+                <button type="submit"
+                  style={{ padding: '12px 24px', background: '#4dd4ac', color: '#000', border: 'none', borderRadius: '8px', fontSize: '0.9rem', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#3bc495'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#4dd4ac'}>
+                  🔒 Update Password
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }
