@@ -104,7 +104,7 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
     setView('listings');
   };
 
-  // ── UPDATED: Category click stores the category so Listings filters by it ──
+  // Category click stores the category so Listings filters by it
   const handleCategoryClick = (label) => {
     sessionStorage.setItem('selectedCategory', label);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -166,7 +166,7 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
             </button>
           </div>
 
-          {/* ── Category Icons — now filter on click ── */}
+          {/* ── Category Icons ── */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', maxWidth: '480px', margin: '0 auto' }} className="category-grid">
             <style>{`@media (min-width: 640px) { .category-grid { display: flex !important; flex-wrap: nowrap !important; justify-content: center !important; max-width: 100% !important; } }`}</style>
             {categoryIcons.map(({ label, icon }) => (
@@ -205,7 +205,7 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }} className="new-arrivals-grid">
               <style>{`@media (min-width: 768px) { .new-arrivals-grid { grid-template-columns: repeat(3, 1fr) !important; } }`}</style>
-              {products.slice(0, Math.max(12, products.length)).map((product) => {
+              {products.slice(0, 12).map((product) => {
                 const price = parseFloat(product.price || 0);
                 const formattedPrice = '$' + price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                 return (
