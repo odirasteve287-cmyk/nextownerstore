@@ -112,8 +112,8 @@ export default function AdminDashboard({ user, setView }) {
   const [editBusy,         setEditBusy]         = useState(false);
   const [editExistingImgs, setEditExistingImgs] = useState([null, null, null]);
 
-  // add listing
-  const [nProd,   setNProd]   = useState({ title: '', price: '', category: 'Furniture', condition: 'Like New', description: '', location: '', business_name: '' });
+  // add listing — location and business_name removed
+  const [nProd,   setNProd]   = useState({ title: '', price: '', category: 'Furniture', condition: 'Like New', description: '' });
   const [nImg0,   setNImg0]   = useState(null);
   const [nImg1,   setNImg1]   = useState(null);
   const [nImg2,   setNImg2]   = useState(null);
@@ -147,7 +147,6 @@ export default function AdminDashboard({ user, setView }) {
     if (user) { load(); const iv = setInterval(load, 10000); return () => clearInterval(iv); }
   }, [user]);
 
-  // Only auto-scroll when a new message arrives (not on initial load)
   useEffect(() => {
     if (msgs.length > prevMsgLen.current && prevMsgLen.current !== 0) {
       msgsEnd.current?.scrollIntoView({ behavior: 'smooth' });
@@ -164,7 +163,6 @@ export default function AdminDashboard({ user, setView }) {
     return () => document.removeEventListener('mousedown', fn);
   }, []);
 
-  // Poll messages every 5s when a conversation is selected
   useEffect(() => {
     if (!selConv) return;
     const iv = setInterval(async () => {
@@ -333,7 +331,7 @@ export default function AdminDashboard({ user, setView }) {
       const url0 = await uploadImg(nImg0);
       if (url0) { await supabase.from('product_images').insert([{ product_id: prod.id, image_url: url0, is_primary: true, sort_order: 0 }]); await supabase.from('products').update({ image_url: url0 }).eq('id', prod.id); }
       for (const [f, ord] of [[nImg1, 1], [nImg2, 2]]) { if (f) { const u = await uploadImg(f); if (u) await supabase.from('product_images').insert([{ product_id: prod.id, image_url: u, is_primary: false, sort_order: ord }]); } }
-      setNProd({ title: '', price: '', category: 'Furniture', condition: 'Like New', description: '', location: '', business_name: '' });
+      setNProd({ title: '', price: '', category: 'Furniture', condition: 'Like New', description: '' });
       setNImg0(null); setNImg1(null); setNImg2(null);
       setAddMsg({ type: 'ok', text: 'Listing published!' });
       load();
@@ -451,7 +449,7 @@ export default function AdminDashboard({ user, setView }) {
             </div>
           )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {[['Title','title','text'],['Price','price','number'],['Location','location','text'],['Business Name','business_name','text']].map(([lbl,key,type]) => (
+            {[['Title','title','text'],['Price','price','number']].map(([lbl,key,type]) => (
               <div key={key}>
                 <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>{lbl}</p>
                 <input className="adm-in" type={type} value={nProd[key]} onChange={e => setNProd(p => ({ ...p, [key]: e.target.value }))} style={IS} placeholder={lbl} />
@@ -536,7 +534,6 @@ export default function AdminDashboard({ user, setView }) {
 
           {/* Right: chat panel */}
           <div className={`adm-msg-right${!mobileShowChat && convs.length > 0 ? ' adm-hidden-mobile' : ''}`}>
-            {/* Topbar */}
             <div style={{ padding: '11px 14px', background: '#0d1520', borderBottom: '2px solid #1e2a3a', display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
               <button onClick={() => setMobileShowChat(false)} className="adm-back-btn"
                 style={{ background: 'none', border: 'none', color: '#4dd4ac', cursor: 'pointer', fontSize: '1.1rem', padding: '0 4px' }}>←</button>
@@ -557,7 +554,6 @@ export default function AdminDashboard({ user, setView }) {
               </div>
             </div>
 
-            {/* Message list — scrolls inside the fixed-height shell */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {!selConv && (
                 <div style={{ textAlign: 'center', paddingTop: '60px' }}>
@@ -584,7 +580,6 @@ export default function AdminDashboard({ user, setView }) {
               <div ref={msgsEnd} />
             </div>
 
-            {/* Input bar */}
             <div style={{ padding: '10px 12px', borderTop: '2px solid #1e2a3a', display: 'flex', gap: '8px', flexShrink: 0, background: '#0d1520' }}>
               <div ref={pickerRef} style={{ position: 'relative', flexShrink: 0 }}>
                 <button onClick={() => setShowPicker(p => !p)}
@@ -655,7 +650,6 @@ export default function AdminDashboard({ user, setView }) {
         .adm-in::placeholder { color: rgba(255,255,255,0.22); }
         .adm-in option { background: #111; }
 
-        /* ── Full-page layout ── */
         .adm-layout {
           display: flex;
           height: 100vh;
@@ -665,7 +659,6 @@ export default function AdminDashboard({ user, setView }) {
           font-family: 'Poppins', -apple-system, sans-serif;
         }
 
-        /* ── Desktop sidebar (hidden on mobile) ── */
         .adm-sidebar {
           width: 220px;
           flex-shrink: 0;
@@ -676,7 +669,6 @@ export default function AdminDashboard({ user, setView }) {
           overflow: hidden;
         }
 
-        /* ── Main column ── */
         .adm-main {
           flex: 1;
           display: flex;
@@ -685,7 +677,6 @@ export default function AdminDashboard({ user, setView }) {
           min-width: 0;
         }
 
-        /* ── Mobile top bar (hidden on desktop) ── */
         .adm-topbar-mobile {
           display: none;
           align-items: center;
@@ -698,7 +689,6 @@ export default function AdminDashboard({ user, setView }) {
           z-index: 10;
         }
 
-        /* ── Scrollable content area ── */
         .adm-content {
           flex: 1;
           overflow-y: auto;
@@ -708,7 +698,6 @@ export default function AdminDashboard({ user, setView }) {
         .adm-content::-webkit-scrollbar { width: 4px; }
         .adm-content::-webkit-scrollbar-thumb { background: #1e2a3a; border-radius: 4px; }
 
-        /* ── Messages chat shell — fixed height so it never causes page scroll ── */
         .adm-msg-shell {
           display: flex;
           border: 2px solid #1e2a3a;
@@ -738,7 +727,6 @@ export default function AdminDashboard({ user, setView }) {
         .adm-hidden { display: none !important; }
         .adm-back-btn { display: none !important; }
 
-        /* ── Mobile (≤768px) ── */
         @media (max-width: 768px) {
           .adm-sidebar { display: none !important; }
           .adm-topbar-mobile { display: flex; }
@@ -776,7 +764,6 @@ export default function AdminDashboard({ user, setView }) {
             <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>Store Management</p>
           </div>
 
-          {/* Stats */}
           <div style={{ padding: '12px 10px', borderBottom: '2px solid #1e2a3a', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
             {[
               { v: stats.pending,  l: 'Pending',  c: '#fbbf24', bg: 'rgba(251,191,36,0.08)'  },
@@ -791,12 +778,10 @@ export default function AdminDashboard({ user, setView }) {
             ))}
           </div>
 
-          {/* Nav */}
           <nav style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
             {NAV.map(item => <SideNavItem key={item.id} item={item} />)}
           </nav>
 
-          {/* Footer */}
           <div style={{ padding: '12px 10px', borderTop: '2px solid #1e2a3a', display: 'flex', flexDirection: 'column', gap: '7px' }}>
             <button onClick={() => setView('home')}
               style={{ width: '100%', padding: '10px', background: 'transparent', border: '2px solid #1e2a3a', borderRadius: '9px', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.82rem', fontWeight: '600', transition: 'all 0.2s' }}
@@ -814,7 +799,6 @@ export default function AdminDashboard({ user, setView }) {
         {/* ══ MAIN AREA ══ */}
         <div className="adm-main">
 
-          {/* Mobile top bar — phone only */}
           <div className="adm-topbar-mobile" ref={menuRef}>
             <button onClick={() => setMenuOpen(p => !p)} aria-label="Menu"
               style={{ width: '40px', height: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '5px', background: menuOpen ? 'rgba(77,212,172,0.15)' : '#0e1825', border: `2px solid ${menuOpen ? '#4dd4ac' : '#1e2a3a'}`, borderRadius: '10px', cursor: 'pointer', padding: 0, flexShrink: 0 }}>
@@ -834,7 +818,6 @@ export default function AdminDashboard({ user, setView }) {
               ← Store
             </button>
 
-            {/* Mobile dropdown — overlays content */}
             {menuOpen && (
               <>
                 <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 998, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(2px)' }} />
@@ -845,7 +828,6 @@ export default function AdminDashboard({ user, setView }) {
             )}
           </div>
 
-          {/* Content */}
           <div className="adm-content">
             <div style={{ maxWidth: '860px', margin: '0 auto' }}>
 
