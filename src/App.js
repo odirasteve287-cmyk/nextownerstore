@@ -32,7 +32,7 @@ export default function App() {
     setView(v);
   };
 
-  const ADMIN_EMAILS = ['odirasteve25@gmail.com'];
+  const ADMIN_EMAILS = ['nextownerstore@gmail.com'];
 
   const checkAdmin = (currentUser) => {
     if (currentUser && ADMIN_EMAILS.includes(currentUser.email)) {
