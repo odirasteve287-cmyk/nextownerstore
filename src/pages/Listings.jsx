@@ -8,14 +8,14 @@ function ProductCard({ product, onClick }) {
     <div onClick={() => onClick(product)} style={{ backgroundColor: '#000000', cursor: 'pointer', display: 'flex', flexDirection: 'column', position: 'relative', transition: 'opacity 0.2s' }}
       onMouseEnter={e => e.currentTarget.style.opacity = '0.85'} onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
       {isSold && (<div style={{ position: 'absolute', top: '12px', left: '12px', zIndex: 2, backgroundColor: '#dc2626', color: '#fff', fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '4px' }}>Sold</div>)}
-      {!isSold && (<div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 2, backgroundColor: '#065f46', color: '#ffffff', fontSize: '10px', fontWeight: '700', padding: '4px 9px', borderRadius: '4px', fontFamily: "'Times New Roman', Times, serif", letterSpacing: '0.06em', textTransform: 'uppercase' }}>Available</div>)}
+      {!isSold && (<div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 2, backgroundColor: '#065f46', color: '#ffffff', fontSize: '10px', fontWeight: '700', padding: '4px 9px', borderRadius: '4px', fontFamily: "'Poppins', sans-serif", letterSpacing: '0.06em', textTransform: 'uppercase' }}>Available</div>)}
       <div style={{ backgroundColor: '#111827', aspectRatio: '1', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #1e293b' }}>
         {product.image_url ? (<img src={product.image_url} alt={product.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'} loading="lazy" />) : (<span style={{ fontSize: '3rem', opacity: 0.3 }}>🏺</span>)}
       </div>
       <div style={{ padding: '14px 4px 20px' }}>
-        <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#64748b', marginBottom: '5px' }}>{product.category || 'General'}</p>
-        <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '17px', fontWeight: '500', color: '#e2e8f0', marginBottom: '8px', lineHeight: 1.35, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{product.title}</p>
-        <span style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '15px', fontWeight: '600', color: '#ffffff' }}>
+        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#64748b', marginBottom: '5px' }}>{product.category || 'General'}</p>
+        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '17px', fontWeight: '500', color: '#e2e8f0', marginBottom: '8px', lineHeight: 1.35, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{product.title}</p>
+        <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: '15px', fontWeight: '600', color: '#ffffff' }}>
           ${parseFloat(product.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </span>
       </div>
@@ -35,7 +35,7 @@ function PriceRangeSlider({ min, max, value, onChange }) {
         <div style={{ position: 'absolute', top: '50%', transform: 'translate(-50%, -50%)', left: `${getPercent(value[0])}%`, width: '14px', height: '14px', borderRadius: '50%', backgroundColor: '#0bbfaa', border: '2px solid #0d1b2a', pointerEvents: 'none', zIndex: 2 }} />
         <div style={{ position: 'absolute', top: '50%', transform: 'translate(-50%, -50%)', left: `${getPercent(value[1])}%`, width: '14px', height: '14px', borderRadius: '50%', backgroundColor: '#0bbfaa', border: '2px solid #0d1b2a', pointerEvents: 'none', zIndex: 2 }} />
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "'Times New Roman', Times, serif", fontSize: '13px', color: '#94a3b8' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "'Poppins', sans-serif", fontSize: '13px', color: '#94a3b8' }}>
         <span>${value[0].toLocaleString()}</span><span>${value[1].toLocaleString()}</span>
       </div>
     </div>
@@ -162,11 +162,11 @@ export default function Listings({ products = [], refreshProducts, cart = [], se
   return (
     <div style={{ backgroundColor: '#000000', minHeight: '100vh' }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
         .filter-drawer { transition: transform 0.3s ease; }
         .listings-search-input::placeholder { color: #475569; }
         .listings-search-input:focus { border-color: #0bbfaa !important; }
-        .back-home-link { display: inline-flex; align-items: center; gap: 6px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; color: #0bbfaa; text-decoration: none; cursor: pointer; transition: opacity 0.2s; }
+        .back-home-link { display: inline-flex; align-items: center; gap: 6px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; color: #0bbfaa; text-decoration: none; cursor: pointer; transition: opacity 0.2s; }
         .back-home-link:hover { opacity: 0.7; }
       `}</style>
 
@@ -176,10 +176,10 @@ export default function Listings({ products = [], refreshProducts, cart = [], se
       <div className="filter-drawer" style={{ position: 'fixed', top: 0, left: 0, height: '100%', width: '300px', backgroundColor: '#000000', zIndex: 9999, boxShadow: '4px 0 32px rgba(0,0,0,0.8)', transform: filterOpen ? 'translateX(0)' : 'translateX(-100%)', display: 'flex', flexDirection: 'column', overflowY: 'auto', border: '1px solid #1e293b' }}>
         <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '20px 20px 0' }}><button onClick={() => setFilterOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '26px', color: '#475569', lineHeight: 1 }}>×</button></div>
         <div style={{ padding: '8px 28px 40px' }}>
-          <h3 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '20px', fontWeight: '700', color: '#e2e8f0', marginBottom: '16px' }}>Filter by price</h3>
+          <h3 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '20px', fontWeight: '700', color: '#e2e8f0', marginBottom: '16px' }}>Filter by price</h3>
           <PriceRangeSlider min={globalMin} max={globalMax} value={priceRange} onChange={setPriceRange} />
-          <button onClick={() => { setAppliedPrice(priceRange); setFilterOpen(false); }} style={{ padding: '9px 28px', fontSize: '11px', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#0d1b2a', backgroundColor: '#0bbfaa', border: 'none', cursor: 'pointer', fontFamily: "'Times New Roman', Times, serif", marginBottom: '36px' }} onMouseEnter={e => e.currentTarget.style.backgroundColor = '#09a896'} onMouseLeave={e => e.currentTarget.style.backgroundColor = '#0bbfaa'}>Apply</button>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}><h3 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '20px', fontWeight: '700', color: '#e2e8f0', margin: 0 }}>Categories</h3><span style={{ fontSize: '16px', color: '#64748b' }}>∧</span></div>
+          <button onClick={() => { setAppliedPrice(priceRange); setFilterOpen(false); }} style={{ padding: '9px 28px', fontSize: '11px', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#0d1b2a', backgroundColor: '#0bbfaa', border: 'none', cursor: 'pointer', fontFamily: "'Poppins', sans-serif", marginBottom: '36px' }} onMouseEnter={e => e.currentTarget.style.backgroundColor = '#09a896'} onMouseLeave={e => e.currentTarget.style.backgroundColor = '#0bbfaa'}>Apply</button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}><h3 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '20px', fontWeight: '700', color: '#e2e8f0', margin: 0 }}>Categories</h3><span style={{ fontSize: '16px', color: '#64748b' }}>∧</span></div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {categories.filter(c => c !== 'All').map(cat => {
               const count = categoryCounts[cat] || 0;
@@ -189,7 +189,7 @@ export default function Listings({ products = [], refreshProducts, cart = [], se
                   <div style={{ width: '48px', height: '48px', borderRadius: '4px', overflow: 'hidden', backgroundColor: '#1e293b', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {catProduct ? <img src={catProduct.image_url} alt={cat} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: '1.2rem', opacity: 0.4 }}>🏺</span>}
                   </div>
-                  <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '14px', color: categoryFilter === cat ? '#0bbfaa' : '#94a3b8', fontWeight: categoryFilter === cat ? '600' : '400' }}>{cat} ({count})</span>
+                  <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '14px', color: categoryFilter === cat ? '#0bbfaa' : '#94a3b8', fontWeight: categoryFilter === cat ? '600' : '400' }}>{cat} ({count})</span>
                 </button>
               );
             })}
@@ -214,7 +214,7 @@ export default function Listings({ products = [], refreshProducts, cart = [], se
 
         {/* ── Search Bar ── */}
         <div style={{ marginBottom: '28px' }}>
-          <p style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '18px', fontStyle: 'italic', color: '#ffffff', marginBottom: '12px', letterSpacing: '0.06em', fontWeight: '800', textShadow: '0 0 20px rgba(255,255,255,0.15)' }}>I am searching for...</p>
+          <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: '18px', fontStyle: 'italic', color: '#ffffff', marginBottom: '12px', letterSpacing: '0.06em', fontWeight: '800', textShadow: '0 0 20px rgba(255,255,255,0.15)' }}>I am searching for...</p>
           <div style={{ display: 'flex', gap: '8px', maxWidth: '600px' }}>
             <div style={{ flex: 1, position: 'relative' }}>
               <input
@@ -225,7 +225,7 @@ export default function Listings({ products = [], refreshProducts, cart = [], se
                 value={listingSearch}
                 onChange={e => setListingSearch(e.target.value)}
                 onKeyPress={e => e.key === 'Enter' && handleListingSearch(e)}
-                style={{ width: '100%', padding: '12px 40px 12px 16px', fontSize: '14px', fontFamily: "'Cormorant Garamond', Georgia, serif", color: '#e2e8f0', backgroundColor: '#111827', border: '1px solid #1e293b', borderRadius: '6px', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s' }}
+                style={{ width: '100%', padding: '12px 40px 12px 16px', fontSize: '14px', fontFamily: "'Inter', sans-serif", color: '#e2e8f0', backgroundColor: '#111827', border: '1px solid #1e293b', borderRadius: '6px', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s' }}
               />
               {listingSearch && (
                 <button onClick={clearSearch} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#e2e8f0', fontSize: '20px', lineHeight: 1, padding: 0 }}>×</button>
@@ -233,7 +233,7 @@ export default function Listings({ products = [], refreshProducts, cart = [], se
             </div>
             <button
               onClick={handleListingSearch}
-              style={{ padding: '12px 20px', backgroundColor: '#0bbfaa', color: '#0d1b2a', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '700', fontSize: '13px', fontFamily: "'Times New Roman', Times, serif", letterSpacing: '0.05em', flexShrink: 0, transition: 'background-color 0.2s' }}
+              style={{ padding: '12px 20px', backgroundColor: '#0bbfaa', color: '#0d1b2a', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '700', fontSize: '13px', fontFamily: "'Poppins', sans-serif", letterSpacing: '0.05em', flexShrink: 0, transition: 'background-color 0.2s' }}
               onMouseEnter={e => e.currentTarget.style.backgroundColor = '#09a896'}
               onMouseLeave={e => e.currentTarget.style.backgroundColor = '#0bbfaa'}>
               <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
@@ -243,16 +243,16 @@ export default function Listings({ products = [], refreshProducts, cart = [], se
             </button>
           </div>
           {appliedSearch && (
-            <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '13px', color: '#94a3b8', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '13px', color: '#94a3b8', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               Showing results for <strong style={{ color: '#0bbfaa' }}>"{appliedSearch}"</strong> — {filtered.length} {filtered.length === 1 ? 'item' : 'items'} found
-              <button onClick={clearSearch} style={{ backgroundColor: '#1e293b', border: '1.5px solid #ffffff', borderRadius: '4px', cursor: 'pointer', color: '#ffffff', fontSize: '11px', fontWeight: '800', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'Times New Roman', Times, serif", padding: '5px 14px' }}>✕ Clear Search</button>
+              <button onClick={clearSearch} style={{ backgroundColor: '#1e293b', border: '1.5px solid #ffffff', borderRadius: '4px', cursor: 'pointer', color: '#ffffff', fontSize: '11px', fontWeight: '800', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'Poppins', sans-serif", padding: '5px 14px' }}>✕ Clear Search</button>
             </p>
           )}
           {(categoryFilter !== 'All' || appliedPrice[0] !== globalMin || appliedPrice[1] !== globalMax) && (
-            <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '13px', color: '#94a3b8', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '13px', color: '#94a3b8', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               {categoryFilter !== 'All' && <span style={{ color: '#0bbfaa' }}>Category: {categoryFilter}</span>}
               {(appliedPrice[0] !== globalMin || appliedPrice[1] !== globalMax) && <span style={{ color: '#0bbfaa' }}>Price: ${appliedPrice[0]}–${appliedPrice[1]}</span>}
-              <button onClick={() => { setCategoryFilter('All'); setAppliedPrice([globalMin, globalMax]); setPriceRange([globalMin, globalMax]); setCurrentPage(1); }} style={{ backgroundColor: '#1e293b', border: '1.5px solid #ffffff', borderRadius: '4px', cursor: 'pointer', color: '#ffffff', fontSize: '11px', fontWeight: '800', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'Times New Roman', Times, serif", padding: '5px 14px' }}>✕ Clear Filters</button>
+              <button onClick={() => { setCategoryFilter('All'); setAppliedPrice([globalMin, globalMax]); setPriceRange([globalMin, globalMax]); setCurrentPage(1); }} style={{ backgroundColor: '#1e293b', border: '1.5px solid #ffffff', borderRadius: '4px', cursor: 'pointer', color: '#ffffff', fontSize: '11px', fontWeight: '800', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'Poppins', sans-serif", padding: '5px 14px' }}>✕ Clear Filters</button>
             </p>
           )}
         </div>
@@ -261,21 +261,21 @@ export default function Listings({ products = [], refreshProducts, cart = [], se
         {showSortDropdown && <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setShowSortDropdown(false)} />}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
           <style>{`.filter-btn-text { display: inline; } @media (max-width: 639px) { .filter-btn-text { display: none; } .filter-btn { padding: 10px 12px !important; } }`}</style>
-          <button onClick={() => setFilterOpen(true)} className="filter-btn" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', fontSize: '12px', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#e2e8f0', backgroundColor: 'transparent', border: '1.5px solid #334155', cursor: 'pointer', fontFamily: "'Times New Roman', Times, serif", transition: 'all 0.15s' }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#0bbfaa'; e.currentTarget.style.color = '#0d1b2a'; e.currentTarget.style.borderColor = '#0bbfaa'; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#e2e8f0'; e.currentTarget.style.borderColor = '#334155'; }}>
+          <button onClick={() => setFilterOpen(true)} className="filter-btn" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', fontSize: '12px', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#e2e8f0', backgroundColor: 'transparent', border: '1.5px solid #334155', cursor: 'pointer', fontFamily: "'Poppins', sans-serif", transition: 'all 0.15s' }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#0bbfaa'; e.currentTarget.style.color = '#0d1b2a'; e.currentTarget.style.borderColor = '#0bbfaa'; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#e2e8f0'; e.currentTarget.style.borderColor = '#334155'; }}>
             <svg width="14" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 16 14"><line x1="0" y1="2" x2="16" y2="2"/><line x1="3" y1="7" x2="13" y2="7"/><line x1="6" y1="12" x2="10" y2="12"/></svg>
             <span className="filter-btn-text">Filter</span>
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '13px', color: '#64748b' }}>{filtered.length} {filtered.length === 1 ? 'result' : 'results'}</span>
+            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '13px', color: '#64748b' }}>{filtered.length} {filtered.length === 1 ? 'result' : 'results'}</span>
             <div style={{ position: 'relative' }}>
-              <button onClick={() => setShowSortDropdown(!showSortDropdown)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', fontSize: '13px', backgroundColor: '#111827', color: '#e2e8f0', border: '1px solid #1e293b', cursor: 'pointer', fontFamily: "'Cormorant Garamond', Georgia, serif", minWidth: '200px', justifyContent: 'space-between' }} onMouseEnter={e => e.currentTarget.style.borderColor = '#0bbfaa'} onMouseLeave={e => e.currentTarget.style.borderColor = '#1e293b'}>
+              <button onClick={() => setShowSortDropdown(!showSortDropdown)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', fontSize: '13px', backgroundColor: '#111827', color: '#e2e8f0', border: '1px solid #1e293b', cursor: 'pointer', fontFamily: "'Inter', sans-serif", minWidth: '200px', justifyContent: 'space-between' }} onMouseEnter={e => e.currentTarget.style.borderColor = '#0bbfaa'} onMouseLeave={e => e.currentTarget.style.borderColor = '#1e293b'}>
                 <span>{sortLabels[sortBy]}</span>
                 <svg width="10" height="6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4"/></svg>
               </button>
               {showSortDropdown && (
                 <div style={{ position: 'absolute', top: 'calc(100% + 2px)', left: 0, right: 0, backgroundColor: '#111827', border: '1px solid #1e293b', boxShadow: '0 8px 24px rgba(0,0,0,0.4)', zIndex: 50 }}>
                   {Object.entries(sortLabels).map(([val, label]) => (
-                    <button key={val} onClick={() => { setSortBy(val); setShowSortDropdown(false); }} style={{ width: '100%', textAlign: 'left', padding: '11px 16px', fontSize: '13px', border: 'none', cursor: 'pointer', fontFamily: "'Cormorant Garamond', Georgia, serif", backgroundColor: sortBy === val ? '#1e293b' : 'transparent', color: sortBy === val ? '#0bbfaa' : '#94a3b8', fontWeight: sortBy === val ? '600' : '400' }} onMouseEnter={e => { if (sortBy !== val) e.currentTarget.style.backgroundColor = '#1e293b'; }} onMouseLeave={e => { if (sortBy !== val) e.currentTarget.style.backgroundColor = 'transparent'; }}>{label}</button>
+                    <button key={val} onClick={() => { setSortBy(val); setShowSortDropdown(false); }} style={{ width: '100%', textAlign: 'left', padding: '11px 16px', fontSize: '13px', border: 'none', cursor: 'pointer', fontFamily: "'Inter', sans-serif", backgroundColor: sortBy === val ? '#1e293b' : 'transparent', color: sortBy === val ? '#0bbfaa' : '#94a3b8', fontWeight: sortBy === val ? '600' : '400' }} onMouseEnter={e => { if (sortBy !== val) e.currentTarget.style.backgroundColor = '#1e293b'; }} onMouseLeave={e => { if (sortBy !== val) e.currentTarget.style.backgroundColor = 'transparent'; }}>{label}</button>
                   ))}
                 </div>
               )}
@@ -291,22 +291,22 @@ export default function Listings({ products = [], refreshProducts, cart = [], se
           </div>
         ) : (
           <div style={{ textAlign: 'center', padding: '80px 20px' }}>
-            <p style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '1.4rem', color: '#64748b', marginBottom: '8px' }}>{products.length === 0 ? 'No products available yet' : 'No products match your filters'}</p>
-            <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '14px', color: '#475569' }}>{products.length === 0 ? 'Check back soon for new items!' : 'Try adjusting your search or filters'}</p>
-            {appliedSearch && <button onClick={clearSearch} style={{ marginTop: '16px', padding: '10px 28px', backgroundColor: '#0bbfaa', color: '#0d1b2a', border: 'none', borderRadius: '4px', fontWeight: '700', cursor: 'pointer', fontFamily: "'Times New Roman', Times, serif", fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Clear Search</button>}
+            <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: '1.4rem', color: '#64748b', marginBottom: '8px' }}>{products.length === 0 ? 'No products available yet' : 'No products match your filters'}</p>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '14px', color: '#475569' }}>{products.length === 0 ? 'Check back soon for new items!' : 'Try adjusting your search or filters'}</p>
+            {appliedSearch && <button onClick={clearSearch} style={{ marginTop: '16px', padding: '10px 28px', backgroundColor: '#0bbfaa', color: '#0d1b2a', border: 'none', borderRadius: '4px', fontWeight: '700', cursor: 'pointer', fontFamily: "'Poppins', sans-serif", fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Clear Search</button>}
           </div>
         )}
 
         {/* ── Pagination ── */}
         {totalPages > 1 && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '56px', paddingBottom: '40px', flexWrap: 'wrap' }}>
-            <style>{`.pg-btn { font-family: 'Times New Roman', Times, serif; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; border: 1px solid #1e293b; background: transparent; color: #94a3b8; cursor: pointer; padding: 8px 14px; transition: all 0.15s; } .pg-btn:hover { border-color: #0bbfaa; color: #0bbfaa; } .pg-btn.active { background: #0bbfaa; border-color: #0bbfaa; color: #0d1b2a; } .pg-btn:disabled { opacity: 0.3; cursor: default; }`}</style>
+            <style>{`.pg-btn { font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; border: 1px solid #1e293b; background: transparent; color: #94a3b8; cursor: pointer; padding: 8px 14px; transition: all 0.15s; } .pg-btn:hover { border-color: #0bbfaa; color: #0bbfaa; } .pg-btn.active { background: #0bbfaa; border-color: #0bbfaa; color: #0d1b2a; } .pg-btn:disabled { opacity: 0.3; cursor: default; }`}</style>
             <button className="pg-btn" onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>← Prev</button>
             {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => {
               const show = p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1;
               const isDot = !show && (p === 2 && currentPage > 4) || (p === totalPages - 1 && currentPage < totalPages - 3);
               if (!show && !isDot) return null;
-              if (isDot) return <span key={p} style={{ color: '#334155', fontFamily: "'Times New Roman', Times, serif", fontSize: '13px', padding: '0 4px' }}>…</span>;
+              if (isDot) return <span key={p} style={{ color: '#334155', fontFamily: "'Poppins', sans-serif", fontSize: '13px', padding: '0 4px' }}>…</span>;
               return <button key={p} className={`pg-btn${p === currentPage ? ' active' : ''}`} onClick={() => goToPage(p)}>{p}</button>;
             })}
             <button className="pg-btn" onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages}>Next →</button>
@@ -355,25 +355,25 @@ function MessageModal({ onClose, agentName, productTitle, productPrice, isLogged
     <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }} onClick={onClose}>
       <div style={{ width: '100%', maxWidth: '440px', borderRadius: '12px', border: '1px solid #1e293b', padding: '24px', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', backgroundColor: '#111827' }} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-          <h3 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '18px', fontWeight: '700', color: '#e2e8f0' }}>Message {agentName}</h3>
+          <h3 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '18px', fontWeight: '700', color: '#e2e8f0' }}>Message {agentName}</h3>
           <button onClick={onClose} style={{ fontSize: '24px', color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', lineHeight: 1 }}>×</button>
         </div>
         {sent ? (
           <div style={{ textAlign: 'center', padding: '32px 0' }}>
             <div style={{ fontSize: '3rem', marginBottom: '16px' }}>✅</div>
-            <p style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '18px', fontWeight: '600', color: '#0bbfaa' }}>Message sent!</p>
-            <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '13px', color: '#64748b', marginTop: '8px' }}>Taking you to your messages…</p>
+            <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: '18px', fontWeight: '600', color: '#0bbfaa' }}>Message sent!</p>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '13px', color: '#64748b', marginTop: '8px' }}>Taking you to your messages…</p>
           </div>
         ) : (
           <>
             <div style={{ marginBottom: '16px', padding: '12px', borderRadius: '8px', border: '1px solid #1e293b', backgroundColor: '#0d1b2a' }}>
-              <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '11px', color: '#64748b', marginBottom: '4px' }}>Regarding:</p>
-              <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '13px', fontWeight: '600', color: '#0bbfaa' }}>{productTitle}</p>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '11px', color: '#64748b', marginBottom: '4px' }}>Regarding:</p>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '13px', fontWeight: '600', color: '#0bbfaa' }}>{productTitle}</p>
             </div>
             <textarea value={message} onChange={e => setMessage(e.target.value)} rows={5}
-              style={{ width: '100%', border: '1px solid #1e293b', borderRadius: '8px', padding: '12px', resize: 'none', outline: 'none', marginBottom: '16px', fontSize: '13px', backgroundColor: '#0d1b2a', color: '#e2e8f0', fontFamily: "'Cormorant Garamond', Georgia, serif", boxSizing: 'border-box' }} />
+              style={{ width: '100%', border: '1px solid #1e293b', borderRadius: '8px', padding: '12px', resize: 'none', outline: 'none', marginBottom: '16px', fontSize: '13px', backgroundColor: '#0d1b2a', color: '#e2e8f0', fontFamily: "'Inter', sans-serif", boxSizing: 'border-box' }} />
             <button onClick={handleSend} disabled={!message.trim()}
-              style={{ width: '100%', padding: '12px', fontWeight: '700', fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#0d1b2a', backgroundColor: '#0bbfaa', border: 'none', borderRadius: '6px', cursor: message.trim() ? 'pointer' : 'default', opacity: message.trim() ? 1 : 0.5, fontFamily: "'Times New Roman', Times, serif" }}>
+              style={{ width: '100%', padding: '12px', fontWeight: '700', fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#0d1b2a', backgroundColor: '#0bbfaa', border: 'none', borderRadius: '6px', cursor: message.trim() ? 'pointer' : 'default', opacity: message.trim() ? 1 : 0.5, fontFamily: "'Poppins', sans-serif" }}>
               Send Message
             </button>
           </>
@@ -437,8 +437,8 @@ function ProductDetail({ product = {}, allProducts = [], onProductClick, onBack,
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#000000', color: '#e2e8f0' }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap');
-        .detail-breadcrumb { font-size:13px; display:flex; align-items:center; gap:6px; margin-bottom:20px; flex-wrap:wrap; font-family:'Cormorant Garamond',Georgia,serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+        .detail-breadcrumb { font-size:13px; display:flex; align-items:center; gap:6px; margin-bottom:20px; flex-wrap:wrap; font-family:'Inter',sans-serif; }
         .detail-breadcrumb .crumb-link { color:#0bbfaa; cursor:pointer; transition:opacity 0.15s; }
         .detail-breadcrumb .crumb-link:hover { opacity:0.75; }
         .detail-breadcrumb .sep { color:#334155; margin:0 2px; }
@@ -492,7 +492,7 @@ function ProductDetail({ product = {}, allProducts = [], onProductClick, onBack,
                     const label = isSold ? 'Sold' : isOOS ? 'Out of Stock' : 'Available';
                     const bg = isSold ? '#dc2626' : isOOS ? '#92400e' : '#065f46';
                     return (
-                      <div style={{ position: 'absolute', top: '14px', right: '14px', zIndex: 3, backgroundColor: bg, color: '#ffffff', fontSize: '11px', fontWeight: '700', padding: '5px 12px', borderRadius: '4px', fontFamily: "'Times New Roman', Times, serif", letterSpacing: '0.07em', textTransform: 'uppercase' }}>{label}</div>
+                      <div style={{ position: 'absolute', top: '14px', right: '14px', zIndex: 3, backgroundColor: bg, color: '#ffffff', fontSize: '11px', fontWeight: '700', padding: '5px 12px', borderRadius: '4px', fontFamily: "'Poppins', sans-serif", letterSpacing: '0.07em', textTransform: 'uppercase' }}>{label}</div>
                     );
                   })()}
                   <button onClick={() => setShowImageModal(true)} style={{ position: 'absolute', bottom: '12px', right: '12px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '0', backgroundColor: 'rgba(0,0,0,0.7)', border: 'none', cursor: 'pointer' }}>
@@ -504,22 +504,22 @@ function ProductDetail({ product = {}, allProducts = [], onProductClick, onBack,
 
             {/* Title + Price desktop */}
             <div className="title-price-block-desktop detail-text-offset">
-              <h1 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '26px', fontWeight: '700', color: '#0bbfaa', lineHeight: 1.3, margin: '0 0 6px 0' }}>{productData.title}</h1>
-              <span style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '22px', fontWeight: '700', color: '#ffffff', display: 'block', marginBottom: '4px' }}>
+              <h1 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '26px', fontWeight: '700', color: '#0bbfaa', lineHeight: 1.3, margin: '0 0 6px 0' }}>{productData.title}</h1>
+              <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: '22px', fontWeight: '700', color: '#ffffff', display: 'block', marginBottom: '4px' }}>
                 ${productData.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
 
             {/* Item Details desktop */}
             <div className="title-price-block-desktop detail-text-offset" style={{ marginTop: '4px' }}>
-              <h2 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '18px', fontWeight: '700', color: '#ffffff', marginBottom: '10px', marginTop: 0 }}>Items Details</h2>
-              <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '14px', lineHeight: 1.7, color: '#94a3b8', margin: 0 }}>{productData.description}</p>
+              <h2 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '18px', fontWeight: '700', color: '#ffffff', marginBottom: '10px', marginTop: 0 }}>Items Details</h2>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '14px', lineHeight: 1.7, color: '#94a3b8', margin: 0 }}>{productData.description}</p>
             </div>
 
             {/* ── Related Items desktop ── */}
             {relatedItems.length > 0 && (
               <div className="title-price-block-desktop detail-text-offset" style={{ marginTop: '8px' }}>
-                <h2 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '18px', fontWeight: '700', color: '#ffffff', marginBottom: '14px', marginTop: 0 }}>Related Items</h2>
+                <h2 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '18px', fontWeight: '700', color: '#ffffff', marginBottom: '14px', marginTop: 0 }}>Related Items</h2>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
                   {relatedItems.map(rel => (
                     <button key={rel.id} className="related-card" onClick={() => handleRelatedClick(rel)}>
@@ -527,13 +527,13 @@ function ProductDetail({ product = {}, allProducts = [], onProductClick, onBack,
                         {rel.image_url
                           ? <img src={rel.image_url} alt={rel.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'} />
                           : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontSize: '2rem', opacity: 0.3 }}>🏺</span>}
-                        <div style={{ position: 'absolute', top: '8px', right: '8px', backgroundColor: rel.status === 'sold' ? '#dc2626' : '#065f46', color: '#fff', fontSize: '9px', fontWeight: '700', padding: '3px 7px', fontFamily: "'Times New Roman', Times, serif", letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                        <div style={{ position: 'absolute', top: '8px', right: '8px', backgroundColor: rel.status === 'sold' ? '#dc2626' : '#065f46', color: '#fff', fontSize: '9px', fontWeight: '700', padding: '3px 7px', fontFamily: "'Poppins', sans-serif", letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                           {rel.status === 'sold' ? 'Sold' : 'Available'}
                         </div>
                       </div>
                       <div style={{ padding: '10px 12px 12px' }}>
-                        <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '13px', color: '#0bbfaa', fontWeight: '500', margin: '0 0 4px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: 1.35 }}>{rel.title}</p>
-                        <p style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '13px', fontWeight: '700', color: '#ffffff', margin: 0 }}>
+                        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '13px', color: '#0bbfaa', fontWeight: '500', margin: '0 0 4px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: 1.35 }}>{rel.title}</p>
+                        <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: '13px', fontWeight: '700', color: '#ffffff', margin: 0 }}>
                           ${parseFloat(rel.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
                       </div>
@@ -547,8 +547,8 @@ function ProductDetail({ product = {}, allProducts = [], onProductClick, onBack,
           <div className="detail-right">
             {/* Mobile title + price */}
             <div className="title-price-block-mobile">
-              <h1 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '22px', fontWeight: '700', color: '#0bbfaa', lineHeight: 1.3, margin: '0 0 4px 0' }}>{productData.title}</h1>
-              <span style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '20px', fontWeight: '700', color: '#ffffff', display: 'block', marginBottom: '16px' }}>
+              <h1 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '22px', fontWeight: '700', color: '#0bbfaa', lineHeight: 1.3, margin: '0 0 4px 0' }}>{productData.title}</h1>
+              <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: '20px', fontWeight: '700', color: '#ffffff', display: 'block', marginBottom: '16px' }}>
                 ${productData.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
@@ -558,17 +558,17 @@ function ProductDetail({ product = {}, allProducts = [], onProductClick, onBack,
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '52px', height: '52px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', background: 'linear-gradient(135deg, #0bbfaa 0%, #09a896 100%)', border: '2px solid #0bbfaa', flexShrink: 0 }}>{agent.avatar}</div>
                 <div>
-                  <h3 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '14px', fontWeight: '700', color: '#0bbfaa', marginBottom: '2px' }}>{agent.name}</h3>
-                  <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '12px', color: '#64748b', margin: 0 }}>Member since: {agent.memberMonths} months</p>
-                  <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '12px', color: '#64748b', margin: 0 }}>Account type: {agent.type}</p>
+                  <h3 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '14px', fontWeight: '700', color: '#0bbfaa', marginBottom: '2px' }}>{agent.name}</h3>
+                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '12px', color: '#64748b', margin: 0 }}>Member since: {agent.memberMonths} months</p>
+                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '12px', color: '#64748b', margin: 0 }}>Account type: {agent.type}</p>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: agent.online ? '#22c55e' : '#475569', flexShrink: 0 }} />
-                  <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '12px', color: '#64748b' }}>User is {agent.online ? 'online' : 'offline'}</span>
+                  <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '12px', color: '#64748b' }}>User is {agent.online ? 'online' : 'offline'}</span>
                 </div>
-                <button style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '13px', color: '#0bbfaa', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '3px', padding: 0 }}>See all ads</button>
+                <button style={{ fontFamily: "'Inter', sans-serif", fontSize: '13px', color: '#0bbfaa', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '3px', padding: 0 }}>See all ads</button>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#0d1b2a', padding: '10px 14px' }}>
                 <div style={{ width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#1e293b', flexShrink: 0 }}>
@@ -584,7 +584,7 @@ function ProductDetail({ product = {}, allProducts = [], onProductClick, onBack,
                 </button>
               </div>
               <button onClick={() => setShowChatModal(true)}
-                style={{ width: '100%', padding: '14px', fontFamily: "'Times New Roman', Times, serif", fontSize: '12px', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#e2e8f0', backgroundColor: 'transparent', border: '1.5px solid #334155', borderRadius: '0', cursor: 'pointer', transition: 'all 0.15s' }}
+                style={{ width: '100%', padding: '14px', fontFamily: "'Poppins', sans-serif", fontSize: '12px', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#e2e8f0', backgroundColor: 'transparent', border: '1.5px solid #334155', borderRadius: '0', cursor: 'pointer', transition: 'all 0.15s' }}
                 onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#0bbfaa'; e.currentTarget.style.color = '#0d1b2a'; e.currentTarget.style.borderColor = '#0bbfaa'; }}
                 onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#e2e8f0'; e.currentTarget.style.borderColor = '#334155'; }}>
                 Chat
@@ -598,15 +598,15 @@ function ProductDetail({ product = {}, allProducts = [], onProductClick, onBack,
             {/* Description mobile */}
             <div className="detail-desc-mobile">
               <style>{`.detail-desc-mobile { display: none; } @media (max-width: 639px) { .detail-desc-mobile { display: block; border-top: 1px solid #1e293b; padding-top: 16px; } }`}</style>
-              <h2 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '18px', fontWeight: '700', color: '#ffffff', marginBottom: '12px' }}>Items Details</h2>
-              <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '14px', lineHeight: 1.7, color: '#94a3b8' }}>{productData.description}</p>
+              <h2 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '18px', fontWeight: '700', color: '#ffffff', marginBottom: '12px' }}>Items Details</h2>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '14px', lineHeight: 1.7, color: '#94a3b8' }}>{productData.description}</p>
             </div>
 
             {/* ── Related Items mobile ── */}
             {relatedItems.length > 0 && (
               <div className="detail-related-mobile">
                 <style>{`.detail-related-mobile { display: none; } @media (max-width: 639px) { .detail-related-mobile { display: block; border-top: 1px solid #1e293b; padding-top: 16px; } }`}</style>
-                <h2 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '18px', fontWeight: '700', color: '#ffffff', marginBottom: '14px' }}>Related Items</h2>
+                <h2 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '18px', fontWeight: '700', color: '#ffffff', marginBottom: '14px' }}>Related Items</h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {relatedItems.map(rel => (
                     <button key={rel.id} onClick={() => handleRelatedClick(rel)}
@@ -617,8 +617,8 @@ function ProductDetail({ product = {}, allProducts = [], onProductClick, onBack,
                         {rel.image_url ? <img src={rel.image_url} alt={rel.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontSize: '1.5rem', opacity: 0.3 }}>🏺</span>}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '13px', color: '#0bbfaa', fontWeight: '500', margin: '0 0 4px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: 1.35 }}>{rel.title}</p>
-                        <p style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '13px', fontWeight: '700', color: '#ffffff', margin: 0 }}>
+                        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '13px', color: '#0bbfaa', fontWeight: '500', margin: '0 0 4px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: 1.35 }}>{rel.title}</p>
+                        <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: '13px', fontWeight: '700', color: '#ffffff', margin: 0 }}>
                           ${parseFloat(rel.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
                       </div>
@@ -650,19 +650,19 @@ function CartSidebar({ cart = [], setCart, onClose, onViewCart }) {
       <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 50 }} onClick={onClose} />
       <div style={{ position: 'fixed', right: 0, top: 0, height: '100%', width: '384px', backgroundColor: '#111827', zIndex: 51, display: 'flex', flexDirection: 'column', boxShadow: '-4px 0 24px rgba(0,0,0,0.5)', borderLeft: '1px solid #1e293b' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px', borderBottom: '1px solid #1e293b' }}>
-          <h2 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '20px', fontWeight: '700', color: '#e2e8f0' }}>Shopping Cart</h2>
+          <h2 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '20px', fontWeight: '700', color: '#e2e8f0' }}>Shopping Cart</h2>
           <button onClick={onClose} style={{ fontSize: '24px', color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', lineHeight: 1 }}>×</button>
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
           {cart.length === 0
-            ? <p style={{ textAlign: 'center', padding: '48px 0', color: '#64748b', fontFamily: "'Cormorant Garamond', Georgia, serif" }}>Your cart is empty</p>
+            ? <p style={{ textAlign: 'center', padding: '48px 0', color: '#64748b', fontFamily: "'Inter', sans-serif" }}>Your cart is empty</p>
             : cart.map((item, index) => (
               <div key={index} style={{ display: 'flex', gap: '16px', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #1e293b' }}>
                 <img src={item.image_url} alt={item.title} style={{ width: '72px', height: '72px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #1e293b' }} />
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '13px', fontWeight: '500', color: '#e2e8f0', marginBottom: '4px' }}>{item.title}</p>
-                  <p style={{ fontFamily: "'Times New Roman', Times, serif", color: '#ffffff', marginBottom: '8px' }}>${item.price}</p>
-                  <button onClick={() => removeFromCart(index)} style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '12px', color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Remove</button>
+                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '13px', fontWeight: '500', color: '#e2e8f0', marginBottom: '4px' }}>{item.title}</p>
+                  <p style={{ fontFamily: "'Poppins', sans-serif", color: '#ffffff', marginBottom: '8px' }}>${item.price}</p>
+                  <button onClick={() => removeFromCart(index)} style={{ fontFamily: "'Inter', sans-serif", fontSize: '12px', color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Remove</button>
                 </div>
               </div>
             ))}
@@ -670,10 +670,10 @@ function CartSidebar({ cart = [], setCart, onClose, onViewCart }) {
         {cart.length > 0 && (
           <div style={{ borderTop: '1px solid #1e293b', padding: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", color: '#64748b' }}>Subtotal:</span>
-              <span style={{ fontFamily: "'Times New Roman', Times, serif", fontWeight: '700', color: '#e2e8f0' }}>${subtotal.toFixed(2)}</span>
+              <span style={{ fontFamily: "'Inter', sans-serif", color: '#64748b' }}>Subtotal:</span>
+              <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: '700', color: '#e2e8f0' }}>${subtotal.toFixed(2)}</span>
             </div>
-            <button onClick={onViewCart} style={{ width: '100%', padding: '12px', fontFamily: "'Times New Roman', Times, serif", fontSize: '12px', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#0d1b2a', backgroundColor: '#0bbfaa', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>View Cart</button>
+            <button onClick={onViewCart} style={{ width: '100%', padding: '12px', fontFamily: "'Poppins', sans-serif", fontSize: '12px', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#0d1b2a', backgroundColor: '#0bbfaa', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>View Cart</button>
           </div>
         )}
       </div>
@@ -692,15 +692,15 @@ function CartPage({ cart = [], setCart, onBack }) {
   return (
     <div style={{ minHeight: '100vh', padding: '32px 16px', backgroundColor: '#000000', color: '#e2e8f0' }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-        <button onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', color: '#0bbfaa', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '14px' }}>
+        <button onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', color: '#0bbfaa', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '14px' }}>
           <svg style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           Continue Shopping
         </button>
-        <h1 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '40px', fontWeight: '800', color: '#ffffff', marginBottom: '32px' }}>Cart</h1>
+        <h1 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '40px', fontWeight: '800', color: '#ffffff', marginBottom: '32px' }}>Cart</h1>
         {cart.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '48px', border: '1px solid #1e293b', backgroundColor: '#111827' }}>
-            <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '20px', color: '#64748b', marginBottom: '24px' }}>Your cart is empty</p>
-            <button onClick={onBack} style={{ padding: '12px 32px', fontFamily: "'Times New Roman', Times, serif", fontSize: '12px', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#0d1b2a', backgroundColor: '#0bbfaa', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Start Shopping</button>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '20px', color: '#64748b', marginBottom: '24px' }}>Your cart is empty</p>
+            <button onClick={onBack} style={{ padding: '12px 32px', fontFamily: "'Poppins', sans-serif", fontSize: '12px', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#0d1b2a', backgroundColor: '#0bbfaa', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Start Shopping</button>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px' }}>
@@ -708,7 +708,7 @@ function CartPage({ cart = [], setCart, onBack }) {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid #1e293b' }}>
-                    {['Product', 'Price', 'Quantity', 'Subtotal'].map(h => <th key={h} style={{ padding: '16px', textAlign: 'left', fontFamily: "'Times New Roman', Times, serif", fontSize: '13px', fontWeight: '700', color: '#64748b' }}>{h}</th>)}
+                    {['Product', 'Price', 'Quantity', 'Subtotal'].map(h => <th key={h} style={{ padding: '16px', textAlign: 'left', fontFamily: "'Poppins', sans-serif", fontSize: '13px', fontWeight: '700', color: '#64748b' }}>{h}</th>)}
                   </tr>
                 </thead>
                 <tbody>
@@ -718,20 +718,20 @@ function CartPage({ cart = [], setCart, onBack }) {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                           <button onClick={() => removeFromCart(index)} style={{ color: '#475569', background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', lineHeight: 1 }}>⊗</button>
                           <img src={item.image_url || ''} alt={item.title} style={{ width: '56px', height: '56px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #1e293b' }} />
-                          <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '13px', fontWeight: '500', color: '#e2e8f0' }}>{item.title}</span>
+                          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '13px', fontWeight: '500', color: '#e2e8f0' }}>{item.title}</span>
                         </div>
                       </td>
-                      <td style={{ padding: '16px', fontFamily: "'Times New Roman', Times, serif", color: '#64748b' }}>${parseFloat(item.price).toFixed(2)}</td>
+                      <td style={{ padding: '16px', fontFamily: "'Poppins', sans-serif", color: '#64748b' }}>${parseFloat(item.price).toFixed(2)}</td>
                       <td style={{ padding: '16px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #1e293b', width: 'fit-content', overflow: 'hidden' }}>
                           {[{ label: '-', action: () => updateQuantity(index, (item.quantity || 1) - 1) }, { label: item.quantity || 1, isValue: true }, { label: '+', action: () => updateQuantity(index, (item.quantity || 1) + 1) }].map((btn, i) =>
                             btn.isValue
-                              ? <span key={i} style={{ padding: '6px 12px', backgroundColor: '#0d1b2a', color: '#e2e8f0', borderLeft: '1px solid #1e293b', borderRight: '1px solid #1e293b', fontFamily: "'Times New Roman', Times, serif" }}>{btn.label}</span>
-                              : <button key={i} onClick={btn.action} style={{ padding: '6px 10px', backgroundColor: '#1e293b', color: '#94a3b8', border: 'none', cursor: 'pointer', fontFamily: "'Times New Roman', Times, serif" }}>{btn.label}</button>
+                              ? <span key={i} style={{ padding: '6px 12px', backgroundColor: '#0d1b2a', color: '#e2e8f0', borderLeft: '1px solid #1e293b', borderRight: '1px solid #1e293b', fontFamily: "'Poppins', sans-serif" }}>{btn.label}</span>
+                              : <button key={i} onClick={btn.action} style={{ padding: '6px 10px', backgroundColor: '#1e293b', color: '#94a3b8', border: 'none', cursor: 'pointer', fontFamily: "'Poppins', sans-serif" }}>{btn.label}</button>
                           )}
                         </div>
                       </td>
-                      <td style={{ padding: '16px', fontFamily: "'Times New Roman', Times, serif", fontWeight: '700', color: '#ffffff' }}>${(parseFloat(item.price) * (item.quantity || 1)).toFixed(2)}</td>
+                      <td style={{ padding: '16px', fontFamily: "'Poppins', sans-serif", fontWeight: '700', color: '#ffffff' }}>${(parseFloat(item.price) * (item.quantity || 1)).toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -739,16 +739,16 @@ function CartPage({ cart = [], setCart, onBack }) {
             </div>
             <div>
               <div style={{ padding: '24px', border: '1px solid #1e293b', backgroundColor: '#111827' }}>
-                <h2 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '24px', fontWeight: '800', color: '#ffffff', marginBottom: '24px' }}>Cart totals</h2>
+                <h2 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '24px', fontWeight: '800', color: '#ffffff', marginBottom: '24px' }}>Cart totals</h2>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #1e293b', marginBottom: '12px' }}>
-                  <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", color: '#64748b' }}>Subtotal</span>
-                  <span style={{ fontFamily: "'Times New Roman', Times, serif", fontWeight: '700', color: '#e2e8f0' }}>${subtotal.toFixed(2)}</span>
+                  <span style={{ fontFamily: "'Inter', sans-serif", color: '#64748b' }}>Subtotal</span>
+                  <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: '700', color: '#e2e8f0' }}>${subtotal.toFixed(2)}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #1e293b', marginBottom: '24px' }}>
-                  <span style={{ fontFamily: "'Times New Roman', Times, serif", fontWeight: '600', color: '#e2e8f0' }}>Total</span>
-                  <span style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '20px', fontWeight: '700', color: '#ffffff' }}>${subtotal.toFixed(2)}</span>
+                  <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: '600', color: '#e2e8f0' }}>Total</span>
+                  <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: '20px', fontWeight: '700', color: '#ffffff' }}>${subtotal.toFixed(2)}</span>
                 </div>
-                <button style={{ width: '100%', padding: '14px', fontFamily: "'Times New Roman', Times, serif", fontSize: '12px', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#0d1b2a', backgroundColor: '#0bbfaa', border: 'none', borderRadius: '4px', cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.backgroundColor = '#09a896'} onMouseLeave={e => e.currentTarget.style.backgroundColor = '#0bbfaa'}>Proceed to Checkout</button>
+                <button style={{ width: '100%', padding: '14px', fontFamily: "'Poppins', sans-serif", fontSize: '12px', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#0d1b2a', backgroundColor: '#0bbfaa', border: 'none', borderRadius: '4px', cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.backgroundColor = '#09a896'} onMouseLeave={e => e.currentTarget.style.backgroundColor = '#0bbfaa'}>Proceed to Checkout</button>
               </div>
             </div>
           </div>
