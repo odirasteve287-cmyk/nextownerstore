@@ -14,7 +14,7 @@ function ProductCard({ product, onClick }) {
       </div>
       <div style={{ padding: '14px 4px 20px' }}>
         <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#64748b', marginBottom: '5px' }}>{product.category || 'General'}</p>
-        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '17px', fontWeight: '500', color: '#e2e8f0', marginBottom: '8px', lineHeight: 1.35, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{product.title}</p>
+        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '17px', fontWeight: '500', color: '#0bbfaa', marginBottom: '8px', lineHeight: 1.35, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{product.title}</p>
         <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: '15px', fontWeight: '600', color: '#ffffff' }}>
           ${parseFloat(product.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </span>
@@ -660,7 +660,7 @@ function CartSidebar({ cart = [], setCart, onClose, onViewCart }) {
               <div key={index} style={{ display: 'flex', gap: '16px', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #1e293b' }}>
                 <img src={item.image_url} alt={item.title} style={{ width: '72px', height: '72px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #1e293b' }} />
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '13px', fontWeight: '500', color: '#e2e8f0', marginBottom: '4px' }}>{item.title}</p>
+                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '13px', fontWeight: '500', color: '#0bbfaa', marginBottom: '4px' }}>{item.title}</p>
                   <p style={{ fontFamily: "'Poppins', sans-serif", color: '#ffffff', marginBottom: '8px' }}>${item.price}</p>
                   <button onClick={() => removeFromCart(index)} style={{ fontFamily: "'Inter', sans-serif", fontSize: '12px', color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Remove</button>
                 </div>
@@ -718,7 +718,7 @@ function CartPage({ cart = [], setCart, onBack }) {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                           <button onClick={() => removeFromCart(index)} style={{ color: '#475569', background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', lineHeight: 1 }}>⊗</button>
                           <img src={item.image_url || ''} alt={item.title} style={{ width: '56px', height: '56px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #1e293b' }} />
-                          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '13px', fontWeight: '500', color: '#e2e8f0' }}>{item.title}</span>
+                          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '13px', fontWeight: '500', color: '#0bbfaa' }}>{item.title}</span>
                         </div>
                       </td>
                       <td style={{ padding: '16px', fontFamily: "'Poppins', sans-serif", color: '#64748b' }}>${parseFloat(item.price).toFixed(2)}</td>
