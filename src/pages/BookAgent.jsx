@@ -72,15 +72,26 @@ export default function BookAgent({ setView }) {
     backgroundColor: '#ffffff', border: '1px solid #334155',
     borderRadius: '6px', color: '#0f172a',
     fontSize: '0.9rem', outline: 'none',
-    boxSizing: 'border-box', fontFamily: 'inherit',
+    boxSizing: 'border-box', fontFamily: "'Inter', sans-serif",
   };
   const labelStyle = {
     display: 'block', color: '#e2e8f0',
     fontSize: '0.9rem', fontWeight: '600', marginBottom: '8px',
+    fontFamily: "'Inter', sans-serif",
   };
 
   return (
-    <div style={{ backgroundColor: '#0d1b2a', minHeight: '100vh', fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+    <div style={{ backgroundColor: '#0d1b2a', minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+        .phone-row { display: flex; gap: 0.5rem; }
+        .phone-code-select { width: 130px; flex-shrink: 0; }
+        .phone-number-input { flex: 1; min-width: 0; }
+        @media (max-width: 480px) {
+          .phone-row { flex-direction: column; }
+          .phone-code-select { width: 100% !important; }
+        }
+      `}</style>
 
       {/* ── Hero ── */}
       <div style={{ backgroundColor: '#0bbfaa', position: 'relative', overflow: 'hidden', minHeight: '260px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -92,15 +103,15 @@ export default function BookAgent({ setView }) {
         </svg>
         <div style={{ flex: 1 }} />
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 2rem 0.75rem', width: '100%', position: 'relative', zIndex: 1 }}>
-          <h1 style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: '800', color: '#0d1b2a', marginBottom: 0, lineHeight: 1.05, letterSpacing: '-0.02em' }}>
+          <h1 style={{ fontFamily: "'Poppins', sans-serif", fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: '800', color: '#0d1b2a', marginBottom: 0, lineHeight: 1.05, letterSpacing: '-0.02em' }}>
             <span style={{ color: '#f5c518' }}>Book</span> An Agent
           </h1>
         </div>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 2rem', width: '100%', position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#0d1b2a', padding: '0.6rem 1.5rem', borderRadius: '6px 6px 0 0', fontSize: '0.875rem' }}>
-            <button onClick={() => setView && setView('home')} style={{ color: '#14b8a6', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: '500' }}>Home</button>
+            <button onClick={() => setView && setView('home')} style={{ fontFamily: "'Inter', sans-serif", color: '#14b8a6', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: '500' }}>Home</button>
             <span style={{ color: '#64748b' }}>›</span>
-            <span style={{ color: '#e2e8f0', fontWeight: '600' }}>Book an Agent</span>
+            <span style={{ fontFamily: "'Inter', sans-serif", color: '#e2e8f0', fontWeight: '600' }}>Book an Agent</span>
           </div>
         </div>
       </div>
@@ -111,9 +122,9 @@ export default function BookAgent({ setView }) {
 
           {/* Left */}
           <div style={{ color: '#e2e8f0', paddingTop: '3rem' }}>
-            <h2 style={{ fontSize: '2rem', fontWeight: '800', color: '#14b8a6', marginBottom: '1.5rem', lineHeight: 1.2 }}>Ready to Help!</h2>
-            <p style={{ color: '#94a3b8', lineHeight: 1.8, marginBottom: '1.25rem', fontSize: '0.95rem' }}>Finding the right support shouldn't be difficult. We're here to help with expert staff ready to answer your questions and guide you to the best solution.</p>
-            <p style={{ color: '#94a3b8', lineHeight: 1.8, marginBottom: '2rem', fontSize: '0.95rem' }}>Our services include site visits, inventory management, valuation, photography, marketing strategy, and after-sale support. We've got you covered.</p>
+            <h2 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '2rem', fontWeight: '800', color: '#14b8a6', marginBottom: '1.5rem', lineHeight: 1.2 }}>Ready to Help!</h2>
+            <p style={{ fontFamily: "'Inter', sans-serif", color: '#94a3b8', lineHeight: 1.8, marginBottom: '1.25rem', fontSize: '0.95rem' }}>Finding the right support shouldn't be difficult. We're here to help with expert staff ready to answer your questions and guide you to the best solution.</p>
+            <p style={{ fontFamily: "'Inter', sans-serif", color: '#94a3b8', lineHeight: 1.8, marginBottom: '2rem', fontSize: '0.95rem' }}>Our services include site visits, inventory management, valuation, photography, marketing strategy, and after-sale support. We've got you covered.</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
               {SOCIAL_ICONS.map(({ label, path }) => (
                 <a key={label} href="#" aria-label={label}
@@ -131,20 +142,20 @@ export default function BookAgent({ setView }) {
             {submitted ? (
               <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
                 <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>✅</div>
-                <h3 style={{ color: '#14b8a6', fontSize: '1.5rem', fontWeight: '700', marginBottom: '0.75rem' }}>Booking Received!</h3>
-                <p style={{ color: '#94a3b8', marginBottom: '1.5rem' }}>Our team will reach out to you shortly.</p>
+                <h3 style={{ fontFamily: "'Poppins', sans-serif", color: '#14b8a6', fontSize: '1.5rem', fontWeight: '700', marginBottom: '0.75rem' }}>Booking Received!</h3>
+                <p style={{ fontFamily: "'Inter', sans-serif", color: '#94a3b8', marginBottom: '1.5rem' }}>Our team will reach out to you shortly.</p>
                 <button onClick={() => setView && setView('home')}
-                  style={{ padding: '10px 28px', backgroundColor: '#14b8a6', color: '#0d1b2a', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit' }}>
+                  style={{ fontFamily: "'Poppins', sans-serif", padding: '10px 28px', backgroundColor: '#14b8a6', color: '#0d1b2a', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontSize: '0.9rem' }}>
                   Back to Home
                 </button>
               </div>
             ) : (
               <>
-                <h3 style={{ color: '#14b8a6', fontSize: '1.2rem', fontWeight: '800', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>BOOK AN AGENT</h3>
-                <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1.75rem', lineHeight: 1.6 }}>We would be delighted to receive precise information regarding your booking for our agency services.</p>
+                <h3 style={{ fontFamily: "'Poppins', sans-serif", color: '#14b8a6', fontSize: '1.2rem', fontWeight: '800', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>BOOK AN AGENT</h3>
+                <p style={{ fontFamily: "'Inter', sans-serif", color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1.75rem', lineHeight: 1.6 }}>We would be delighted to receive precise information regarding your booking for our agency services.</p>
 
                 {submitError && (
-                  <div style={{ padding: '12px 16px', marginBottom: '16px', borderRadius: '8px', background: 'rgba(239,68,68,0.1)', borderLeft: '4px solid #ef4444', color: '#fca5a5', fontSize: '0.85rem' }}>
+                  <div style={{ fontFamily: "'Inter', sans-serif", padding: '12px 16px', marginBottom: '16px', borderRadius: '8px', background: 'rgba(239,68,68,0.1)', borderLeft: '4px solid #ef4444', color: '#fca5a5', fontSize: '0.85rem' }}>
                     {submitError}
                   </div>
                 )}
@@ -153,19 +164,19 @@ export default function BookAgent({ setView }) {
 
                   <div>
                     <label style={labelStyle}>Your Name <span style={{ color: '#ef4444' }}>*</span></label>
-                    <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="eg: John Doe" required style={inputStyle} />
+                    <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="eg: Jack Walsh" required style={inputStyle} />
                   </div>
 
                   <div>
                     <label style={labelStyle}>Phone/Mobile <span style={{ color: '#ef4444' }}>*</span></label>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <select style={{ ...inputStyle, width: '130px', flexShrink: 0, cursor: 'pointer' }}>
+                    <div className="phone-row">
+                      <select className="phone-code-select" style={{ ...inputStyle, cursor: 'pointer' }}>
                         <option value="+1">US +1</option>
                         <option value="+44">UK +44</option>
                         <option value="+91">India +91</option>
                         <option value="+61">AU +61</option>
                       </select>
-                      <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="Enter valid phone number" required style={{ ...inputStyle, flex: 1 }} />
+                      <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="Enter valid phone number" required className="phone-number-input" style={{ ...inputStyle, flex: 1, minWidth: 0 }} />
                     </div>
                   </div>
 
@@ -178,7 +189,7 @@ export default function BookAgent({ setView }) {
                     <label style={labelStyle}>What category of items do you have? <span style={{ color: '#ef4444' }}>*</span></label>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                       {CATEGORIES.map(cat => (
-                        <label key={cat} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', color: '#cbd5e1', fontSize: '0.9rem' }}>
+                        <label key={cat} style={{ fontFamily: "'Inter', sans-serif", display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', color: '#cbd5e1', fontSize: '0.9rem' }}>
                           <input type="checkbox" name="categories" value={cat} checked={formData.categories.includes(cat)} onChange={handleChange}
                             style={{ width: '16px', height: '16px', accentColor: '#14b8a6', cursor: 'pointer' }} />
                           {cat}
@@ -191,7 +202,7 @@ export default function BookAgent({ setView }) {
                     <label style={labelStyle}>Which service do you prefer: <span style={{ color: '#ef4444' }}>*</span></label>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                       {[{ value: 'paid', label: 'Paid Service ($10)' }, { value: 'free', label: 'Free Service (Remote support)' }].map(opt => (
-                        <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', color: '#cbd5e1', fontSize: '0.9rem' }}>
+                        <label key={opt.value} style={{ fontFamily: "'Inter', sans-serif", display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', color: '#cbd5e1', fontSize: '0.9rem' }}>
                           <input type="radio" name="service" value={opt.value} checked={formData.service === opt.value} onChange={handleChange} required
                             style={{ width: '16px', height: '16px', accentColor: '#14b8a6', cursor: 'pointer' }} />
                           {opt.label}
@@ -208,19 +219,19 @@ export default function BookAgent({ setView }) {
                   </div>
 
                   <div>
-                    <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', cursor: 'pointer', color: '#94a3b8', fontSize: '0.85rem', lineHeight: 1.6 }}>
+                    <label style={{ fontFamily: "'Inter', sans-serif", display: 'flex', alignItems: 'flex-start', gap: '0.75rem', cursor: 'pointer', color: '#94a3b8', fontSize: '0.85rem', lineHeight: 1.6 }}>
                       <input type="checkbox" name="agreed" checked={formData.agreed} onChange={handleChange}
                         style={{ width: '16px', height: '16px', marginTop: '2px', accentColor: '#14b8a6', cursor: 'pointer', flexShrink: 0 }} />
                       <span>I have read and agree to the{' '}
-                        <button type="button" onClick={() => setView && setView('terms')} style={{ color: '#14b8a6', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', fontSize: 'inherit' }}>Terms and Conditions</button>
+                        <button type="button" onClick={() => setView && setView('terms')} style={{ fontFamily: "'Inter', sans-serif", color: '#14b8a6', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', fontSize: 'inherit' }}>Terms and Conditions</button>
                         {' '}and{' '}
-                        <button type="button" onClick={() => setView && setView('privacy')} style={{ color: '#14b8a6', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', fontSize: 'inherit' }}>Privacy Policy</button>
+                        <button type="button" onClick={() => setView && setView('privacy')} style={{ fontFamily: "'Inter', sans-serif", color: '#14b8a6', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', fontSize: 'inherit' }}>Privacy Policy</button>
                       </span>
                     </label>
                   </div>
 
                   <button type="submit" disabled={submitting}
-                    style={{ padding: '14px 32px', backgroundColor: submitting ? '#14b8a6' : '#0d1b2a', color: submitting ? '#0d1b2a' : '#ffffff', border: '2px solid #14b8a6', borderRadius: '8px', fontSize: '1rem', fontWeight: '700', cursor: submitting ? 'not-allowed' : 'pointer', alignSelf: 'flex-start', fontFamily: 'inherit', transition: 'background-color 0.2s, color 0.2s' }}
+                    style={{ fontFamily: "'Poppins', sans-serif", padding: '14px 32px', backgroundColor: submitting ? '#14b8a6' : '#0d1b2a', color: submitting ? '#0d1b2a' : '#ffffff', border: '2px solid #14b8a6', borderRadius: '8px', fontSize: '1rem', fontWeight: '700', cursor: submitting ? 'not-allowed' : 'pointer', alignSelf: 'flex-start', transition: 'background-color 0.2s, color 0.2s' }}
                     onMouseEnter={e => { if (!submitting) { e.currentTarget.style.backgroundColor = '#14b8a6'; e.currentTarget.style.color = '#0d1b2a'; }}}
                     onMouseLeave={e => { if (!submitting) { e.currentTarget.style.backgroundColor = '#0d1b2a'; e.currentTarget.style.color = '#ffffff'; }}}>
                     {submitting ? 'Submitting…' : 'Submit'}
