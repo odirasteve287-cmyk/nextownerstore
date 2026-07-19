@@ -33,7 +33,7 @@ function ProductCard({ product, onClick }) {
         </h3>
         <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px' }}>{product.location || 'N/A'}</p>
         <div style={{ marginBottom: '10px' }}>
-          <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontWeight: '700', fontSize: '1.5rem', color: '#ffffff', letterSpacing: '-0.02em' }}>
+          <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: '700', fontSize: '1.5rem', color: '#ffffff', letterSpacing: '-0.02em' }}>
             {formattedPrice}
           </span>
         </div>
@@ -131,12 +131,20 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
           .search-btn-text { display: none; }
           .search-btn { padding: 0 16px !important; min-width: 48px; }
         }
+        @media (max-width: 480px) {
+          .hero-headline { font-size: 2.6rem !important; }
+          .featured-heading { font-size: 1.55rem !important; white-space: nowrap; }
+          .hero-section { padding-top: 32px !important; padding-bottom: 24px !important; }
+          .section-arrivals { padding: 32px 0 !important; }
+          .section-testimonials { padding: 40px 16px !important; }
+          .section-featured { padding: 32px 16px !important; }
+        }
       `}</style>
 
       {/* ── Hero Section ── */}
-      <section ref={heroRef} style={{ position: 'relative', backgroundColor: '#000000', overflow: 'hidden', paddingTop: '80px', paddingBottom: '64px' }}>
+      <section ref={heroRef} className="hero-section" style={{ position: 'relative', backgroundColor: '#000000', overflow: 'hidden', paddingTop: '48px', paddingBottom: '36px' }}>
         <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', maxWidth: '900px', margin: '0 auto', padding: '60px 24px 48px' }}>
-          <h1 style={{ fontFamily: "'Poppins', sans-serif", fontSize: 'clamp(2rem, 4.5vw, 3.8rem)', fontWeight: '800', color: '#0bbfaa', lineHeight: 1.1, marginBottom: '16px', letterSpacing: '-0.02em' }}>
+          <h1 className="hero-headline" style={{ fontFamily: "'Poppins', sans-serif", fontSize: 'clamp(2rem, 4.5vw, 3.8rem)', fontWeight: '800', color: '#0bbfaa', lineHeight: 1.1, marginBottom: '16px', letterSpacing: '-0.02em' }}>
             Your Trusted Marketplace
           </h1>
           <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 'clamp(1rem, 1.5vw, 1.15rem)', color: '#94a3b8', lineHeight: 1.7, marginBottom: '36px', fontStyle: 'italic' }}>
@@ -187,7 +195,7 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
       </section>
 
       {/* ── New Arrivals Section ── */}
-      <section style={{ backgroundColor: '#000000', padding: '80px 0' }}>
+      <section className="section-arrivals" style={{ backgroundColor: '#000000', padding: '48px 0' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
           <div style={{ textAlign: 'center', marginBottom: '48px' }}>
             <h2 style={{ fontFamily: "'Poppins', sans-serif", fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.01em', marginBottom: '16px' }}>New Arrivals</h2>
@@ -224,7 +232,7 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
                     <div style={{ padding: '14px 4px 8px' }}>
                       <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#64748b', marginBottom: '5px' }}>{product.category || 'General'}</p>
                       <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '17px', fontWeight: '500', color: '#0bbfaa', marginBottom: '8px', lineHeight: 1.35 }}>{product.title}</p>
-                      <p style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '15px', fontWeight: '600', color: '#ffffff' }}>{formattedPrice}</p>
+                      <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: '15px', fontWeight: '600', color: '#ffffff' }}>{formattedPrice}</p>
                     </div>
                   </div>
                 );
@@ -265,7 +273,7 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
       </section>
 
       {/* ── Testimonials ── */}
-      <section style={{ position: 'relative', backgroundColor: '#000000', padding: '100px 24px', textAlign: 'center', overflow: 'hidden' }}>
+      <section className="section-testimonials" style={{ position: 'relative', backgroundColor: '#000000', padding: '56px 24px', textAlign: 'center', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -60%)', fontSize: '28rem', lineHeight: 1, color: '#0d1b2a', fontFamily: "'Inter', sans-serif", fontWeight: '700', userSelect: 'none', pointerEvents: 'none', zIndex: 0 }}>"</div>
         <div style={{ position: 'relative', zIndex: 1, maxWidth: '860px', margin: '0 auto' }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '48px' }}>
@@ -293,10 +301,10 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
       </section>
 
       {/* ── Featured Products Section ── */}
-      <section style={{ backgroundColor: '#000000', padding: '80px 24px' }}>
+      <section className="section-featured" style={{ backgroundColor: '#000000', padding: '48px 24px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-            <h2 style={{ fontFamily: "'Poppins', sans-serif", fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.01em', marginBottom: '16px' }}>Featured Products</h2>
+            <h2 className="featured-heading" style={{ fontFamily: "'Poppins', sans-serif", fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.01em', marginBottom: '16px' }}>Featured Products</h2>
             <button onClick={() => setView('listings')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '12px', fontWeight: '600', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#0bbfaa', textDecoration: 'underline', textUnderlineOffset: '4px', padding: 0 }}>
               - View All
             </button>
@@ -329,7 +337,7 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
                       <div style={{ padding: '28px 24px', backgroundColor: '#000000' }}>
                         <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#64748b', marginBottom: '10px' }}>{product.category || 'General'}</p>
                         <h3 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '22px', fontWeight: '500', color: '#e2e8f0', marginBottom: '12px', lineHeight: 1.4 }}>{product.title}</h3>
-                        <p style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '24px', fontWeight: '700', color: '#ffffff' }}>{formattedPrice}</p>
+                        <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: '24px', fontWeight: '700', color: '#ffffff' }}>{formattedPrice}</p>
                       </div>
                     </div>
                   );
