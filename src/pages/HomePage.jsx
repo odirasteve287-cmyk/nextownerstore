@@ -28,12 +28,12 @@ function ProductCard({ product, onClick }) {
         </div>
       </div>
       <div style={{ padding: '14px 16px 18px' }}>
-        <h3 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '15px', fontWeight: '600', color: '#e2e8f0', marginBottom: '4px', lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+        <h3 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '15px', fontWeight: '600', color: '#e2e8f0', marginBottom: '4px', lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
           {product.title}
         </h3>
         <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px' }}>{product.location || 'N/A'}</p>
         <div style={{ marginBottom: '10px' }}>
-          <span style={{ fontFamily: "'Times New Roman', Times, serif", fontStyle: 'italic', fontWeight: '800', fontSize: '1.5rem', color: '#ffffff', letterSpacing: '-0.02em' }}>
+          <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontWeight: '700', fontSize: '1.5rem', color: '#ffffff', letterSpacing: '-0.02em' }}>
             {formattedPrice}
           </span>
         </div>
@@ -136,10 +136,10 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
       {/* ── Hero Section ── */}
       <section ref={heroRef} style={{ position: 'relative', backgroundColor: '#000000', overflow: 'hidden', paddingTop: '80px', paddingBottom: '64px' }}>
         <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', maxWidth: '900px', margin: '0 auto', padding: '60px 24px 48px' }}>
-          <h1 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: 'clamp(2rem, 4.5vw, 3.8rem)', fontWeight: '800', color: '#0bbfaa', lineHeight: 1.1, marginBottom: '16px', letterSpacing: '-0.02em' }}>
+          <h1 style={{ fontFamily: "'Poppins', sans-serif", fontSize: 'clamp(2rem, 4.5vw, 3.8rem)', fontWeight: '800', color: '#0bbfaa', lineHeight: 1.1, marginBottom: '16px', letterSpacing: '-0.02em' }}>
             Your Trusted Marketplace
           </h1>
-          <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 'clamp(1rem, 1.5vw, 1.15rem)', color: '#94a3b8', lineHeight: 1.7, marginBottom: '36px', fontStyle: 'italic' }}>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 'clamp(1rem, 1.5vw, 1.15rem)', color: '#94a3b8', lineHeight: 1.7, marginBottom: '36px', fontStyle: 'italic' }}>
             Because every item carries a precious story
           </p>
 
@@ -151,12 +151,12 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch(e)}
-              style={{ flex: 1, border: 'none', outline: 'none', padding: '14px 20px', fontSize: '16px', fontFamily: "'Cormorant Garamond', Georgia, serif", color: '#e2e8f0', backgroundColor: 'transparent', minWidth: 0 }}
+              style={{ flex: 1, border: 'none', outline: 'none', padding: '14px 20px', fontSize: '16px', fontFamily: "'Inter', sans-serif", color: '#e2e8f0', backgroundColor: 'transparent', minWidth: 0 }}
             />
             <button
               onClick={handleSearch}
               className="search-btn"
-              style={{ backgroundColor: '#0bbfaa', color: '#0d1b2a', border: 'none', borderRadius: '6px', padding: '14px 32px', fontSize: '16px', fontWeight: '700', cursor: 'pointer', fontFamily: "'Cormorant Garamond', Georgia, serif", display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap', transition: 'background-color 0.2s', flexShrink: 0 }}
+              style={{ backgroundColor: '#0bbfaa', color: '#0d1b2a', border: 'none', borderRadius: '6px', padding: '14px 32px', fontSize: '16px', fontWeight: '700', cursor: 'pointer', fontFamily: "'Inter', sans-serif", display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap', transition: 'background-color 0.2s', flexShrink: 0 }}
               onMouseEnter={e => e.currentTarget.style.backgroundColor = '#09a896'}
               onMouseLeave={e => e.currentTarget.style.backgroundColor = '#0bbfaa'}>
               <span className="search-btn-text">Search</span>
@@ -177,7 +177,7 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
                 <svg viewBox="0 0 80 80" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '36px', height: '36px' }}>
                   {icon}
                 </svg>
-                <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '11px', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#ffffff', whiteSpace: 'nowrap' }}>
+                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '11px', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#ffffff', whiteSpace: 'nowrap' }}>
                   {label}
                 </span>
               </button>
@@ -190,15 +190,15 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
       <section style={{ backgroundColor: '#000000', padding: '80px 0' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
           <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-            <h2 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.01em', marginBottom: '16px' }}>New Arrivals</h2>
-            <button onClick={() => setView('listings')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '12px', fontWeight: '600', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#0bbfaa', textDecoration: 'underline', textUnderlineOffset: '4px', padding: 0 }}>
+            <h2 style={{ fontFamily: "'Poppins', sans-serif", fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.01em', marginBottom: '16px' }}>New Arrivals</h2>
+            <button onClick={() => setView('listings')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '12px', fontWeight: '600', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#0bbfaa', textDecoration: 'underline', textUnderlineOffset: '4px', padding: 0 }}>
               - View All
             </button>
           </div>
 
           {products.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '80px 20px' }}>
-              <h3 style={{ fontSize: '1.6rem', marginBottom: '12px', color: '#e2e8f0', fontFamily: "'Times New Roman', serif" }}>No Items Available</h3>
+              <h3 style={{ fontSize: '1.6rem', marginBottom: '12px', color: '#e2e8f0', fontFamily: "'Poppins', sans-serif" }}>No Items Available</h3>
               <p style={{ color: '#64748b', marginBottom: '24px' }}>Be the first to add a listing!</p>
               <button onClick={() => setView('listings')} style={{ padding: '12px 32px', backgroundColor: '#0bbfaa', color: '#0d1b2a', border: 'none', borderRadius: '2px', fontWeight: '700', cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase', fontSize: '11px' }}>Browse Marketplace</button>
             </div>
@@ -222,9 +222,9 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
                       )}
                     </div>
                     <div style={{ padding: '14px 4px 8px' }}>
-                      <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#64748b', marginBottom: '5px' }}>{product.category || 'General'}</p>
-                      <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '17px', fontWeight: '500', color: '#0bbfaa', marginBottom: '8px', lineHeight: 1.35 }}>{product.title}</p>
-                      <p style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '15px', fontWeight: '600', color: '#ffffff' }}>{formattedPrice}</p>
+                      <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#64748b', marginBottom: '5px' }}>{product.category || 'General'}</p>
+                      <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '17px', fontWeight: '500', color: '#0bbfaa', marginBottom: '8px', lineHeight: 1.35 }}>{product.title}</p>
+                      <p style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '15px', fontWeight: '600', color: '#ffffff' }}>{formattedPrice}</p>
                     </div>
                   </div>
                 );
@@ -248,15 +248,15 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
       <section className="about-section">
         <div className="about-img" />
         <div className="about-card">
-          <h2 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', fontWeight: '600', color: '#ffffff', lineHeight: 1.2, marginBottom: '24px', letterSpacing: '-0.01em' }}>
+          <h2 style={{ fontFamily: "'Poppins', sans-serif", fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', fontWeight: '600', color: '#ffffff', lineHeight: 1.2, marginBottom: '24px', letterSpacing: '-0.01em' }}>
             We connect pre-loved items with new owners
           </h2>
           <div style={{ width: '40px', height: '1px', backgroundColor: '#0bbfaa', margin: '0 auto 24px' }} />
-          <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 'clamp(1rem, 1.5vw, 1.15rem)', fontStyle: 'italic', color: '#94a3b8', lineHeight: 1.7, marginBottom: '36px' }}>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 'clamp(1rem, 1.5vw, 1.15rem)', fontStyle: 'italic', color: '#94a3b8', lineHeight: 1.7, marginBottom: '36px' }}>
             Every item carries a precious story — find something that speaks to you
           </p>
           <button onClick={() => setView('listings')}
-            style={{ backgroundColor: '#0bbfaa', color: '#0d1b2a', border: 'none', borderRadius: '2px', padding: '13px 32px', fontSize: '11px', fontWeight: '700', letterSpacing: '0.18em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: "'Cormorant Garamond', Georgia, serif", transition: 'background-color 0.2s' }}
+            style={{ backgroundColor: '#0bbfaa', color: '#0d1b2a', border: 'none', borderRadius: '2px', padding: '13px 32px', fontSize: '11px', fontWeight: '700', letterSpacing: '0.18em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: "'Inter', sans-serif", transition: 'background-color 0.2s' }}
             onMouseEnter={e => e.currentTarget.style.backgroundColor = '#09a896'}
             onMouseLeave={e => e.currentTarget.style.backgroundColor = '#0bbfaa'}>
             - Explore Now
@@ -266,18 +266,18 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
 
       {/* ── Testimonials ── */}
       <section style={{ position: 'relative', backgroundColor: '#000000', padding: '100px 24px', textAlign: 'center', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -60%)', fontSize: '28rem', lineHeight: 1, color: '#0d1b2a', fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: '700', userSelect: 'none', pointerEvents: 'none', zIndex: 0 }}>"</div>
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -60%)', fontSize: '28rem', lineHeight: 1, color: '#0d1b2a', fontFamily: "'Inter', sans-serif", fontWeight: '700', userSelect: 'none', pointerEvents: 'none', zIndex: 0 }}>"</div>
         <div style={{ position: 'relative', zIndex: 1, maxWidth: '860px', margin: '0 auto' }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '48px' }}>
-            <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '11px', fontWeight: '700', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#0bbfaa', border: '1px solid #0bbfaa', borderRadius: '999px', padding: '8px 24px' }}>
+            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '11px', fontWeight: '700', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#0bbfaa', border: '1px solid #0bbfaa', borderRadius: '999px', padding: '8px 24px' }}>
               Testimonials
             </span>
           </div>
           <div className={`testimonial-content${testimonialFading ? ' fading' : ''}`} style={{ minHeight: '200px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 'clamp(1.4rem, 2.5vw, 2rem)', fontStyle: 'italic', fontWeight: '400', color: '#e2e8f0', lineHeight: 1.6, marginBottom: '28px' }}>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 'clamp(1.4rem, 2.5vw, 2rem)', fontStyle: 'italic', fontWeight: '400', color: '#e2e8f0', lineHeight: 1.6, marginBottom: '28px' }}>
               {testimonials[testimonialIndex].quote}
             </p>
-            <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '13px', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#64748b', marginBottom: '24px' }}>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '13px', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#64748b', marginBottom: '24px' }}>
               — {testimonials[testimonialIndex].name}, {testimonials[testimonialIndex].role}
             </p>
             <div style={{ width: '40px', height: '1px', backgroundColor: '#0bbfaa', margin: '0 auto 32px' }} />
@@ -296,8 +296,8 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
       <section style={{ backgroundColor: '#000000', padding: '80px 24px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-            <h2 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.01em', marginBottom: '16px' }}>Featured Products</h2>
-            <button onClick={() => setView('listings')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '12px', fontWeight: '600', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#0bbfaa', textDecoration: 'underline', textUnderlineOffset: '4px', padding: 0 }}>
+            <h2 style={{ fontFamily: "'Poppins', sans-serif", fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.01em', marginBottom: '16px' }}>Featured Products</h2>
+            <button onClick={() => setView('listings')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '12px', fontWeight: '600', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#0bbfaa', textDecoration: 'underline', textUnderlineOffset: '4px', padding: 0 }}>
               - View All
             </button>
           </div>
@@ -327,9 +327,9 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
                         )}
                       </div>
                       <div style={{ padding: '28px 24px', backgroundColor: '#000000' }}>
-                        <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#64748b', marginBottom: '10px' }}>{product.category || 'General'}</p>
-                        <h3 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '22px', fontWeight: '500', color: '#e2e8f0', marginBottom: '12px', lineHeight: 1.4 }}>{product.title}</h3>
-                        <p style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '24px', fontWeight: '700', color: '#ffffff' }}>{formattedPrice}</p>
+                        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#64748b', marginBottom: '10px' }}>{product.category || 'General'}</p>
+                        <h3 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '22px', fontWeight: '500', color: '#e2e8f0', marginBottom: '12px', lineHeight: 1.4 }}>{product.title}</h3>
+                        <p style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '24px', fontWeight: '700', color: '#ffffff' }}>{formattedPrice}</p>
                       </div>
                     </div>
                   );
