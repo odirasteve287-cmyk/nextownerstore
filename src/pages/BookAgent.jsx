@@ -170,7 +170,7 @@ export default function BookAgent({ setView }) {
                   <div>
                     <label style={labelStyle}>Phone/Mobile <span style={{ color: '#ef4444' }}>*</span></label>
                     <div className="phone-row">
-                      <select className="phone-code-select" style={{ ...inputStyle, cursor: 'pointer' }}>
+                      <select className="phone-code-select" style={{ ...inputStyle, width: '130px', flexShrink: 0, cursor: 'pointer' }}>
                         <option value="+1">US +1</option>
                         <option value="+44">UK +44</option>
                         <option value="+91">India +91</option>
