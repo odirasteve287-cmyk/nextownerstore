@@ -5,9 +5,12 @@ export default function Footer({ setView, listings = [] }) {
     <footer style={{
       backgroundColor: '#000000',
       color: '#e2e8f0',
-      fontFamily: "'Cormorant Garamond', Georgia, serif",
+      fontFamily: "'Inter', sans-serif",
       borderTop: '1px solid rgba(255,255,255,0.08)',
     }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap');
+      `}</style>
       <div style={{ maxWidth: '960px', margin: '0 auto', padding: '56px 24px 0' }}>
 
         {/* ── Centered Logo (matching Header) ── */}
@@ -32,23 +35,23 @@ export default function Footer({ setView, listings = [] }) {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
               <span style={{
-                fontSize: '22px',
+                fontSize: '20px',
                 fontWeight: '800',
                 color: '#ffffff',
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                letterSpacing: '0.02em',
+                fontFamily: "'Poppins', sans-serif",
+                letterSpacing: '-0.01em',
               }}>
-                NEXT
+                NextOwner
               </span>
               <span style={{
                 fontSize: '11px',
                 fontWeight: '500',
                 color: '#ffffff',
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
+                fontFamily: "'Inter', sans-serif",
                 letterSpacing: '0.14em',
                 textTransform: 'uppercase',
               }}>
-                Ownerstore
+                Store
               </span>
             </div>
           </div>
@@ -77,10 +80,11 @@ export default function Footer({ setView, listings = [] }) {
                 border: 'none',
                 cursor: 'pointer',
                 padding: '4px 0',
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: '15px',
+                fontFamily: "'Inter', sans-serif",
+                fontSize: '14px',
+                fontWeight: '500',
                 color: 'rgba(255,255,255,0.6)',
-                letterSpacing: '0.02em',
+                letterSpacing: '0.01em',
                 transition: 'color 0.2s',
               }}
               onMouseEnter={e => e.currentTarget.style.color = '#f5c518'}
@@ -146,11 +150,11 @@ export default function Footer({ setView, listings = [] }) {
         textAlign: 'center',
       }}>
         <p style={{
-          fontFamily: "'Cormorant Garamond', Georgia, serif",
+          fontFamily: "'Inter', sans-serif",
           fontSize: '13px',
           color: 'rgba(255,255,255,0.35)',
           margin: 0,
-          letterSpacing: '0.03em',
+          letterSpacing: '0.01em',
         }}>
           Copyright © 2025 Next Owners Store Ltd. All Rights Reserved.
         </p>
