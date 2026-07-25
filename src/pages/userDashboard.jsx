@@ -754,7 +754,7 @@ export default function SellerDashboard({ user, setView }) {
 
             <div className="wa-shell">
               {/* Left: thread list — hidden on mobile when chat is open */}
-              <div className={`wa-left${mobileShowChat ? ' hidden' : ''}${conversations.length === 0 ? ' wa-left-full' : ''}`}>
+              <div className={`wa-left${mobileShowChat ? ' hidden' : ''}${(conversations.length === 0 && !mobileShowChat) ? ' wa-left-full' : ''}`}>
                 <div className="wa-left-top">
                   <div>
                     <h3>Chats</h3>
@@ -800,8 +800,8 @@ export default function SellerDashboard({ user, setView }) {
                 )}
               </div>
 
-              {/* Right: chat panel — only rendered when a conversation exists; hidden on mobile while contact list is showing */}
-              {conversations.length > 0 && (
+              {/* Right: chat panel — rendered whenever a conversation exists OR the user is composing a new one */}
+              {(conversations.length > 0 || mobileShowChat) && (
                 <div className={`wa-right${!mobileShowChat ? ' hidden' : ''}`} style={{ display: 'flex', flexDirection: 'column' }}>
                     <div className="wa-topbar">
                       {/* Back button — visible only on mobile */}
