@@ -130,6 +130,10 @@ export default function App() {
   const addToCart = (product) => setCart([...cart, product]);
   const refreshProducts = () => setRefreshTrigger(prev => prev + 1);
 
+  // ✅ Views that render full-screen with no Header/Footer chrome (e.g. AuthForm has its own close-X)
+  const noChromeViews = ['authForm', 'signup', 'signin'];
+  const showChrome = !noChromeViews.includes(view);
+
   // ✅ Show spinner until auth resolves — prevents header flicker
   if (!authReady) {
     return (
@@ -155,13 +159,15 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header
-        user={user}
-        view={view}
-        setView={updateView}
-        cartCount={cart.length}
-        isAdmin={isAdmin}
-      />
+      {showChrome && (
+        <Header
+          user={user}
+          view={view}
+          setView={updateView}
+          cartCount={cart.length}
+          isAdmin={isAdmin}
+        />
+      )}
 
       {view === 'home' ? (
         <HomePage
@@ -242,7 +248,7 @@ export default function App() {
         </main>
       )}
 
-      <Footer setView={updateView} listings={products} />
+      {showChrome && <Footer setView={updateView} listings={products} />}
 
       {/* ✅ Cookie Consent Banner — renders as fixed overlay above everything */}
       <CookieConsent />
