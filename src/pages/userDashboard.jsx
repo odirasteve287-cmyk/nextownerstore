@@ -365,7 +365,7 @@ export default function SellerDashboard({ user, setView }) {
   }[s] || { bg: 'rgba(255,255,255,0.08)', text: 'rgba(255,255,255,0.45)' });
 
   return (
-    <div style={{ background: '#0e1117', minHeight: '100vh', color: '#ffffff', fontFamily: "'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+    <div style={{ background: '#0e1117', minHeight: '100vh', color: '#ffffff', fontFamily: "'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
       <style>{`
         .dash-input::placeholder { color: rgba(255,255,255,0.25); }
         .dash-input option { background: #1c1c1c; }
@@ -374,19 +374,19 @@ export default function SellerDashboard({ user, setView }) {
 
         .dash-tabbar { background: #131920; border-bottom: 2px solid #1a2030; display: flex; align-items: center; padding: 0 40px; position: sticky; top: 0; z-index: 100; overflow-x: auto; }
         .dash-tabbar::-webkit-scrollbar { display: none; }
-        .dash-tab { display: inline-flex; align-items: center; gap: 8px; padding: 20px 28px; color: rgba(255,255,255,0.45); font-size: 0.95rem; font-weight: 600; border: none; border-bottom: 3px solid transparent; background: none; cursor: pointer; white-space: nowrap; transition: all 0.2s; font-family: inherit; }
+        .dash-tab { display: inline-flex; align-items: center; gap: 8px; padding: 20px 28px; color: rgba(255,255,255,0.45); font-size: 0.95rem; font-weight: 600; border: none; border-bottom: 3px solid transparent; background: none; cursor: pointer; white-space: nowrap; transition: all 0.2s; font-family: 'Inter', sans-serif; letter-spacing: 0.01em; }
         .dash-tab:hover { color: #FFD700; }
         .dash-tab.active { color: #FFD700; border-bottom-color: #FFD700; }
-        .tab-badge { background: #4dd4ac; color: #000; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; margin-left: 4px; }
+        .tab-badge { background: #4dd4ac; color: #000; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; margin-left: 4px; font-family: 'Inter', sans-serif; }
 
-        .alert { padding: 13px 18px; border-radius: 8px; margin-bottom: 24px; font-size: 0.88rem; font-weight: 500; border: 1px solid; display: flex; align-items: flex-start; gap: 10px; }
+        .alert { padding: 13px 18px; border-radius: 8px; margin-bottom: 24px; font-size: 0.88rem; font-weight: 500; border: 1px solid; display: flex; align-items: center; gap: 10px; font-family: 'Inter', sans-serif; }
         .alert-success { background: rgba(77,212,172,0.07); border-color: #4dd4ac; color: #4dd4ac; }
         .alert-error   { background: rgba(255,107,107,0.07); border-color: #ff6b6b; color: #ff6b6b; }
 
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
         .form-group { margin-bottom: 18px; }
-        .form-group label { display: block; margin-bottom: 7px; color: rgba(255,255,255,0.65); font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
-        .form-control { width: 100%; padding: 12px 16px; border: 1px solid #1e2a3a; border-radius: 8px; background: #0e1117; color: #fff; font-size: 0.9rem; font-family: inherit; transition: border-color 0.2s; box-sizing: border-box; }
+        .form-group label { display: block; margin-bottom: 7px; color: rgba(255,255,255,0.65); font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; font-family: 'Inter', sans-serif; }
+        .form-control { width: 100%; padding: 12px 16px; border: 1px solid #1e2a3a; border-radius: 8px; background: #0e1117; color: #fff; font-size: 0.9rem; font-family: 'Inter', sans-serif; transition: border-color 0.2s; box-sizing: border-box; }
         .form-control:focus { outline: none; border-color: #4dd4ac; }
         .form-control::placeholder { color: rgba(255,255,255,0.22); }
         textarea.form-control { min-height: 115px; resize: vertical; }
@@ -395,9 +395,10 @@ export default function SellerDashboard({ user, setView }) {
 
         .upload-zone { border: 2px dashed #1e2a3a; border-radius: 10px; padding: 28px; text-align: center; transition: border-color 0.2s; cursor: pointer; background: #0e1117; width: 100%; box-sizing: border-box; }
         .upload-zone:hover { border-color: #4dd4ac; }
-        @media (max-width: 768px) { .upload-zone { border-radius: 0; border-left: none; border-right: none; margin-left: -16px; margin-right: -16px; width: calc(100% + 32px); padding: 24px 16px; } }
 
-        .ftab { padding: 7px 15px; background: #1a2030; color: rgba(255,255,255,0.45); font-weight: 600; font-size: 0.8rem; border-radius: 20px; border: 1px solid #1e2a3a; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-family: inherit; }
+        .dash-add-card { background: #151c27; border: 1px solid #1e2a3a; border-radius: 14px; padding: 40px; }
+
+        .ftab { padding: 7px 15px; background: #1a2030; color: rgba(255,255,255,0.45); font-weight: 600; font-size: 0.8rem; border-radius: 20px; border: 1px solid #1e2a3a; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-family: 'Inter', sans-serif; }
         .ftab:hover { color: #4dd4ac; border-color: #4dd4ac; }
         .ftab.active { background: #4dd4ac; color: #000; border-color: #4dd4ac; }
         .ftab span { font-size: 0.72rem; font-weight: 700; opacity: 0.75; }
@@ -407,13 +408,13 @@ export default function SellerDashboard({ user, setView }) {
         .listing-card:hover { transform: translateY(-4px); border-color: #4dd4ac; box-shadow: 0 8px 24px rgba(77,212,172,0.1); }
         .lc-img { position: relative; height: 175px; background: #111; overflow: hidden; }
         .lc-img img { width: 100%; height: 100%; object-fit: cover; }
-        .lc-status-badge { position: absolute; top: 10px; right: 10px; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+        .lc-status-badge { position: absolute; top: 10px; right: 10px; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; font-family: 'Inter', sans-serif; }
         .lc-body { padding: 16px; }
-        .lc-title { font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 5px; }
-        .lc-price { font-size: 1.2rem; font-weight: 700; color: #4dd4ac; margin-bottom: 11px; }
-        .lc-veri { padding: 8px 11px; border-radius: 7px; margin-bottom: 10px; font-size: 0.78rem; font-weight: 600; display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.25); }
+        .lc-title { font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 5px; font-family: 'Poppins', sans-serif; }
+        .lc-price { font-size: 1.2rem; font-weight: 700; color: #4dd4ac; margin-bottom: 11px; font-family: 'Poppins', sans-serif; letter-spacing: -0.01em; }
+        .lc-veri { padding: 8px 11px; border-radius: 7px; margin-bottom: 10px; font-size: 0.78rem; font-weight: 600; display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.25); font-family: 'Inter', sans-serif; }
         .lc-actions { display: flex; gap: 8px; padding-top: 11px; margin-top: 4px; border-top: 1px solid #1e2a3a; }
-        .lc-btn { flex: 1; padding: 8px; border-radius: 7px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; border: 1px solid; font-family: inherit; transition: all 0.2s; background: transparent; }
+        .lc-btn { flex: 1; padding: 8px; border-radius: 7px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; border: 1px solid; font-family: 'Inter', sans-serif; transition: all 0.2s; background: transparent; }
         .btn-view { color: #4dd4ac; border-color: #4dd4ac; }
         .btn-view:hover { background: #4dd4ac; color: #000; }
         .btn-del { color: #ff6b6b; border-color: #ff6b6b; }
@@ -431,33 +432,33 @@ export default function SellerDashboard({ user, setView }) {
         }
         .wa-left { width: 300px; flex-shrink: 0; background: #0e1117; border-right: 1px solid #1e2a3a; display: flex; flex-direction: column; }
         .wa-left-top { padding: 16px 20px; background: #131920; border-bottom: 1px solid #1e2a3a; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-        .wa-left-top h3 { font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0; }
-        .wa-left-sub { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 2px; }
+        .wa-left-top h3 { font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0; font-family: 'Poppins', sans-serif; }
+        .wa-left-sub { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 2px; font-family: 'Inter', sans-serif; }
         .wa-contact-list { flex: 1; overflow-y: auto; }
         .wa-contact { display: flex; align-items: center; gap: 13px; padding: 14px 20px; cursor: pointer; border-bottom: 1px solid #1a2030; transition: background 0.15s; border-left: 3px solid transparent; }
         .wa-contact:hover { background: rgba(77,212,172,0.07); }
         .wa-contact.active { background: rgba(77,212,172,0.14); border-left-color: #4dd4ac; }
-        .wa-ava { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #4dd4ac, #2a9d7c); display: flex; align-items: center; justify-content: center; color: #000; font-weight: 700; font-size: 1rem; flex-shrink: 0; position: relative; }
+        .wa-ava { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #4dd4ac, #2a9d7c); display: flex; align-items: center; justify-content: center; color: #000; font-weight: 700; font-size: 1rem; flex-shrink: 0; position: relative; font-family: 'Poppins', sans-serif; }
         .wa-dot { width: 10px; height: 10px; background: #4dd4ac; border-radius: 50%; border: 2px solid #111; position: absolute; bottom: 1px; right: 1px; box-shadow: 0 0 5px rgba(77,212,172,0.7); }
         .wa-ci { flex: 1; min-width: 0; }
-        .wa-cname { font-size: 0.88rem; font-weight: 600; color: #fff; }
-        .wa-cprev { font-size: 0.75rem; color: rgba(255,255,255,0.38); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
-        .wa-ctime { font-size: 0.68rem; color: rgba(255,255,255,0.28); }
+        .wa-cname { font-size: 0.88rem; font-weight: 600; color: #fff; font-family: 'Poppins', sans-serif; }
+        .wa-cprev { font-size: 0.75rem; color: rgba(255,255,255,0.38); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; font-family: 'Inter', sans-serif; }
+        .wa-ctime { font-size: 0.68rem; color: rgba(255,255,255,0.28); font-family: 'Inter', sans-serif; }
 
         .wa-right { flex: 1; display: flex; flex-direction: column; background: #0a1018; background-image: radial-gradient(circle at 1px 1px, rgba(77,212,172,0.02) 1px, transparent 0); background-size: 28px 28px; min-width: 0; }
         .wa-topbar { padding: 14px 20px; background: #131920; border-bottom: 1px solid #1e2a3a; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-        .wa-topbar-ava { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #4dd4ac, #2a9d7c); display: flex; align-items: center; justify-content: center; color: #000; font-weight: 700; font-size: 0.92rem; flex-shrink: 0; }
-        .wa-topbar-name { font-size: 0.9rem; font-weight: 600; color: #fff; margin: 0 0 2px; }
-        .wa-topbar-status { font-size: 0.72rem; color: #4dd4ac; margin: 0; display: flex; align-items: center; gap: 5px; }
+        .wa-topbar-ava { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #4dd4ac, #2a9d7c); display: flex; align-items: center; justify-content: center; color: #000; font-weight: 700; font-size: 0.92rem; flex-shrink: 0; font-family: 'Poppins', sans-serif; }
+        .wa-topbar-name { font-size: 0.9rem; font-weight: 600; color: #fff; margin: 0 0 2px; font-family: 'Poppins', sans-serif; }
+        .wa-topbar-status { font-size: 0.72rem; color: #4dd4ac; margin: 0; display: flex; align-items: center; gap: 5px; font-family: 'Inter', sans-serif; }
         .wa-topbar-status::before { content: ''; width: 6px; height: 6px; background: #4dd4ac; border-radius: 50%; display: inline-block; box-shadow: 0 0 5px rgba(77,212,172,0.6); }
-        .wa-topbar-sub { font-size: 0.65rem; color: rgba(255,255,255,0.3); letter-spacing: 0.04em; text-transform: uppercase; }
+        .wa-topbar-sub { font-size: 0.65rem; color: rgba(255,255,255,0.3); letter-spacing: 0.04em; text-transform: uppercase; font-family: 'Inter', sans-serif; }
 
         .wa-msgs { flex: 1; overflow-y: auto; padding: 22px 28px; display: flex; flex-direction: column; gap: 3px; }
         .wa-msgs::-webkit-scrollbar { width: 5px; }
         .wa-msgs::-webkit-scrollbar-thumb { background: #1e2a3a; border-radius: 4px; }
 
         .wa-datechip { text-align: center; margin: 10px 0; }
-        .wa-datechip span { background: #1a2520; color: rgba(255,255,255,0.4); font-size: 0.7rem; padding: 4px 13px; border-radius: 9px; display: inline-block; border: 1px solid rgba(77,212,172,0.1); }
+        .wa-datechip span { background: #1a2520; color: rgba(255,255,255,0.4); font-size: 0.7rem; padding: 4px 13px; border-radius: 9px; display: inline-block; border: 1px solid rgba(77,212,172,0.1); font-family: 'Inter', sans-serif; }
 
         .wa-msg { display: flex; margin-bottom: 1px; }
         .wa-msg.sent { justify-content: flex-end; }
@@ -465,38 +466,60 @@ export default function SellerDashboard({ user, setView }) {
         .wa-msg-inner { display: flex; flex-direction: column; max-width: 72%; }
         .wa-msg.sent .wa-msg-inner { align-items: flex-end; }
         .wa-msg.received .wa-msg-inner { align-items: flex-start; }
-        .wa-sender-label { font-size: 0.68rem; font-weight: 700; color: #4dd4ac; margin-bottom: 3px; padding-left: 2px; }
-        .wa-bubble { width: 100%; padding: 8px 12px 6px; border-radius: 10px; word-wrap: break-word; line-height: 1.55; font-size: 0.87rem; box-shadow: 0 1px 2px rgba(0,0,0,0.35); animation: waPop 0.18s ease; }
+        .wa-sender-label { font-size: 0.68rem; font-weight: 700; color: #4dd4ac; margin-bottom: 3px; padding-left: 2px; font-family: 'Inter', sans-serif; }
+        .wa-bubble { width: 100%; padding: 8px 12px 6px; border-radius: 10px; word-wrap: break-word; line-height: 1.55; font-size: 0.87rem; box-shadow: 0 1px 2px rgba(0,0,0,0.35); animation: waPop 0.18s ease; font-family: 'Inter', sans-serif; }
         @keyframes waPop { from { opacity:0; transform: scale(0.95) translateY(5px); } to { opacity:1; transform: scale(1) translateY(0); } }
         .wa-msg.received .wa-bubble { background: #1e2b27; color: #e0f5ef; border-top-left-radius: 2px; }
         .wa-msg.sent .wa-bubble { background: #1d4b39; color: #e0f5ef; border-top-right-radius: 2px; }
         .wa-foot { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-top: 2px; }
         .wa-time { font-size: 0.62rem; color: rgba(255,255,255,0.36); }
-        .wa-tick { color: #4dd4ac; font-size: 0.68rem; }
+        .wa-tick { color: #4dd4ac; }
 
         .wa-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 40px; }
-        .wa-empty-icon { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #1d4b39, #163326); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #4dd4ac; }
+        .wa-empty-icon { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #1d4b39, #163326); display: flex; align-items: center; justify-content: center; color: #4dd4ac; }
 
         .wa-inputbar { padding: 12px 18px; background: #131920; border-top: 1px solid #1e2a3a; display: flex; align-items: flex-end; gap: 10px; flex-shrink: 0; }
-        .wa-ta { flex: 1; background: #1a2230; border: 1px solid #1e2a3a; border-radius: 22px; color: #fff; font-family: inherit; font-size: 0.87rem; padding: 10px 16px; resize: none; min-height: 42px; max-height: 110px; overflow-y: hidden; line-height: 1.5; transition: border-color 0.2s; }
+        .wa-ta { flex: 1; background: #1a2230; border: 1px solid #1e2a3a; border-radius: 22px; color: #fff; font-family: 'Inter', sans-serif; font-size: 0.87rem; padding: 10px 16px; resize: none; min-height: 42px; max-height: 110px; overflow-y: hidden; line-height: 1.5; transition: border-color 0.2s; }
         .wa-ta:focus { outline: none; border-color: #4dd4ac; }
         .wa-ta::placeholder { color: rgba(255,255,255,0.28); }
-        .wa-sendbtn { width: 42px; height: 42px; border-radius: 50%; background: #4dd4ac; color: #000; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; transition: all 0.2s; box-shadow: 0 2px 8px rgba(77,212,172,0.3); }
+        .wa-sendbtn { width: 42px; height: 42px; border-radius: 50%; background: #4dd4ac; color: #000; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; box-shadow: 0 2px 8px rgba(77,212,172,0.3); }
         .wa-sendbtn:hover { background: #3bc495; transform: scale(1.08); }
         .wa-sendbtn:disabled { background: #1e2a3a; cursor: default; transform: none; box-shadow: none; }
 
-        .empty-state { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.3); }
-        .empty-state h3 { color: rgba(255,255,255,0.45); margin-bottom: 8px; font-size: 1rem; }
+        .wa-newmsg-btn { width: 100%; padding: 11px; background: rgba(77,212,172,0.1); border: 1px solid #4dd4ac; border-radius: 8px; color: #4dd4ac; cursor: pointer; font-size: 0.82rem; font-weight: 600; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; gap: 7px; transition: all 0.2s; }
+        .wa-newmsg-btn:hover { background: #4dd4ac; color: #000; }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.3); font-family: 'Inter', sans-serif; }
+        .empty-state h3 { color: rgba(255,255,255,0.45); margin-bottom: 8px; font-size: 1rem; font-family: 'Poppins', sans-serif; }
 
         .settings-card { background: #151c27; border: 1px solid #1e2a3a; border-radius: 14px; padding: 40px; }
-        .settings-label { font-size: 0.72rem; font-weight: 700; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 18px; }
+        .settings-label { font-size: 0.72rem; font-weight: 700; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 18px; font-family: 'Inter', sans-serif; }
+
+        .dash-section-title { font-family: 'Poppins', sans-serif; font-size: 1.6rem; font-weight: 800; color: #4dd4ac; margin-bottom: 4px; letter-spacing: -0.01em; }
+        .dash-section-sub { font-family: 'Inter', sans-serif; font-size: 0.85rem; color: rgba(255,255,255,0.32); line-height: 1.6; }
+
+        .dash-page { max-width: 1200px; margin: 0 auto; padding: 44px 40px; }
 
         /* ── Mobile overrides ── */
         @media (max-width: 768px) {
           .dash-tabbar { padding: 0 16px; }
-          .dash-page { padding: 24px 16px; }
+          .dash-page { padding: 24px 0; }
+
+          .dash-page-inner { padding: 0 16px; }
+          .dash-page-inner.dash-page-flush { padding: 0; }
+          .dash-page-inner.dash-page-flush > .dash-section-title,
+          .dash-page-inner.dash-page-flush > .dash-section-sub,
+          .dash-page-inner.dash-page-flush > .alert {
+            margin-left: 16px;
+            margin-right: 16px;
+          }
+
           .form-row { grid-template-columns: 1fr; }
           .listings-grid { grid-template-columns: 1fr; }
+
+          /* Add New: full-bleed, edge-to-edge card on mobile */
+          .dash-add-card { border-radius: 0; padding: 24px 16px; }
+          .upload-zone { border-radius: 0; margin-left: -16px; margin-right: -16px; width: calc(100% + 32px); padding: 24px 16px; }
 
           /* Chat: full-screen height on mobile, stacked layout */
           .wa-shell {
@@ -546,22 +569,35 @@ export default function SellerDashboard({ user, setView }) {
       </div>
 
       {/* ── Page Content ── */}
-      <div className="dash-page" style={{ maxWidth: '1200px', margin: '0 auto', padding: '44px 40px' }}>
+      <div className="dash-page">
 
         {postSuccess && activeTab !== 'new' && (
-          <div className="alert alert-success">✓ Item submitted successfully! It will be visible after agent approval.</div>
+          <div className="alert alert-success">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ flexShrink: 0 }}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+            Item submitted successfully! It will be visible after agent approval.
+          </div>
         )}
 
         {/* ══ ADD NEW ══ */}
         {activeTab === 'new' && (
-          <div>
+          <div className="dash-page-inner dash-page-flush">
             <div style={{ marginBottom: '28px' }}>
-              <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#4dd4ac', marginBottom: '4px' }}>Add New Listing</div>
-              <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.32)' }}>Fill in the details and submit — your listing will be reviewed before going live.</div>
+              <div className="dash-section-title">Add New Listing</div>
+              <div className="dash-section-sub">Fill in the details and submit — your listing will be reviewed before going live.</div>
             </div>
-            {postSuccess && <div className="alert alert-success">✓ Listing submitted! It will be visible after admin verification.</div>}
-            {postError   && <div className="alert alert-error">⚠ {postError}</div>}
-            <div style={{ background: '#151c27', border: '1px solid #1e2a3a', borderRadius: '14px', padding: '40px' }}>
+            {postSuccess && (
+              <div className="alert alert-success">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ flexShrink: 0 }}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                Listing submitted! It will be visible after admin verification.
+              </div>
+            )}
+            {postError && (
+              <div className="alert alert-error">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ flexShrink: 0 }}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86l-8.18 14.18A2 2 0 003.82 21h16.36a2 2 0 001.71-2.96L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
+                {postError}
+              </div>
+            )}
+            <div className="dash-add-card">
               <form onSubmit={handlePostSubmit}>
                 <div className="form-row">
                   <div className="form-group">
@@ -604,7 +640,9 @@ export default function SellerDashboard({ user, setView }) {
                 <div className="form-group">
                   <label>Images</label>
                   <div className="upload-zone">
-                    <div style={{ fontSize: '2rem', color: '#4dd4ac', marginBottom: '10px' }}>↑</div>
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#4dd4ac" strokeWidth="1.8" style={{ marginBottom: '10px' }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16.5V18a2 2 0 002 2h12a2 2 0 002-2v-1.5M16 8l-4-4-4 4M12 4v12" />
+                    </svg>
                     <div style={{ marginBottom: '16px' }}>
                       {[
                         { label: 'Main Image *', setter: setMainImage, req: true },
@@ -612,20 +650,20 @@ export default function SellerDashboard({ user, setView }) {
                         { label: 'Detail Image 2 (Optional)', setter: setDetailImage2 },
                       ].map(({ label, setter, req }) => (
                         <div key={label} style={{ marginBottom: '12px', textAlign: 'left' }}>
-                          <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.55)', marginBottom: '6px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</div>
+                          <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.55)', marginBottom: '6px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.04em', fontFamily: "'Inter', sans-serif" }}>{label}</div>
                           <input type="file" accept="image/*" required={req} onChange={e => setter(e.target.files[0])}
-                            style={{ width: '100%', padding: '10px', background: '#0e1117', border: '1px solid #1e2a3a', borderRadius: '8px', color: '#fff', cursor: 'pointer', colorScheme: 'dark' }} />
+                            style={{ width: '100%', padding: '10px', background: '#0e1117', border: '1px solid #1e2a3a', borderRadius: '8px', color: '#fff', cursor: 'pointer', colorScheme: 'dark', fontFamily: "'Inter', sans-serif" }} />
                         </div>
                       ))}
                     </div>
-                    <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.82rem' }}>JPG, PNG or GIF · 1 main + 2 optional detail images</p>
+                    <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.82rem', fontFamily: "'Inter', sans-serif" }}>JPG, PNG or GIF · 1 main + 2 optional detail images</p>
                   </div>
                 </div>
                 <button type="submit" disabled={uploading}
-                  style={{ padding: '12px 28px', background: uploading ? 'rgba(77,212,172,0.5)' : '#4dd4ac', color: '#000', border: 'none', borderRadius: '8px', fontSize: '0.9rem', fontWeight: '600', cursor: uploading ? 'default' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px', fontFamily: 'inherit', transition: 'all 0.2s' }}
+                  style={{ padding: '12px 28px', background: uploading ? 'rgba(77,212,172,0.5)' : '#4dd4ac', color: '#000', border: 'none', borderRadius: '8px', fontSize: '0.9rem', fontWeight: '600', cursor: uploading ? 'default' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px', fontFamily: "'Inter', sans-serif", transition: 'all 0.2s' }}
                   onMouseEnter={e => { if (!uploading) e.currentTarget.style.background = '#3bc495'; }}
                   onMouseLeave={e => { if (!uploading) e.currentTarget.style.background = '#4dd4ac'; }}>
-                  ✈ {uploading ? 'Submitting…' : 'Submit for Verification'}
+                  {uploading ? 'Submitting…' : 'Submit for Verification'}
                 </button>
               </form>
             </div>
@@ -634,10 +672,10 @@ export default function SellerDashboard({ user, setView }) {
 
         {/* ══ MY ADS ══ */}
         {activeTab === 'listings' && (
-          <div>
+          <div className="dash-page-inner">
             <div style={{ marginBottom: '28px' }}>
-              <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#4dd4ac', marginBottom: '4px' }}>My Ads</div>
-              <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.32)' }}>Track and manage all your listings.</div>
+              <div className="dash-section-title">My Ads</div>
+              <div className="dash-section-sub">Track and manage all your listings.</div>
             </div>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
               {[
@@ -658,7 +696,7 @@ export default function SellerDashboard({ user, setView }) {
                 <p style={{ fontSize: '0.82rem' }}>You haven't posted any items in this category yet.</p>
                 {statusFilter === 'all' && (
                   <button onClick={() => setActiveTab('new')}
-                    style={{ marginTop: '16px', padding: '10px 24px', background: '#4dd4ac', color: '#000', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}>
+                    style={{ marginTop: '16px', padding: '10px 24px', background: '#4dd4ac', color: '#000', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}>
                     Post Your First Item
                   </button>
                 )}
@@ -668,27 +706,27 @@ export default function SellerDashboard({ user, setView }) {
                 {filteredProducts.map(product => {
                   const sc = statusColor(product.status);
                   const statusLabel = { pending: 'Pending', active: 'Active', sold: 'Sold', approved: 'Approved', rejected: 'Rejected' }[product.status] || product.status;
-                  const veriLabel = { pending: '⏳ Waiting for Verification', active: '✓ Live & Active', approved: '✓ Live & Approved', sold: '● Sold', rejected: '✗ Rejected' }[product.status] || product.status;
+                  const veriLabel = { pending: 'Waiting for Verification', active: 'Live & Active', approved: 'Live & Approved', sold: 'Sold', rejected: 'Rejected' }[product.status] || product.status;
                   return (
                     <div key={product.id} className="listing-card">
                       <div className="lc-img">
                         {product.image_url
                           ? <img src={product.image_url} alt={product.title} />
-                          : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', fontSize: '0.8rem', background: '#111' }}>No image</div>}
+                          : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', fontSize: '0.8rem', background: '#111', fontFamily: "'Inter', sans-serif" }}>No image</div>}
                         <span className="lc-status-badge" style={{ background: sc.bg, color: sc.text }}>{statusLabel}</span>
                       </div>
                       <div className="lc-body">
                         <div className="lc-title">{product.title}</div>
                         <div className="lc-price">${parseFloat(product.price).toFixed(2)}</div>
                         <div className="lc-veri" style={{ borderLeft: `3px solid ${sc.text}`, color: sc.text }}>{veriLabel}</div>
-                        <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', marginBottom: '10px' }}>{product.category} · {product.condition} · {product.location}</div>
+                        <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', marginBottom: '10px', fontFamily: "'Inter', sans-serif" }}>{product.category} · {product.condition} · {product.location}</div>
                         {(product.status === 'active' || product.status === 'approved' || product.status === 'pending') && (
                           <div className="lc-actions">
                             {(product.status === 'active' || product.status === 'approved') && (
-                              <button className="lc-btn btn-view" onClick={() => { sessionStorage.setItem('selectedProductId', product.id); setView('listings'); }}>👁 View</button>
+                              <button className="lc-btn btn-view" onClick={() => { sessionStorage.setItem('selectedProductId', product.id); setView('listings'); }}>View</button>
                             )}
                             {product.status === 'pending' && (
-                              <button className="lc-btn btn-del" onClick={async () => { if (window.confirm('Delete this listing?')) { await supabase.from('products').delete().eq('id', product.id); loadSellerData(); } }}>🗑 Delete</button>
+                              <button className="lc-btn btn-del" onClick={async () => { if (window.confirm('Delete this listing?')) { await supabase.from('products').delete().eq('id', product.id); loadSellerData(); } }}>Delete</button>
                             )}
                           </div>
                         )}
@@ -703,10 +741,10 @@ export default function SellerDashboard({ user, setView }) {
 
         {/* ══ MESSAGES ══ */}
         {activeTab === 'messages' && (
-          <div>
+          <div className="dash-page-inner">
             <div style={{ marginBottom: '28px' }}>
-              <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#4dd4ac', marginBottom: '4px' }}>Messages</div>
-              <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.32)' }}>Your conversations with marketplace agents.</div>
+              <div className="dash-section-title">Messages</div>
+              <div className="dash-section-sub">Your conversations with marketplace agents.</div>
             </div>
 
             <div className="wa-shell">
@@ -720,13 +758,17 @@ export default function SellerDashboard({ user, setView }) {
                 </div>
                 <div className="wa-contact-list">
                   {conversations.length === 0 ? (
-                    <div style={{ padding: '40px 16px', textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '0.82rem' }}>
-                      <div style={{ fontSize: '2rem', marginBottom: '10px' }}>💬</div>
-                      <p>No conversations yet</p>
-                      <p style={{ fontSize: '11px', marginTop: '6px' }}>Browse listings and tap Chat on any product to start</p>
-                      <button onClick={() => { setSelectedConv(null); setMessages([]); setMobileShowChat(true); }}
-                        style={{ marginTop: '14px', width: '100%', padding: '10px', background: 'rgba(77,212,172,0.1)', border: '1px solid #4dd4ac', borderRadius: '8px', color: '#4dd4ac', cursor: 'pointer', fontSize: '0.82rem', fontWeight: '600', fontFamily: 'inherit' }}>
-                        + Start a conversation
+                    <div style={{ padding: '44px 20px', textAlign: 'center' }}>
+                      <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(77,212,172,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4dd4ac" strokeWidth="1.8">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
+                        </svg>
+                      </div>
+                      <p style={{ color: 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.88rem', marginBottom: '6px', fontFamily: "'Poppins', sans-serif" }}>No conversations yet</p>
+                      <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.3)', marginBottom: '18px', lineHeight: '1.6', fontFamily: "'Inter', sans-serif" }}>Browse listings and tap Chat on any product to start</p>
+                      <button onClick={() => { setSelectedConv(null); setMessages([]); setMobileShowChat(true); }} className="wa-newmsg-btn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" /></svg>
+                        Write new message
                       </button>
                     </div>
                   ) : conversations.map((conv, idx) => (
@@ -737,7 +779,7 @@ export default function SellerDashboard({ user, setView }) {
                       </div>
                       <div className="wa-ci">
                         <div className="wa-cname">{getAgentName(conv)}</div>
-                        <div className="wa-cprev">{conv.lastMsg ? (conv.lastMsg.is_agent ? '🤝 ' : 'You: ') + conv.lastMsg.content : 'No messages yet'}</div>
+                        <div className="wa-cprev">{conv.lastMsg ? (conv.lastMsg.is_agent ? '' : 'You: ') + conv.lastMsg.content : 'No messages yet'}</div>
                       </div>
                       <div className="wa-ctime">{formatDate(conv.last_message_at)}</div>
                     </div>
@@ -749,11 +791,19 @@ export default function SellerDashboard({ user, setView }) {
               <div className={`wa-right${!mobileShowChat && conversations.length > 0 ? ' hidden' : ''}`} style={{ display: 'flex', flexDirection: 'column' }}>
                 {conversations.length === 0 && !mobileShowChat ? (
                   <div className="wa-empty">
-                    <div className="wa-empty-icon">💬</div>
-                    <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1rem' }}>No messages yet</h3>
-                    <p style={{ color: 'rgba(255,255,255,0.28)', fontSize: '0.8rem', maxWidth: '260px', lineHeight: '1.6' }}>
+                    <div className="wa-empty-icon">
+                      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
+                      </svg>
+                    </div>
+                    <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1rem', fontFamily: "'Poppins', sans-serif", margin: 0 }}>No messages yet</h3>
+                    <p style={{ color: 'rgba(255,255,255,0.28)', fontSize: '0.8rem', maxWidth: '260px', lineHeight: '1.6', fontFamily: "'Inter', sans-serif" }}>
                       Browse listings and tap <strong>Chat</strong> on any product to start a conversation with an agent.
                     </p>
+                    <button onClick={() => { setSelectedConv(null); setMessages([]); setMobileShowChat(true); }} className="wa-newmsg-btn" style={{ maxWidth: '220px' }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" /></svg>
+                      Write new message
+                    </button>
                   </div>
                 ) : (
                   <>
@@ -772,12 +822,16 @@ export default function SellerDashboard({ user, setView }) {
 
                     <div className="wa-msgs">
                       {msgLoading ? (
-                        <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', paddingTop: '60px' }}>Loading…</div>
+                        <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', paddingTop: '60px', fontFamily: "'Inter', sans-serif" }}>Loading…</div>
                       ) : messagesWithDateChips.length === 0 ? (
                         <div style={{ textAlign: 'center', paddingTop: '60px' }}>
-                          <div style={{ fontSize: '2.5rem', marginBottom: '14px' }}>👋</div>
-                          <p style={{ color: 'rgba(255,255,255,0.55)', fontWeight: '600', marginBottom: '6px' }}>Welcome to Support</p>
-                          <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.85rem' }}>How can we help you today?</p>
+                          <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(77,212,172,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4dd4ac" strokeWidth="1.8">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.97-4.03 9-9 9-1.5 0-2.9-.37-4.14-1.02L3 21l1.05-3.5A8.96 8.96 0 013 12c0-4.97 4.03-9 9-9s9 4.03 9 9z" />
+                            </svg>
+                          </div>
+                          <p style={{ color: 'rgba(255,255,255,0.55)', fontWeight: '600', marginBottom: '6px', fontFamily: "'Poppins', sans-serif" }}>Welcome to Support</p>
+                          <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.85rem', fontFamily: "'Inter', sans-serif" }}>How can we help you today?</p>
                         </div>
                       ) : messagesWithDateChips.map((item, i) => {
                         if (item.type === 'chip') return (
@@ -793,7 +847,11 @@ export default function SellerDashboard({ user, setView }) {
                                 <p style={{ fontSize: '0.875rem', lineHeight: '1.5', margin: 0, whiteSpace: 'pre-wrap' }}>{msg.content}</p>
                                 <div className="wa-foot">
                                   <span className="wa-time">{formatTime(msg.created_at)}</span>
-                                  {isMe && <span className="wa-tick">✓✓</span>}
+                                  {isMe && (
+                                    <svg className="wa-tick" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M2 12l5 5L22 4" />
+                                    </svg>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -813,7 +871,9 @@ export default function SellerDashboard({ user, setView }) {
                         rows={1}
                         className="wa-ta"
                       />
-                      <button onClick={handleSendMessage} disabled={!newMessage.trim()} className="wa-sendbtn">➤</button>
+                      <button onClick={handleSendMessage} disabled={!newMessage.trim()} className="wa-sendbtn">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z" /></svg>
+                      </button>
                     </div>
                   </>
                 )}
@@ -824,10 +884,10 @@ export default function SellerDashboard({ user, setView }) {
 
         {/* ══ SETTINGS ══ */}
         {activeTab === 'settings' && (
-          <div>
+          <div className="dash-page-inner">
             <div style={{ marginBottom: '28px' }}>
-              <div style={{ fontSize: '1.6rem', fontWeight: '700', color: '#4dd4ac', marginBottom: '4px' }}>Settings</div>
-              <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.32)' }}>Manage your account security.</div>
+              <div className="dash-section-title">Settings</div>
+              <div className="dash-section-sub">Manage your account security.</div>
             </div>
             <div className="settings-card">
               <div className="settings-label">Change Password</div>
@@ -857,10 +917,10 @@ export default function SellerDashboard({ user, setView }) {
                   </div>
                 </div>
                 <button type="submit"
-                  style={{ padding: '12px 24px', background: '#4dd4ac', color: '#000', border: 'none', borderRadius: '8px', fontSize: '0.9rem', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s' }}
+                  style={{ padding: '12px 24px', background: '#4dd4ac', color: '#000', border: 'none', borderRadius: '8px', fontSize: '0.9rem', fontWeight: '600', cursor: 'pointer', fontFamily: "'Inter', sans-serif", transition: 'all 0.2s' }}
                   onMouseEnter={e => e.currentTarget.style.background = '#3bc495'}
                   onMouseLeave={e => e.currentTarget.style.background = '#4dd4ac'}>
-                  🔒 Update Password
+                  Update Password
                 </button>
               </form>
             </div>
