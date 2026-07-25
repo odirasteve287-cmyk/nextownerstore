@@ -167,17 +167,6 @@ export default function AuthForm({ type: initialType, setView }) {
     }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap');
-
-        @media (max-width: 640px) {
-          .auth-page { padding: 0 !important; align-items: stretch !important; }
-          .auth-card {
-            width: 100% !important;
-            max-width: 100% !important;
-            min-height: 100vh !important;
-            border-radius: 0 !important;
-            box-shadow: none !important;
-          }
-        }
       `}</style>
 
       {/* Close button — back to homepage */}
