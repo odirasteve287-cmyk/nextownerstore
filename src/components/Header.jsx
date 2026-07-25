@@ -59,14 +59,14 @@ export default function Header({ user, view, setView, cartCount = 0, isAdmin }) 
     color: textColor,
     fontSize: '13px',
     fontWeight: '600',
-    letterSpacing: '0.1em',
+    letterSpacing: '0.05em',
     textTransform: 'uppercase',
     textDecoration: 'none',
     cursor: 'pointer',
     background: 'none',
     border: 'none',
     padding: '0',
-    fontFamily: "'Cormorant Garamond', Georgia, serif",
+    fontFamily: "'Inter', sans-serif",
     transition: 'color 0.15s',
   };
 
@@ -93,11 +93,11 @@ export default function Header({ user, view, setView, cartCount = 0, isAdmin }) 
         </svg>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
-        <span style={{ fontSize: '22px', fontWeight: '800', color: '#ffffff', fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: '0.02em' }}>
-          NEXT
+        <span style={{ fontSize: '20px', fontWeight: '800', color: '#ffffff', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.01em' }}>
+          NextOwner
         </span>
-        <span style={{ fontSize: '11px', fontWeight: '500', color: '#ffffff', fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-          Ownerstore
+        <span style={{ fontSize: '11px', fontWeight: '500', color: '#ffffff', fontFamily: "'Inter', sans-serif", letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+          Store
         </span>
       </div>
     </div>
@@ -108,14 +108,14 @@ export default function Header({ user, view, setView, cartCount = 0, isAdmin }) 
     backgroundColor: isGreen ? '#f5c518' : isDark ? 'transparent' : '#fff',
     color:           isGreen ? '#0d1b2a'  : isDark ? '#ffffff'      : '#2d2d2d',
     border:          isGreen ? '1.5px solid #f5c518' : isDark ? '1.5px solid rgba(255,255,255,0.4)' : '1.5px solid #c8b8a8',
-    borderRadius: '2px',
-    padding: '9px 18px',
+    borderRadius: '999px',
+    padding: '9px 20px',
     fontSize: '11px',
     fontWeight: '600',
-    letterSpacing: '0.15em',
+    letterSpacing: '0.1em',
     textTransform: 'uppercase',
     cursor: 'pointer',
-    fontFamily: "'Cormorant Garamond', Georgia, serif",
+    fontFamily: "'Inter', sans-serif",
     transition: 'background-color 0.15s, color 0.15s',
     whiteSpace: 'nowrap',
   };
@@ -123,7 +123,7 @@ export default function Header({ user, view, setView, cartCount = 0, isAdmin }) 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap');
 
         @media (max-width: 768px) {
           .hidden-mobile  { display: none !important; }
@@ -198,7 +198,7 @@ export default function Header({ user, view, setView, cartCount = 0, isAdmin }) 
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
                 </svg>
                 {user && (
-                  <span className="account-name" style={{ fontSize: '12px', fontWeight: '600', color: '#ffffff', fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: '0.05em', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span className="account-name" style={{ fontSize: '12px', fontWeight: '600', color: '#ffffff', fontFamily: "'Inter', sans-serif", letterSpacing: '0.01em', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {user.user_metadata?.full_name?.split(' ')[0] || user.user_metadata?.name?.split(' ')[0] || user.email?.split('@')[0]}
                   </span>
                 )}
@@ -214,29 +214,29 @@ export default function Header({ user, view, setView, cartCount = 0, isAdmin }) 
                   {user ? (
                     <>
                       <div style={{ padding: '10px 16px 12px' }}>
-                        <div style={{ fontSize: '13px', fontWeight: '700', color: '#ffffff', fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: '0.03em' }}>
+                        <div style={{ fontSize: '13px', fontWeight: '700', color: '#ffffff', fontFamily: "'Poppins', sans-serif", letterSpacing: '0' }}>
                           {user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0]}
                         </div>
-                        <div style={{ fontSize: '10px', color: '#666', fontFamily: "'Cormorant Garamond', Georgia, serif", marginTop: '2px', letterSpacing: '0.02em' }}>
+                        <div style={{ fontSize: '10px', color: '#666', fontFamily: "'Inter', sans-serif", marginTop: '2px', letterSpacing: '0.01em' }}>
                           {user.email}
                         </div>
                       </div>
                       {isAdmin && (
                         <button onClick={() => handleNavClick('admin-dashboard')}
-                          style={{ width: '100%', textAlign: 'left', padding: '10px 16px', fontSize: '12px', letterSpacing: '0.05em', fontWeight: '700', color: '#f5c518', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+                          style={{ width: '100%', textAlign: 'left', padding: '10px 16px', fontSize: '12px', letterSpacing: '0.03em', fontWeight: '700', color: '#f5c518', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}
                           onMouseEnter={e => e.currentTarget.style.backgroundColor = '#1a1a1a'}
                           onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
                           Admin Dashboard
                         </button>
                       )}
                       <button onClick={() => handleNavClick('seller-dashboard')}
-                        style={{ width: '100%', textAlign: 'left', padding: '10px 16px', fontSize: '12px', letterSpacing: '0.05em', color: '#ffffff', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+                        style={{ width: '100%', textAlign: 'left', padding: '10px 16px', fontSize: '12px', letterSpacing: '0.03em', color: '#ffffff', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = '#1a1a1a'}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
                         My Account
                       </button>
                       <button onClick={async () => { await supabase.auth.signOut(); handleNavClick('home'); }}
-                        style={{ width: '100%', textAlign: 'left', padding: '10px 16px', fontSize: '12px', letterSpacing: '0.05em', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+                        style={{ width: '100%', textAlign: 'left', padding: '10px 16px', fontSize: '12px', letterSpacing: '0.03em', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = '#1a1a1a'}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
                         Sign Out
@@ -245,13 +245,13 @@ export default function Header({ user, view, setView, cartCount = 0, isAdmin }) 
                   ) : (
                     <>
                       <button onClick={() => handleNavClick('signin')}
-                        style={{ width: '100%', textAlign: 'left', padding: '10px 16px', fontSize: '12px', letterSpacing: '0.05em', color: '#ffffff', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+                        style={{ width: '100%', textAlign: 'left', padding: '10px 16px', fontSize: '12px', letterSpacing: '0.03em', color: '#ffffff', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = '#1a1a1a'}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
                         Log In
                       </button>
                       <button onClick={() => handleNavClick('signup')}
-                        style={{ width: '100%', textAlign: 'left', padding: '10px 16px', fontSize: '12px', letterSpacing: '0.05em', color: '#f5c518', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+                        style={{ width: '100%', textAlign: 'left', padding: '10px 16px', fontSize: '12px', letterSpacing: '0.03em', color: '#f5c518', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = '#1a1a1a'}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
                         Register
@@ -322,7 +322,7 @@ export default function Header({ user, view, setView, cartCount = 0, isAdmin }) 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 20px 16px' }}>
           <button
             onClick={() => handleNavClick('authForm')}
-            style={{ flex: 1, padding: '11px 0', fontSize: '11px', fontWeight: '600', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#000000', backgroundColor: '#f5c518', border: 'none', borderRadius: '3px', cursor: 'pointer', fontFamily: "'Cormorant Garamond', Georgia, serif", marginRight: '12px' }}
+            style={{ flex: 1, padding: '11px 0', fontSize: '11px', fontWeight: '600', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#000000', backgroundColor: '#f5c518', border: 'none', borderRadius: '999px', cursor: 'pointer', fontFamily: "'Inter', sans-serif", marginRight: '12px' }}
           >
             + Post Item
           </button>
@@ -340,7 +340,7 @@ export default function Header({ user, view, setView, cartCount = 0, isAdmin }) 
             <button
               key={v}
               onClick={() => handleNavClick(v)}
-              style={{ textAlign: 'left', padding: '13px 20px', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#ffffff', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Cormorant Garamond', Georgia, serif", transition: 'color 0.15s' }}
+              style={{ textAlign: 'left', padding: '13px 20px', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#ffffff', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Inter', sans-serif", transition: 'color 0.15s' }}
               onMouseEnter={e => e.currentTarget.style.color = '#f5c518'}
               onMouseLeave={e => e.currentTarget.style.color = '#ffffff'}
             >
@@ -350,7 +350,7 @@ export default function Header({ user, view, setView, cartCount = 0, isAdmin }) 
           {isAdmin && (
             <button
               onClick={() => handleNavClick('admin-dashboard')}
-              style={{ textAlign: 'left', padding: '13px 20px', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#f5c518', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+              style={{ textAlign: 'left', padding: '13px 20px', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#f5c518', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}
             >
               Admin
             </button>
@@ -362,16 +362,16 @@ export default function Header({ user, view, setView, cartCount = 0, isAdmin }) 
           {user ? (
             <>
               <div style={{ padding: '0 0 8px', marginBottom: '4px' }}>
-                <div style={{ fontSize: '13px', fontWeight: '700', color: '#ffffff', fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
+                <div style={{ fontSize: '13px', fontWeight: '700', color: '#ffffff', fontFamily: "'Poppins', sans-serif" }}>
                   {user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0]}
                 </div>
-                <div style={{ fontSize: '10px', color: '#555', fontFamily: "'Cormorant Garamond', Georgia, serif", marginTop: '2px' }}>
+                <div style={{ fontSize: '10px', color: '#555', fontFamily: "'Inter', sans-serif", marginTop: '2px' }}>
                   {user.email}
                 </div>
               </div>
               <button
                 onClick={() => handleNavClick('seller-dashboard')}
-                style={{ padding: '11px 14px', fontSize: '12px', fontWeight: '600', color: '#ffffff', backgroundColor: '#111', borderRadius: '4px', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: '0.03em' }}
+                style={{ padding: '11px 14px', fontSize: '12px', fontWeight: '600', color: '#ffffff', backgroundColor: '#111', borderRadius: '8px', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: "'Inter', sans-serif", letterSpacing: '0.01em' }}
                 onMouseEnter={e => e.currentTarget.style.backgroundColor = '#1a1a1a'}
                 onMouseLeave={e => e.currentTarget.style.backgroundColor = '#111'}
               >
@@ -379,7 +379,7 @@ export default function Header({ user, view, setView, cartCount = 0, isAdmin }) 
               </button>
               <button
                 onClick={async () => { await supabase.auth.signOut(); handleNavClick('home'); }}
-                style={{ padding: '11px 14px', fontSize: '12px', fontWeight: '600', color: '#ef4444', backgroundColor: 'transparent', borderRadius: '4px', border: '1px solid rgba(239,68,68,0.3)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: '0.03em' }}
+                style={{ padding: '11px 14px', fontSize: '12px', fontWeight: '600', color: '#ef4444', backgroundColor: 'transparent', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.3)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Inter', sans-serif", letterSpacing: '0.01em' }}
               >
                 Sign Out
               </button>
@@ -388,7 +388,7 @@ export default function Header({ user, view, setView, cartCount = 0, isAdmin }) 
             <>
               <button
                 onClick={() => handleNavClick('signin')}
-                style={{ padding: '11px 14px', fontSize: '12px', fontWeight: '600', color: '#ffffff', backgroundColor: '#111', borderRadius: '4px', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: '0.03em' }}
+                style={{ padding: '11px 14px', fontSize: '12px', fontWeight: '600', color: '#ffffff', backgroundColor: '#111', borderRadius: '8px', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: "'Inter', sans-serif", letterSpacing: '0.01em' }}
                 onMouseEnter={e => e.currentTarget.style.backgroundColor = '#1a1a1a'}
                 onMouseLeave={e => e.currentTarget.style.backgroundColor = '#111'}
               >
@@ -396,7 +396,7 @@ export default function Header({ user, view, setView, cartCount = 0, isAdmin }) 
               </button>
               <button
                 onClick={() => handleNavClick('signup')}
-                style={{ padding: '11px 14px', fontSize: '12px', fontWeight: '600', color: '#f5c518', backgroundColor: 'transparent', borderRadius: '4px', border: '1px solid rgba(245,197,24,0.4)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: '0.03em' }}
+                style={{ padding: '11px 14px', fontSize: '12px', fontWeight: '600', color: '#f5c518', backgroundColor: 'transparent', borderRadius: '8px', border: '1px solid rgba(245,197,24,0.4)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Inter', sans-serif", letterSpacing: '0.01em' }}
               >
                 Register
               </button>
