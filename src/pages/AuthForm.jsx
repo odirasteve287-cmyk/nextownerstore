@@ -5,13 +5,13 @@ const inputStyle = {
   width: '100%',
   background: '#0d1117',
   border: '1.5px solid #1e2d3d',
-  borderRadius: '6px',
+  borderRadius: '4px',
   padding: '13px 14px 13px 46px',
   color: '#e2e8f0',
   fontSize: '14px',
   outline: 'none',
   boxSizing: 'border-box',
-  fontFamily: 'inherit',
+  fontFamily: "'Inter', sans-serif",
   transition: 'border-color 0.2s',
 };
 
@@ -161,10 +161,14 @@ export default function AuthForm({ type: initialType, setView }) {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '24px 16px',
-      fontFamily: "'Segoe UI', system-ui, sans-serif",
+      fontFamily: "'Inter', sans-serif",
       position: 'relative',
       overflow: 'hidden',
     }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap');
+      `}</style>
+
       {/* Geometric background */}
       <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
         <polygon points="800,0 1050,0 750,800 500,800"    fill="rgba(255,255,255,0.08)" />
@@ -177,9 +181,9 @@ export default function AuthForm({ type: initialType, setView }) {
       {/* Card */}
       <div style={{
         width: '100%',
-        maxWidth: '460px',
+        maxWidth: '560px',
         backgroundColor: '#0d1117',
-        borderRadius: '12px',
+        borderRadius: '6px',
         overflow: 'hidden',
         boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
         position: 'relative',
@@ -197,10 +201,11 @@ export default function AuthForm({ type: initialType, setView }) {
                 border: 'none',
                 borderBottom: tab === t ? '2px solid #0bbfaa' : '2px solid transparent',
                 color: tab === t ? '#0bbfaa' : '#64748b',
-                fontWeight: tab === t ? '600' : '400',
+                fontWeight: '600',
                 fontSize: '15px', cursor: 'pointer',
-                letterSpacing: '0.03em', transition: 'all 0.2s',
+                letterSpacing: '0.02em', transition: 'all 0.2s',
                 marginBottom: '-2px', textTransform: 'capitalize',
+                fontFamily: "'Poppins', sans-serif",
               }}
             >
               {t === 'login' ? 'Login' : 'Register'}
@@ -208,14 +213,14 @@ export default function AuthForm({ type: initialType, setView }) {
           ))}
         </div>
 
-        <div style={{ padding: '28px 32px 32px' }}>
+        <div style={{ padding: tab === 'login' ? '56px 44px 64px' : '28px 32px 32px' }}>
           {error && (
-            <div style={{ background: '#2d1515', border: '1px solid #dc2626', borderRadius: '6px', padding: '10px 14px', marginBottom: '16px', color: '#f87171', fontSize: '13px' }}>
+            <div style={{ background: '#2d1515', border: '1px solid #dc2626', borderRadius: '4px', padding: '10px 14px', marginBottom: '16px', color: '#f87171', fontSize: '13px', fontFamily: "'Inter', sans-serif" }}>
               {error}
             </div>
           )}
           {success && (
-            <div style={{ background: '#1e3a2a', border: '1px solid #2ecc71', borderRadius: '6px', padding: '10px 14px', marginBottom: '16px', color: '#6fcf97', fontSize: '13px' }}>
+            <div style={{ background: '#1e3a2a', border: '1px solid #2ecc71', borderRadius: '4px', padding: '10px 14px', marginBottom: '16px', color: '#6fcf97', fontSize: '13px', fontFamily: "'Inter', sans-serif" }}>
               {success}
             </div>
           )}
@@ -235,9 +240,10 @@ export default function AuthForm({ type: initialType, setView }) {
               />
               <button type="submit" disabled={loading} style={{
                 width: '100%', padding: '13px', background: '#0bbfaa', border: 'none',
-                borderRadius: '6px', color: '#0d1b2a', fontWeight: '700', fontSize: '15px',
+                borderRadius: '4px', color: '#0d1b2a', fontWeight: '700', fontSize: '15px',
                 cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1,
                 transition: 'background 0.2s', letterSpacing: '0.02em', marginTop: '8px',
+                fontFamily: "'Poppins', sans-serif",
               }}
                 onMouseEnter={e => !loading && (e.currentTarget.style.background = '#09a896')}
                 onMouseLeave={e => e.currentTarget.style.background = '#0bbfaa'}
@@ -259,21 +265,22 @@ export default function AuthForm({ type: initialType, setView }) {
               />
               <PasswordField icon={IconLock} placeholder="Password*"         value={password}        onChange={e => setPassword(e.target.value)}        autoComplete="new-password" required />
               <PasswordField icon={IconLock} placeholder="Confirm Password*" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} autoComplete="new-password" required />
-              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer', color: '#64748b', fontSize: '13px', marginBottom: '8px' }}>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer', color: '#64748b', fontSize: '13px', marginBottom: '8px', fontFamily: "'Inter', sans-serif" }}>
                 <input type="checkbox" checked={acceptPolicy} onChange={e => setAcceptPolicy(e.target.checked)}
                   style={{ accentColor: '#0bbfaa', width: '15px', height: '15px', marginTop: '1px', flexShrink: 0 }} />
                 <span>I accept the <span style={{ color: '#0bbfaa', textDecoration: 'underline', cursor: 'pointer' }}>Privacy Policy</span></span>
               </label>
-              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer', color: '#64748b', fontSize: '13px', marginBottom: '20px' }}>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer', color: '#64748b', fontSize: '13px', marginBottom: '20px', fontFamily: "'Inter', sans-serif" }}>
                 <input type="checkbox" checked={acceptPromo} onChange={e => setAcceptPromo(e.target.checked)}
                   style={{ accentColor: '#0bbfaa', width: '15px', height: '15px', marginTop: '1px', flexShrink: 0 }} />
                 I agree to receive promotional emails and updates
               </label>
               <button type="submit" disabled={loading} style={{
                 width: '100%', padding: '13px', background: '#0bbfaa', border: 'none',
-                borderRadius: '6px', color: '#0d1b2a', fontWeight: '700', fontSize: '15px',
+                borderRadius: '4px', color: '#0d1b2a', fontWeight: '700', fontSize: '15px',
                 cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1,
                 transition: 'background 0.2s',
+                fontFamily: "'Poppins', sans-serif",
               }}
                 onMouseEnter={e => !loading && (e.currentTarget.style.background = '#09a896')}
                 onMouseLeave={e => e.currentTarget.style.background = '#0bbfaa'}
