@@ -430,7 +430,8 @@ export default function SellerDashboard({ user, setView }) {
           border: 1px solid #1e2a3a;
           box-shadow: 0 16px 50px rgba(0,0,0,0.5);
         }
-        .wa-left { width: 300px; flex-shrink: 0; background: #0e1117; border-right: 1px solid #1e2a3a; display: flex; flex-direction: column; }
+        .wa-left { width: 300px; flex-shrink: 0; background: #0e1117; border-right: 1px solid #1e2a3a; display: flex; flex-direction: column; position: relative; }
+        .wa-left.wa-left-full { width: 100%; flex: 1; border-right: none; }
         .wa-left-top { padding: 16px 20px; background: #131920; border-bottom: 1px solid #1e2a3a; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
         .wa-left-top h3 { font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0; font-family: 'Poppins', sans-serif; }
         .wa-left-sub { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 2px; font-family: 'Inter', sans-serif; }
@@ -475,8 +476,14 @@ export default function SellerDashboard({ user, setView }) {
         .wa-time { font-size: 0.62rem; color: rgba(255,255,255,0.36); }
         .wa-tick { color: #4dd4ac; }
 
-        .wa-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 40px; }
-        .wa-empty-icon { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #1d4b39, #163326); display: flex; align-items: center; justify-content: center; color: #4dd4ac; }
+        .wa-empty-screen { height: 100%; min-height: 320px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 28px 100px; }
+        .wa-empty-illustration { width: 84px; height: 84px; border-radius: 50%; background: linear-gradient(135deg, #1d4b39, #163326); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+        .wa-empty-title { font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 0.98rem; color: rgba(255,255,255,0.8); margin: 0 0 8px; }
+        .wa-empty-sub { font-family: 'Inter', sans-serif; font-size: 0.82rem; color: rgba(255,255,255,0.32); line-height: 1.65; max-width: 280px; }
+        .wa-empty-sub strong { color: rgba(255,255,255,0.5); font-weight: 600; }
+
+        .wa-fab { position: absolute; bottom: 24px; right: 24px; width: 54px; height: 54px; border-radius: 50%; background: #4dd4ac; color: #000; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 18px rgba(77,212,172,0.45); transition: all 0.2s; }
+        .wa-fab:hover { background: #3bc495; transform: scale(1.07); }
 
         .wa-inputbar { padding: 12px 18px; background: #131920; border-top: 1px solid #1e2a3a; display: flex; align-items: flex-end; gap: 10px; flex-shrink: 0; }
         .wa-ta { flex: 1; background: #1a2230; border: 1px solid #1e2a3a; border-radius: 22px; color: #fff; font-family: 'Inter', sans-serif; font-size: 0.87rem; padding: 10px 16px; resize: none; min-height: 42px; max-height: 110px; overflow-y: hidden; line-height: 1.5; transition: border-color 0.2s; }
@@ -485,9 +492,6 @@ export default function SellerDashboard({ user, setView }) {
         .wa-sendbtn { width: 42px; height: 42px; border-radius: 50%; background: #4dd4ac; color: #000; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; box-shadow: 0 2px 8px rgba(77,212,172,0.3); }
         .wa-sendbtn:hover { background: #3bc495; transform: scale(1.08); }
         .wa-sendbtn:disabled { background: #1e2a3a; cursor: default; transform: none; box-shadow: none; }
-
-        .wa-newmsg-btn { width: 100%; padding: 11px; background: rgba(77,212,172,0.1); border: 1px solid #4dd4ac; border-radius: 8px; color: #4dd4ac; cursor: pointer; font-size: 0.82rem; font-weight: 600; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; gap: 7px; transition: all 0.2s; }
-        .wa-newmsg-btn:hover { background: #4dd4ac; color: #000; }
 
         .empty-state { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.3); font-family: 'Inter', sans-serif; }
         .empty-state h3 { color: rgba(255,255,255,0.45); margin-bottom: 8px; font-size: 1rem; font-family: 'Poppins', sans-serif; }
@@ -537,6 +541,7 @@ export default function SellerDashboard({ user, setView }) {
             border-bottom: 1px solid #1e2a3a;
           }
           .wa-left.hidden { display: none; }
+          .wa-left.wa-left-full { height: 100%; flex: 1; }
 
           /* Chat panel fills remaining space */
           .wa-right {
@@ -749,7 +754,7 @@ export default function SellerDashboard({ user, setView }) {
 
             <div className="wa-shell">
               {/* Left: thread list — hidden on mobile when chat is open */}
-              <div className={`wa-left${mobileShowChat ? ' hidden' : ''}`}>
+              <div className={`wa-left${mobileShowChat ? ' hidden' : ''}${conversations.length === 0 ? ' wa-left-full' : ''}`}>
                 <div className="wa-left-top">
                   <div>
                     <h3>Chats</h3>
@@ -758,18 +763,14 @@ export default function SellerDashboard({ user, setView }) {
                 </div>
                 <div className="wa-contact-list">
                   {conversations.length === 0 ? (
-                    <div style={{ padding: '44px 20px', textAlign: 'center' }}>
-                      <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(77,212,172,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4dd4ac" strokeWidth="1.8">
+                    <div className="wa-empty-screen">
+                      <div className="wa-empty-illustration">
+                        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#4dd4ac" strokeWidth="1.6">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
                         </svg>
                       </div>
-                      <p style={{ color: 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.88rem', marginBottom: '6px', fontFamily: "'Poppins', sans-serif" }}>No conversations yet</p>
-                      <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.3)', marginBottom: '18px', lineHeight: '1.6', fontFamily: "'Inter', sans-serif" }}>Browse listings and tap Chat on any product to start</p>
-                      <button onClick={() => { setSelectedConv(null); setMessages([]); setMobileShowChat(true); }} className="wa-newmsg-btn">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" /></svg>
-                        Write new message
-                      </button>
+                      <p className="wa-empty-title">No conversations yet</p>
+                      <p className="wa-empty-sub">Tap <strong>Chat</strong> on any product listing to message a seller agent, or start a fresh conversation.</p>
                     </div>
                   ) : conversations.map((conv, idx) => (
                     <div key={conv.id} className={`wa-contact ${selectedConvIdx === idx ? 'active' : ''}`} onClick={() => selectConv(conv, idx)}>
@@ -785,28 +786,23 @@ export default function SellerDashboard({ user, setView }) {
                     </div>
                   ))}
                 </div>
+                {conversations.length === 0 && (
+                  <button
+                    onClick={() => { setSelectedConv(null); setMessages([]); setMobileShowChat(true); }}
+                    className="wa-fab"
+                    title="Write new message"
+                    aria-label="Write new message"
+                  >
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M11 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-5M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  </button>
+                )}
               </div>
 
-              {/* Right: chat panel — hidden on mobile when contact list is showing */}
-              <div className={`wa-right${!mobileShowChat && conversations.length > 0 ? ' hidden' : ''}`} style={{ display: 'flex', flexDirection: 'column' }}>
-                {conversations.length === 0 && !mobileShowChat ? (
-                  <div className="wa-empty">
-                    <div className="wa-empty-icon">
-                      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
-                      </svg>
-                    </div>
-                    <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1rem', fontFamily: "'Poppins', sans-serif", margin: 0 }}>No messages yet</h3>
-                    <p style={{ color: 'rgba(255,255,255,0.28)', fontSize: '0.8rem', maxWidth: '260px', lineHeight: '1.6', fontFamily: "'Inter', sans-serif" }}>
-                      Browse listings and tap <strong>Chat</strong> on any product to start a conversation with an agent.
-                    </p>
-                    <button onClick={() => { setSelectedConv(null); setMessages([]); setMobileShowChat(true); }} className="wa-newmsg-btn" style={{ maxWidth: '220px' }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" /></svg>
-                      Write new message
-                    </button>
-                  </div>
-                ) : (
-                  <>
+              {/* Right: chat panel — only rendered when a conversation exists; hidden on mobile while contact list is showing */}
+              {conversations.length > 0 && (
+                <div className={`wa-right${!mobileShowChat ? ' hidden' : ''}`} style={{ display: 'flex', flexDirection: 'column' }}>
                     <div className="wa-topbar">
                       {/* Back button — visible only on mobile */}
                       <button onClick={() => setMobileShowChat(false)}
@@ -875,9 +871,8 @@ export default function SellerDashboard({ user, setView }) {
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z" /></svg>
                       </button>
                     </div>
-                  </>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         )}
