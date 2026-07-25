@@ -169,6 +169,36 @@ export default function AuthForm({ type: initialType, setView }) {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap');
       `}</style>
 
+      {/* Close button — back to homepage */}
+      <button
+        onClick={() => setView('home')}
+        aria-label="Close"
+        style={{
+          position: 'absolute',
+          top: '24px',
+          right: '24px',
+          width: '40px',
+          height: '40px',
+          borderRadius: '50%',
+          background: 'rgba(0,0,0,0.18)',
+          border: 'none',
+          color: '#ffffff',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 2,
+          transition: 'background 0.2s',
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.32)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0.18)'}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+
       {/* Geometric background */}
       <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
         <polygon points="800,0 1050,0 750,800 500,800"    fill="rgba(255,255,255,0.08)" />
