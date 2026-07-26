@@ -93,6 +93,8 @@ export default function CookieConsent() {
   return (
     <>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap');
+
         @keyframes slideUp {
           from { opacity: 0; transform: translateY(40px); }
           to   { opacity: 1; transform: translateY(0);   }
@@ -143,13 +145,13 @@ export default function CookieConsent() {
         .nos-toggle.locked { background-color: #1e293b; cursor: not-allowed; }
         .nos-toggle.locked::after { transform: translateX(18px); background: #64748b; }
         .nos-btn {
-          font-family: 'Cormorant Garamond', Georgia, serif;
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0.16em;
+          font-family: 'Inter', sans-serif;
+          font-size: 12px;
+          font-weight: 600;
+          letter-spacing: 0.06em;
           text-transform: uppercase;
           border: none;
-          border-radius: 2px;
+          border-radius: 4px;
           cursor: pointer;
           padding: 11px 24px;
           transition: background-color 0.2s, color 0.2s;
@@ -172,10 +174,39 @@ export default function CookieConsent() {
           border: 1px solid #0bbfaa;
         }
         .nos-btn-outline:hover { background-color: #0bbfaa22; }
+
+        /* ── Mobile: stacked floating card (unchanged) ── */
         @media (max-width: 639px) {
           .nos-btn-row { flex-direction: column !important; }
           .nos-btn-row .nos-btn { width: 100%; text-align: center; }
           .nos-cookie-inner { padding: 20px 16px !important; }
+        }
+
+        /* ── Desktop: slim full-width bottom bar instead of a floating card ── */
+        @media (min-width: 640px) {
+          .nos-cookie-wrap {
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            max-width: none !important;
+            margin: 0 !important;
+          }
+          .nos-cookie-inner {
+            border-radius: 0 !important;
+            border-left: none !important;
+            border-right: none !important;
+            border-bottom: none !important;
+            padding: 20px 40px !important;
+          }
+          .nos-content-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 40px;
+          }
+          .nos-text-block { flex: 1; max-width: 640px; }
+          .nos-divider { display: none; }
+          .nos-btn-row { flex-wrap: nowrap; flex-shrink: 0; }
         }
       `}</style>
 
@@ -203,77 +234,77 @@ export default function CookieConsent() {
             boxShadow: '0 20px 60px rgba(0,0,0,0.7)',
           }}
         >
-          {/* Header row */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '16px' }}>
-            <div>
+          <div className="nos-content-row">
+            {/* Text block */}
+            <div className="nos-text-block">
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0bbfaa" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/>
                   <path d="M8.5 8.5v.01M16 15.5v.01M12 12v.01"/>
                 </svg>
-                <span style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '16px', fontWeight: '700', color: '#ffffff', letterSpacing: '-0.01em' }}>
+                <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: '16px', fontWeight: '700', color: '#ffffff', letterSpacing: '-0.01em' }}>
                   We value your privacy
                 </span>
               </div>
-              <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '14px', color: '#94a3b8', lineHeight: 1.65, fontStyle: 'italic' }}>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '13px', color: '#94a3b8', lineHeight: 1.6 }}>
                 Next Owners Store uses cookies to improve your browsing experience, personalise content, and analyse traffic. You control how your data is used.
               </p>
             </div>
-          </div>
 
-          {/* Divider */}
-          <div style={{ height: '1px', backgroundColor: '#1e293b', margin: '16px 0' }} />
+            {/* Button row */}
+            <div className="nos-btn-row" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <button className="nos-btn nos-btn-primary" onClick={acceptAll}>Accept All</button>
+              <button className="nos-btn nos-btn-ghost" onClick={rejectAll}>Reject All</button>
+
+              {showDetails ? (
+                <button className="nos-btn nos-btn-outline" onClick={saveCustom}>Save Preferences</button>
+              ) : (
+                <button
+                  className="nos-btn nos-btn-ghost"
+                  onClick={() => setShowDetails(true)}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  Customise
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
 
           {/* Expandable details */}
           {showDetails && (
-            <div className="nos-details-panel" style={{ marginBottom: '20px' }}>
-              {categories.map((cat) => (
-                <div key={cat.key} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  gap: '12px', padding: '12px 0',
-                  borderBottom: '1px solid #1e293b',
-                }}>
-                  <div>
-                    <p style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '13px', fontWeight: '600', color: '#e2e8f0', marginBottom: '3px' }}>{cat.label}</p>
-                    <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '12px', color: '#64748b', lineHeight: 1.5 }}>{cat.desc}</p>
+            <>
+              <div className="nos-divider" style={{ height: '1px', backgroundColor: '#1e293b', margin: '16px 0' }} />
+              <div className="nos-details-panel">
+                {categories.map((cat) => (
+                  <div key={cat.key} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    gap: '12px', padding: '12px 0',
+                    borderBottom: '1px solid #1e293b',
+                  }}>
+                    <div>
+                      <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: '13px', fontWeight: '600', color: '#e2e8f0', marginBottom: '3px' }}>{cat.label}</p>
+                      <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '12px', color: '#64748b', lineHeight: 1.5 }}>{cat.desc}</p>
+                    </div>
+                    <button
+                      className={`nos-toggle ${cat.locked ? 'locked' : prefs[cat.key] ? 'on' : 'off'}`}
+                      onClick={() => togglePref(cat.key)}
+                      aria-label={`Toggle ${cat.label} cookies`}
+                      title={cat.locked ? 'Always enabled' : undefined}
+                    />
                   </div>
-                  <button
-                    className={`nos-toggle ${cat.locked ? 'locked' : prefs[cat.key] ? 'on' : 'off'}`}
-                    onClick={() => togglePref(cat.key)}
-                    aria-label={`Toggle ${cat.label} cookies`}
-                    title={cat.locked ? 'Always enabled' : undefined}
-                  />
-                </div>
-              ))}
-              <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '11px', color: '#475569', marginTop: '14px', lineHeight: 1.6 }}>
-                For more information, see our{' '}
-                <a href="/privacy-policy" style={{ color: '#0bbfaa', textDecoration: 'underline', textUnderlineOffset: '3px' }}>Privacy Policy</a>
-                {' '}and{' '}
-                <a href="/cookie-policy" style={{ color: '#0bbfaa', textDecoration: 'underline', textUnderlineOffset: '3px' }}>Cookie Policy</a>.
-              </p>
-            </div>
+                ))}
+                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '11px', color: '#475569', marginTop: '14px', lineHeight: 1.6 }}>
+                  For more information, see our{' '}
+                  <a href="/privacy-policy" style={{ color: '#0bbfaa', textDecoration: 'underline', textUnderlineOffset: '3px' }}>Privacy Policy</a>
+                  {' '}and{' '}
+                  <a href="/cookie-policy" style={{ color: '#0bbfaa', textDecoration: 'underline', textUnderlineOffset: '3px' }}>Cookie Policy</a>.
+                </p>
+              </div>
+            </>
           )}
-
-          {/* Button row */}
-          <div className="nos-btn-row" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-            <button className="nos-btn nos-btn-primary" onClick={acceptAll}>Accept All</button>
-            <button className="nos-btn nos-btn-ghost" onClick={rejectAll}>Reject All</button>
-
-            {showDetails ? (
-              <button className="nos-btn nos-btn-outline" onClick={saveCustom}>Save Preferences</button>
-            ) : (
-              <button
-                className="nos-btn nos-btn-ghost"
-                onClick={() => setShowDetails(true)}
-                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-              >
-                Customise
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-            )}
-          </div>
         </div>
       </div>
     </>
