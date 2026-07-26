@@ -321,11 +321,11 @@ export default function Listings({ products = [], refreshProducts, cart = [], se
 // ── AI Agent data generator ──
 function getAIAgent(productId) {
   const agents = [
-    { name: 'Agent Sarah K.', avatar: '👩‍💼', memberMonths: 8, type: 'private', online: false, phone: '3238006149' },
-    { name: 'Agent James M.', avatar: '👨‍💼', memberMonths: 14, type: 'business', online: true, phone: '3238006149' },
-    { name: 'Agent Amara T.', avatar: '👩‍🔬', memberMonths: 3, type: 'private', online: false, phone: '3238006149' },
-    { name: 'Agent Leo B.', avatar: '🧑‍💻', memberMonths: 22, type: 'business', online: true, phone: '3238006149' },
-    { name: 'Agent Nina R.', avatar: '👩‍🎨', memberMonths: 6, type: 'private', online: false, phone: '3238006149' },
+    { name: 'Agent Sarah K.', avatar: '👩‍💼', memberMonths: 8, type: 'private', online: false, phone: '2032864970' },
+    { name: 'Agent James M.', avatar: '👨‍💼', memberMonths: 14, type: 'business', online: true, phone: '3109813840' },
+    { name: 'Agent Amara T.', avatar: '👩‍🔬', memberMonths: 3, type: 'private', online: false, phone: '3234480976' },
+    { name: 'Agent Leo B.', avatar: '🧑‍💻', memberMonths: 22, type: 'business', online: true, phone: '5104707921' },
+    { name: 'Agent Nina R.', avatar: '👩‍🎨', memberMonths: 6, type: 'private', online: false, phone: '6266864764' },
   ];
   const idx = productId ? (productId.toString().charCodeAt(0) % agents.length) : 0;
   return agents[idx];
