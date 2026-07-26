@@ -130,6 +130,7 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
         @media (max-width: 639px) {
           .search-btn-text { display: none; }
           .search-btn { padding: 0 16px !important; min-width: 48px; }
+          .hero-headline, .hero-subtext { text-align: left !important; }
         }
         @media (max-width: 480px) {
           .hero-headline { font-size: 2.6rem !important; }
@@ -147,7 +148,7 @@ export default function HomePage({ products, addToCart, setView, user, isAdmin, 
           <h1 className="hero-headline" style={{ fontFamily: "'Poppins', sans-serif", fontSize: 'clamp(2rem, 4.5vw, 3.8rem)', fontWeight: '800', color: '#0bbfaa', lineHeight: 1.1, marginBottom: '16px', letterSpacing: '-0.02em' }}>
             Your Trusted Marketplace
           </h1>
-          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 'clamp(1rem, 1.5vw, 1.15rem)', color: '#94a3b8', lineHeight: 1.7, marginBottom: '36px', fontStyle: 'italic' }}>
+          <p className="hero-subtext" style={{ fontFamily: "'Inter', sans-serif", fontSize: 'clamp(1rem, 1.5vw, 1.15rem)', color: '#94a3b8', lineHeight: 1.7, marginBottom: '36px', fontStyle: 'italic' }}>
             Because every item carries a precious story
           </p>
 
